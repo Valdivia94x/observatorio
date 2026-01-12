@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 import type { GraficaWidget } from '$lib/sanity';
 import { buildVoiceAgentPrompt } from '$lib/sanity';
 
-const AGENT_ID = 'agent_01jx1fse48e608t1s87xs98k7k';
+const AGENT_ID = 'agent_3101kcvrzjkcfqgb77rbdj3acpp4';
 
 // Store para el contexto del agente de voz
 class VoiceAgentStore {
