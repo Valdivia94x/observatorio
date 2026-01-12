@@ -64,26 +64,37 @@ class VoiceAgentStore {
 			await navigator.mediaDevices.getUserMedia({ audio: true });
 
 			// Construir el prompt dinámico si hay una gráfica activa
+			// NOTA: Para usar overrides, debes habilitar "Allow prompt override"
+			// en la configuración de seguridad del agente en ElevenLabs
 			let overrides: any = undefined;
+
+			// TODO: Descomentar cuando los overrides estén habilitados en ElevenLabs
+			// if (this.activeGrafica) {
+			// 	const dynamicPrompt = buildVoiceAgentPrompt(
+			// 		this.activeGrafica,
+			// 		this.indicadorTitle
+			// 	);
+			// 	overrides = {
+			// 		agent: {
+			// 			prompt: {
+			// 				prompt: dynamicPrompt
+			// 			}
+			// 		}
+			// 	};
+			// }
+
+			// Log para debug: muestra el prompt que se usaría
 			if (this.activeGrafica) {
-				const dynamicPrompt = buildVoiceAgentPrompt(
+				console.log('Voice Agent - Gráfica activa:', this.activeGrafica.titulo);
+				console.log('Voice Agent - Prompt generado:', buildVoiceAgentPrompt(
 					this.activeGrafica,
 					this.indicadorTitle
-				);
-				overrides = {
-					agent: {
-						prompt: {
-							prompt: dynamicPrompt
-						}
-					}
-				};
+				));
 			}
 
 			// Iniciar sesión con ElevenLabs
 			this.conversation = await Conversation.startSession({
 				agentId: AGENT_ID,
-				connectionType: 'websocket',
-				overrides,
 				onConnect: () => {
 					this.isConnected = true;
 					this.isLoading = false;
