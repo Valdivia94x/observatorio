@@ -15,15 +15,19 @@
     "sanity"
   ],
   "dependencies": {
+    "@sanity/icons": "^3.7.4",
     "@sanity/locale-es-es": "^1.2.30",
     "@sanity/table": "^2.0.0",
+    "@sanity/ui": "^3.1.11",
     "@sanity/vision": "^4.22.0",
     "chart.js": "^4.5.1",
+    "nanoid": "^5.1.6",
     "react": "^19.1",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.1",
     "sanity": "^4.22.0",
-    "styled-components": "^6.1.18"
+    "styled-components": "^6.1.18",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^5.0.2",

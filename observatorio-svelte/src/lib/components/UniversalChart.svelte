@@ -142,7 +142,8 @@
 			labels = headerRow.slice(1);
 			dataStartIndex = 1;
 		} else if (firstDataIsLabel) {
-			labels = headerRow;
+			// La primera celda del header es un título de columna (ej: "Indicador"), excluirla
+			labels = headerRow.slice(1);
 			dataStartIndex = 1;
 		} else {
 			labels = headerRow;
@@ -154,7 +155,11 @@
 
 		// Row 1+: Datasets
 		const datasets = rows.slice(1).map((row, index) => {
-			const seriesLabel = firstDataIsLabel ? row.cells[0] : `Serie ${index + 1}`;
+			let seriesLabel = firstDataIsLabel ? row.cells[0] : `Serie ${index + 1}`;
+			// Si el label es muy largo (típico de importaciones Excel), simplificarlo
+			if (seriesLabel && seriesLabel.length > 50) {
+				seriesLabel = `Serie ${index + 1}`;
+			}
 			const rawData = row.cells.slice(dataStartIndex).map(cell => parseFloat(cell) || 0);
 
 			// Pad data with zeros at the beginning if there are fewer values than labels
@@ -236,6 +241,14 @@
 		return bloqueGrafica.tipo;
 	}
 
+	function shouldShowLegend(): boolean {
+		const rows = bloqueGrafica.tablaDatos?.rows || [];
+		// Solo mostrar leyenda si hay más de una serie de datos
+		if (rows.length <= 2) return false;
+		// O si hay múltiples series con nombres significativos
+		return true;
+	}
+
 	function getChartOptions() {
 		const isDark = themeStore.isDark;
 		const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
@@ -246,7 +259,7 @@
 			maintainAspectRatio: true,
 			plugins: {
 				legend: {
-					display: true,
+					display: shouldShowLegend(),
 					position: 'top' as const,
 					labels: {
 						color: textColor,

@@ -2,25 +2,31 @@
 	import { themeStore } from '$lib/stores/theme.svelte';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import UniversalChart from '$lib/components/UniversalChart.svelte';
+	import GraficaConFiltro from '$lib/components/GraficaConFiltro.svelte';
 	import InteractiveMap from '$lib/components/InteractiveMap.svelte';
 	import type { Indicador, Eje, UbicacionKey, PeriodicidadKey, GraficaWidget } from '$lib/sanity';
-	import { ubicacionLabels, periodicidadLabels, anioDisponibleEnGrafica, formatearPeriodoGrafica } from '$lib/sanity';
+	import { ubicacionLabels, periodicidadLabels, anioDisponibleEnGrafica, formatearPeriodoGrafica, extraerAniosDeTablas } from '$lib/sanity';
 	import type { MunicipioKey } from '$lib/data/municipiosMap';
+	import { voiceAgentStore } from '$lib/stores/voiceAgent.svelte';
 
 	let { data } = $props();
 
 	const indicadores: Indicador[] = data.indicadores;
 	const allEjes: Eje[] = data.allEjes;
-	const allAnios: number[] = data.allAnios || [];
 	const allUbicaciones: UbicacionKey[] = data.allUbicaciones || [];
+
+	// Combinar años de metadata con años extraídos de tablaDatos
+	const aniosDeTablas = extraerAniosDeTablas(indicadores);
+	const aniosDeMetadata: number[] = data.allAnios || [];
+	const allAnios = [...new Set([...aniosDeMetadata, ...aniosDeTablas])].sort((a, b) => a - b);
 
 	// Filter states
 	// Nivel padre (indicador): filtro por eje
 	let selectedEje = $state<string>('todos');
 	// Nivel hijo (gráfica): filtros por ubicación y año
 	let selectedUbicacion = $state<string>('todos');
-	let selectedAnio = $state<string>('todos');
+	let selectedAnioInicio = $state<string>('todos');
+	let selectedAnioFin = $state<string>('todos');
 	// Filtro adicional por nombre de indicador
 	let selectedIndicador = $state<string>('todos');
 
@@ -88,14 +94,35 @@
 			if (selectedUbicacion !== 'todos') {
 				if (grafica.ubicacion !== selectedUbicacion) return false;
 			}
-			// Filter by año (nivel gráfica) - usando la nueva lógica con rangos
-			if (selectedAnio !== 'todos') {
-				const anio = parseInt(selectedAnio);
-				if (!anioDisponibleEnGrafica(grafica, anio)) return false;
+			// Filter by rango de años - la gráfica debe tener al menos un año en el rango
+			const anioInicio = selectedAnioInicio !== 'todos' ? parseInt(selectedAnioInicio) : null;
+			const anioFin = selectedAnioFin !== 'todos' ? parseInt(selectedAnioFin) : null;
+
+			if (anioInicio !== null || anioFin !== null) {
+				// Verificar que la gráfica tenga datos en el rango seleccionado
+				const inicio = anioInicio ?? 1900;
+				const fin = anioFin ?? 2100;
+
+				// Usar anioDisponibleEnGrafica para verificar si hay overlap
+				let tieneAnioEnRango = false;
+				for (let a = inicio; a <= fin; a++) {
+					if (anioDisponibleEnGrafica(grafica, a)) {
+						tieneAnioEnRango = true;
+						break;
+					}
+				}
+				if (!tieneAnioEnRango) return false;
 			}
 			return true;
 		});
 	}
+
+	// Computed: rango de años para pasar a las gráficas
+	const rangoAniosActivo = $derived(() => {
+		const inicio = selectedAnioInicio !== 'todos' ? parseInt(selectedAnioInicio) : null;
+		const fin = selectedAnioFin !== 'todos' ? parseInt(selectedAnioFin) : null;
+		return { inicio, fin };
+	});
 
 	// Step 1: Filter indicadores by eje (nivel padre)
 	const indicadoresByEje = $derived(() => {
@@ -114,7 +141,7 @@
 			}))
 			.filter(ind => {
 				// Only show indicadores that have graficas to display
-				if (selectedUbicacion === 'todos' && selectedAnio === 'todos') {
+				if (selectedUbicacion === 'todos' && selectedAnioInicio === 'todos' && selectedAnioFin === 'todos') {
 					// No filters: show only if has any graficas
 					return (ind.contenido?.length ?? 0) > 0;
 				}
@@ -161,7 +188,8 @@
 	$effect(() => {
 		void selectedUbicacion;
 		void selectedEje;
-		void selectedAnio;
+		void selectedAnioInicio;
+		void selectedAnioFin;
 		selectedIndicador = 'todos';
 	});
 
@@ -177,7 +205,7 @@
 
 	// Helper to get graficas to show (filtered or all)
 	function getGraficasToShow(indicador: Indicador & { graficasFiltradas: GraficaWidget[] }): GraficaWidget[] {
-		if (selectedUbicacion !== 'todos' || selectedAnio !== 'todos') {
+		if (selectedUbicacion !== 'todos' || selectedAnioInicio !== 'todos' || selectedAnioFin !== 'todos') {
 			return indicador.graficasFiltradas || [];
 		}
 		return indicador.contenido || [];
@@ -187,12 +215,27 @@
 		selectedUbicacion = 'todos';
 		selectedEje = 'todos';
 		selectedIndicador = 'todos';
-		selectedAnio = 'todos';
+		selectedAnioInicio = 'todos';
+		selectedAnioFin = 'todos';
 	}
 
 	const hasActiveFilters = $derived(() => {
-		return selectedUbicacion !== 'todos' || selectedEje !== 'todos' || selectedIndicador !== 'todos' || selectedAnio !== 'todos';
+		return selectedUbicacion !== 'todos' || selectedEje !== 'todos' || selectedIndicador !== 'todos' || selectedAnioInicio !== 'todos' || selectedAnioFin !== 'todos';
 	});
+
+	// Voice agent: inicia conversación directamente con el contexto de la gráfica
+	function askAboutGrafica(grafica: GraficaWidget, indicadorTitle: string) {
+		voiceAgentStore.startWithGrafica(grafica, indicadorTitle);
+	}
+
+	// Check if a grafica is the active one for voice agent
+	const isActiveForVoice = $derived((grafica: GraficaWidget) => {
+		return voiceAgentStore.activeGrafica?._key === grafica._key;
+	});
+
+	// Check if voice agent is loading or connected
+	const isVoiceLoading = $derived(voiceAgentStore.isLoading);
+	const isVoiceConnected = $derived(voiceAgentStore.isConnected);
 </script>
 
 <main>
@@ -267,20 +310,40 @@
 				</select>
 			</div>
 
-			<!-- Año Filter (nivel gráfica) -->
-			<div class="flex-1 min-w-[120px]">
+			<!-- Año Inicio Filter (nivel gráfica) -->
+			<div class="flex-1 min-w-[100px]">
 				<label class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm font-medium mb-1 block">
-					Año
+					Año Inicio
 				</label>
 				<div class="h-px {themeStore.isDark ? 'bg-slate-600' : 'bg-slate-300'}"></div>
 				<select
-					bind:value={selectedAnio}
+					bind:value={selectedAnioInicio}
 					class="{themeStore.isDark
 						? 'bg-slate-800 text-white border-slate-800 focus:border-[#d0005f]'
 						: 'bg-slate-50 text-slate-800 border-slate-200 focus:border-orange-500'}
 						w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-colors"
 				>
-					<option value="todos">Todos los años</option>
+					<option value="todos">Desde</option>
+					{#each anios() as anio}
+						<option value={anio.toString()}>{anio}</option>
+					{/each}
+				</select>
+			</div>
+
+			<!-- Año Fin Filter (nivel gráfica) -->
+			<div class="flex-1 min-w-[100px]">
+				<label class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm font-medium mb-1 block">
+					Año Fin
+				</label>
+				<div class="h-px {themeStore.isDark ? 'bg-slate-600' : 'bg-slate-300'}"></div>
+				<select
+					bind:value={selectedAnioFin}
+					class="{themeStore.isDark
+						? 'bg-slate-800 text-white border-slate-800 focus:border-[#d0005f]'
+						: 'bg-slate-50 text-slate-800 border-slate-200 focus:border-orange-500'}
+						w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-colors"
+				>
+					<option value="todos">Hasta</option>
 					{#each anios() as anio}
 						<option value={anio.toString()}>{anio}</option>
 					{/each}
@@ -412,7 +475,44 @@
 									{#if getGraficasToShow(indicador).length > 0}
 										<div class="space-y-6">
 											{#each getGraficasToShow(indicador) as grafica (grafica._key)}
-												<div class="{themeStore.isDark ? 'bg-slate-800/50' : 'bg-slate-50'} rounded-xl px-4 py-2">
+												<div class="{themeStore.isDark ? 'bg-slate-800/50' : 'bg-slate-50'} rounded-xl px-4 py-2 relative group">
+													<!-- Voice button: click to start conversation about this chart -->
+													<button
+														onclick={() => askAboutGrafica(grafica, indicador.title || '')}
+														disabled={isVoiceLoading && isActiveForVoice(grafica)}
+														class="absolute top-2 right-2 p-2 rounded-full transition-all duration-200 z-10
+															{isActiveForVoice(grafica) && isVoiceConnected
+																? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg ring-2 ring-green-400/50'
+																: isActiveForVoice(grafica) && isVoiceLoading
+																	? 'bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-lg animate-pulse'
+																	: themeStore.isDark
+																		? 'bg-slate-700 text-slate-400 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'
+																		: 'bg-slate-200 text-slate-500 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'}"
+														title={isActiveForVoice(grafica) && isVoiceConnected
+															? 'Conversación activa'
+															: isActiveForVoice(grafica) && isVoiceLoading
+																? 'Conectando...'
+																: 'Preguntar sobre esta gráfica'}
+													>
+														{#if isActiveForVoice(grafica) && isVoiceLoading}
+															<!-- Loading spinner -->
+															<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+																<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+																<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+															</svg>
+														{:else if isActiveForVoice(grafica) && isVoiceConnected}
+															<!-- Connected indicator (sound waves) -->
+															<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+																<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+															</svg>
+														{:else}
+															<!-- Microphone icon -->
+															<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+																<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93h2c0 2.76 2.24 5 5 5s5-2.24 5-5h2c0 4.08-3.06 7.44-7 7.93V19h4v2H8v-2h4v-3.07z"/>
+															</svg>
+														{/if}
+													</button>
+
 													<div class="flex flex-wrap gap-2 mb-1">
 														{#if grafica.ubicacion}
 															<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
@@ -430,7 +530,11 @@
 															</span>
 														{/if}
 													</div>
-													<UniversalChart bloqueGrafica={grafica} />
+													<GraficaConFiltro
+														grafica={grafica}
+														anioInicio={rangoAniosActivo().inicio}
+														anioFin={rangoAniosActivo().fin}
+													/>
 												</div>
 											{/each}
 										</div>

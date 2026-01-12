@@ -17,6 +17,14 @@ export const graficaWidget = defineType({
         collapsed: true,
       },
     },
+    {
+      name: 'importacion',
+      title: 'Datos de Importacion',
+      options: {
+        collapsible: true,
+        collapsed: true,
+      },
+    },
   ],
   fields: [
     defineField({
@@ -110,12 +118,143 @@ export const graficaWidget = defineType({
       type: 'string',
       description: 'Opcional. Texto para subtitulo si difiere del indicador (ej: "2010 - 2022")',
     }),
+    // === METADATOS PARA AGENTE DE VOZ ===
+    defineField({
+      name: 'unidadMedida',
+      title: 'Unidad de Medida',
+      type: 'string',
+      description: 'Unidad en la que se expresan los valores de la grafica',
+      options: {
+        list: [
+          {title: 'Porcentaje (%)', value: 'porcentaje'},
+          {title: 'Pesos (MXN)', value: 'pesos'},
+          {title: 'Miles de pesos', value: 'miles-pesos'},
+          {title: 'Millones de pesos', value: 'millones-pesos'},
+          {title: 'Habitantes', value: 'habitantes'},
+          {title: 'Miles de habitantes', value: 'miles-habitantes'},
+          {title: 'Tasa por 100,000 hab.', value: 'tasa-100mil'},
+          {title: 'Indice (0-100)', value: 'indice'},
+          {title: 'Unidades', value: 'unidades'},
+          {title: 'Hectareas', value: 'hectareas'},
+          {title: 'Kilometros', value: 'kilometros'},
+          {title: 'Toneladas', value: 'toneladas'},
+          {title: 'Litros', value: 'litros'},
+          {title: 'Otro', value: 'otro'},
+        ],
+        layout: 'dropdown',
+      },
+    }),
+    defineField({
+      name: 'unidadMedidaPersonalizada',
+      title: 'Unidad Personalizada',
+      type: 'string',
+      description: 'Especifica la unidad si seleccionaste "Otro"',
+      hidden: ({parent}) => {
+        const p = parent as {unidadMedida?: string}
+        return p?.unidadMedida !== 'otro'
+      },
+    }),
+    defineField({
+      name: 'fuente',
+      title: 'Fuente de Datos',
+      type: 'string',
+      description: 'Institucion u organizacion que genera los datos',
+      options: {
+        list: [
+          {title: 'INEGI', value: 'inegi'},
+          {title: 'CONEVAL', value: 'coneval'},
+          {title: 'IMCO', value: 'imco'},
+          {title: 'CONAPO', value: 'conapo'},
+          {title: 'Secretaria de Salud', value: 'salud'},
+          {title: 'Secretaria de Economia', value: 'economia'},
+          {title: 'SESNSP (Seguridad)', value: 'sesnsp'},
+          {title: 'Banco de Mexico', value: 'banxico'},
+          {title: 'SHCP', value: 'shcp'},
+          {title: 'SEP', value: 'sep'},
+          {title: 'CONAGUA', value: 'conagua'},
+          {title: 'SEMARNAT', value: 'semarnat'},
+          {title: 'Gobierno Municipal', value: 'municipal'},
+          {title: 'Gobierno Estatal', value: 'estatal'},
+          {title: 'Otra fuente', value: 'otra'},
+        ],
+        layout: 'dropdown',
+      },
+    }),
+    defineField({
+      name: 'fuentePersonalizada',
+      title: 'Fuente Personalizada',
+      type: 'string',
+      description: 'Especifica la fuente si seleccionaste "Otra fuente"',
+      hidden: ({parent}) => {
+        const p = parent as {fuente?: string}
+        return p?.fuente !== 'otra'
+      },
+    }),
+    defineField({
+      name: 'descripcionContexto',
+      title: 'Descripcion / Contexto',
+      type: 'text',
+      rows: 3,
+      description:
+        'Opcional. Informacion adicional que ayude al agente de voz a interpretar los datos (metodologia, notas importantes, contexto historico, etc.)',
+    }),
     defineField({
       name: 'tablaDatos',
       title: 'Tabla de Datos',
       type: 'table',
       description:
         'La primera fila son los Años/Categorias. La primera columna son los nombres de las series. Llena los datos como en Excel.',
+    }),
+    // === CAMPOS DE IMPORTACION ===
+    defineField({
+      name: 'archivoFuente',
+      title: 'Archivo Fuente',
+      type: 'file',
+      fieldset: 'importacion',
+      options: {
+        accept: '.xlsx,.xls,.csv',
+      },
+      description: 'Archivo original de Excel/CSV del cual se importaron los datos.',
+    }),
+    defineField({
+      name: 'configLimpieza',
+      title: 'Configuracion de Limpieza',
+      type: 'object',
+      fieldset: 'importacion',
+      description: 'Metadata de como se procesaron los datos del archivo.',
+      fields: [
+        defineField({
+          name: 'headerRow',
+          title: 'Fila de Encabezados',
+          type: 'number',
+        }),
+        defineField({
+          name: 'dataStartRow',
+          title: 'Fila Inicio de Datos',
+          type: 'number',
+        }),
+        defineField({
+          name: 'dataEndRow',
+          title: 'Fila Fin de Datos',
+          type: 'number',
+        }),
+        defineField({
+          name: 'includedColumns',
+          title: 'Columnas Incluidas',
+          type: 'array',
+          of: [{type: 'number'}],
+        }),
+        defineField({
+          name: 'importedAt',
+          title: 'Fecha de Importacion',
+          type: 'datetime',
+        }),
+        defineField({
+          name: 'transpose',
+          title: 'Datos Transpuestos',
+          type: 'boolean',
+        }),
+      ],
     }),
     // === CONFIGURACION DE SERIES (Para gráficas combinadas) ===
     defineField({

@@ -36,6 +36,7 @@
 		"vite": "^7.2.2"
 	},
 	"dependencies": {
+		"@elevenlabs/client": "^0.12.2",
 		"@portabletext/svelte": "^3.0.1",
 		"@sanity/client": "^7.13.2",
 		"@sanity/image-url": "^2.0.2",

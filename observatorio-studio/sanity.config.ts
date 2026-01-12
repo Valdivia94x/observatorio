@@ -4,7 +4,7 @@ import {visionTool} from '@sanity/vision'
 import {table} from '@sanity/table'
 import {schemaTypes} from './schemaTypes'
 import {structure} from './structure'
-import { esESLocale } from '@sanity/locale-es-es' //
+import {esESLocale} from '@sanity/locale-es-es'
 
 export default defineConfig({
   name: 'default',

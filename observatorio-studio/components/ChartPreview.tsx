@@ -13,7 +13,12 @@ import {
   Filler,
 } from 'chart.js'
 import {Bar, Line, Doughnut, Pie, Radar, Chart} from 'react-chartjs-2'
-import {useEffect, useState} from 'react'
+import {useEffect, useState, useCallback} from 'react'
+import {Box, Button, Card, Dialog, Flex, Text} from '@sanity/ui'
+import {UploadIcon, CheckmarkCircleIcon} from '@sanity/icons'
+import {set, unset} from 'sanity'
+import {ExcelImporter} from './ExcelImporter'
+import type {ImportedData} from './ExcelImporter'
 
 // Registrar todos los componentes de Chart.js
 ChartJS.register(
@@ -63,17 +68,36 @@ interface SerieConfig {
   color?: string
 }
 
+interface ConfigLimpieza {
+  headerRow?: number
+  dataStartRow?: number
+  dataEndRow?: number
+  includedColumns?: number[]
+  importedAt?: string
+}
+
+interface FileAsset {
+  _type: 'file'
+  asset?: {
+    _type: 'reference'
+    _ref: string
+  }
+}
+
 interface GraficaWidgetValue {
   titulo?: string
   tipo?: string
   tablaDatos?: TableData
   colores?: string[]
   series?: SerieConfig[]
+  archivoFuente?: FileAsset
+  configLimpieza?: ConfigLimpieza
 }
 
 interface ChartPreviewProps {
   value?: GraficaWidgetValue
   renderDefault: (props: any) => React.ReactElement
+  onChange: (patches: any) => void
 }
 
 function parseTableData(
@@ -171,11 +195,14 @@ function parseTableData(
 }
 
 export function ChartPreview(props: ChartPreviewProps) {
-  const {value, renderDefault} = props
+  const {value, renderDefault, onChange} = props
   const [chartData, setChartData] = useState<any>(null)
+  const [showImporter, setShowImporter] = useState(false)
 
   const isComboChart =
     value?.series && value.series.length > 0 && (value.tipo === 'bar' || value.tipo === 'line')
+
+  const hasImportedData = !!(value?.archivoFuente?.asset?._ref)
 
   useEffect(() => {
     if (value?.tablaDatos) {
@@ -190,6 +217,18 @@ export function ChartPreview(props: ChartPreviewProps) {
       setChartData(null)
     }
   }, [value?.tablaDatos, value?.tipo, value?.colores, value?.series])
+
+  const handleImportComplete = useCallback(
+    (importedData: ImportedData) => {
+      // Aplicar los cambios usando el sistema de patches de Sanity
+      onChange(set(importedData.archivoFuente, ['archivoFuente']))
+      onChange(set(importedData.tablaDatos, ['tablaDatos']))
+      onChange(set(importedData.configLimpieza, ['configLimpieza']))
+
+      setShowImporter(false)
+    },
+    [onChange]
+  )
 
   const getChartOptions = () => {
     return {
@@ -254,9 +293,53 @@ export function ChartPreview(props: ChartPreviewProps) {
     }
   }
 
+  const formatDate = (isoString?: string) => {
+    if (!isoString) return ''
+    const date = new Date(isoString)
+    return date.toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   return (
     <div>
+      {/* Botón de importación y estado */}
+      <Box marginBottom={4}>
+        <Flex gap={3} align="center" wrap="wrap">
+          <Button
+            icon={UploadIcon}
+            text="Importar desde Excel/CSV"
+            tone="primary"
+            mode="ghost"
+            onClick={() => setShowImporter(true)}
+          />
+
+          {hasImportedData && (
+            <Card padding={2} tone="positive" radius={2}>
+              <Flex align="center" gap={2}>
+                <CheckmarkCircleIcon style={{color: '#43a047'}} />
+                <Text size={1}>
+                  Datos importados
+                  {value?.configLimpieza?.importedAt && (
+                    <span style={{color: '#666', marginLeft: 4}}>
+                      ({formatDate(value.configLimpieza.importedAt)})
+                    </span>
+                  )}
+                </Text>
+              </Flex>
+            </Card>
+          )}
+        </Flex>
+      </Box>
+
+      {/* Formulario por defecto de Sanity */}
       {renderDefault(props)}
+
+      {/* Vista previa de la gráfica */}
       <div
         style={{
           marginTop: '20px',
@@ -280,6 +363,22 @@ export function ChartPreview(props: ChartPreviewProps) {
         </h4>
         <div style={{maxWidth: '100%', height: 'auto'}}>{renderChart()}</div>
       </div>
+
+      {/* Modal del importador */}
+      {showImporter && (
+        <Dialog
+          id="excel-importer-dialog"
+          header="Importar datos desde Excel/CSV"
+          width={2}
+          onClose={() => setShowImporter(false)}
+          zOffset={1000}
+        >
+          <ExcelImporter
+            onImportComplete={handleImportComplete}
+            onCancel={() => setShowImporter(false)}
+          />
+        </Dialog>
+      )}
     </div>
   )
 }

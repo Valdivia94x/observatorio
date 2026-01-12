@@ -1,8 +1,8 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import VoiceAgent from '$lib/components/VoiceAgent.svelte';
 	import { themeStore } from '$lib/stores/theme.svelte';
 	import { page } from '$app/stores';
 
@@ -13,10 +13,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
-	{#if !isPublicacionSlug}
-		<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async></script>
-	{/if}
+	<link rel="icon" type="image/png" href="/images/favicon.png" />
 </svelte:head>
 
 <div class="min-h-screen {themeStore.isDark ? 'bg-slate-800' : 'bg-slate-100'}">
@@ -25,7 +22,7 @@
 	<Footer />
 </div>
 
-<!-- ElevenLabs Voice Agent Widget -->
+<!-- ElevenLabs Voice Agent (SDK) -->
 {#if !isPublicacionSlug}
-	<elevenlabs-convai agent-id="agent_3101kcvrzjkcfqgb77rbdj3acpp4"></elevenlabs-convai>
+	<VoiceAgent />
 {/if}
