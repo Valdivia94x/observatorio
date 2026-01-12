@@ -770,29 +770,39 @@ export function extractKeyDataPoints(tablaDatos: TableData | undefined): KeyData
 }
 
 /**
+ * Formatea un número para lectura por voz
+ * Usa punto decimal (más universal para modelos de IA/TTS)
+ */
+function formatNumberForVoice(value: number): string {
+	// Redondear a 2 decimales si tiene decimales, sino mostrar entero
+	const rounded = Math.round(value * 100) / 100;
+	return rounded.toString();
+}
+
+/**
  * Convierte los datos clave a texto compacto para el prompt del agente
  */
 export function keyDataToText(keyData: KeyDataPoints, unidad: string): string {
 	const lines: string[] = ['Datos Clave:'];
 
 	if (keyData.actual) {
-		lines.push(`- Actual (${keyData.actual.label}): ${keyData.actual.value.toLocaleString('es-MX')}${unidad !== 'No especificada' ? ` ${unidad}` : ''}`);
+		lines.push(`- Actual (${keyData.actual.label}): ${formatNumberForVoice(keyData.actual.value)}${unidad !== 'No especificada' ? ` ${unidad}` : ''}`);
 	}
 
 	if (keyData.previo) {
-		lines.push(`- Período Previo (${keyData.previo.label}): ${keyData.previo.value.toLocaleString('es-MX')}`);
+		lines.push(`- Período Previo (${keyData.previo.label}): ${formatNumberForVoice(keyData.previo.value)}`);
 	}
 
 	if (keyData.anioAnterior) {
-		lines.push(`- Año Anterior (${keyData.anioAnterior.label}): ${keyData.anioAnterior.value.toLocaleString('es-MX')}`);
+		lines.push(`- Año Anterior (${keyData.anioAnterior.label}): ${formatNumberForVoice(keyData.anioAnterior.value)}`);
 	}
 
 	if (keyData.maximo) {
-		lines.push(`- Récord Máximo (${keyData.maximo.label}): ${keyData.maximo.value.toLocaleString('es-MX')}`);
+		lines.push(`- Récord Máximo (${keyData.maximo.label}): ${formatNumberForVoice(keyData.maximo.value)}`);
 	}
 
 	if (keyData.minimo) {
-		lines.push(`- Récord Mínimo (${keyData.minimo.label}): ${keyData.minimo.value.toLocaleString('es-MX')}`);
+		lines.push(`- Récord Mínimo (${keyData.minimo.label}): ${formatNumberForVoice(keyData.minimo.value)}`);
 	}
 
 	// Calcular variaciones si hay datos suficientes
