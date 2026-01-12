@@ -868,18 +868,8 @@ Usa frases naturales para iniciar tus respuestas y evita sonar robótica. Varía
 ## Estilo de respuesta
 Responde como si hablaras en persona: natural, directo y sin formatos como listas o viñetas. Usa frases completas y conversacionales. Si no puedes ayudar con algo, deja la puerta abierta: "Si necesitas más información, con gusto te ayudo" o "Cualquier otra duda, aquí estoy para apoyarte".`;
 
-// Prompt simplificado para pruebas (ahorra ~55% de tokens)
-// Para producción: cambiar MARIA_BASE_PROMPT = MARIA_FULL_PROMPT
-const MARIA_BASE_PROMPT = `Eres un asistente de pruebas para verificar lectura de datos.
-
-## Tu única tarea
-Lee y comunica los datos exactos que se te proporcionan sobre la gráfica actual.
-
-## Cómo responder
-- Lee los números exactamente como aparecen
-- Menciona las unidades de medida
-- Indica las fechas/períodos de los datos
-- Responde directo, sin adornos`;
+// Usar el prompt completo de María para producción
+const MARIA_BASE_PROMPT = MARIA_FULL_PROMPT;
 
 /**
  * Construye el prompt completo ("sandwich") para el agente de voz de ElevenLabs
