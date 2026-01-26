@@ -246,6 +246,7 @@
 								class="cursor-pointer transition-all duration-200 {hoveredMunicipio === key ? muni.hoverColor : muni.color} {themeStore.isDark ? 'stroke-white' : 'stroke-slate-800'} stroke-[0.2]"
 								onmouseenter={() => (hoveredMunicipio = key as MunicipioKey)}
 								onmouseleave={() => (hoveredMunicipio = null)}
+								onclick={() => window.location.href = `/indicadores?ubicacion=${key}`}
 								role="button"
 								tabindex={i === 0 ? 0 : -1}
 								aria-label={i === 0 ? muni.nombre : `${muni.nombre} parte ${i + 1}`}

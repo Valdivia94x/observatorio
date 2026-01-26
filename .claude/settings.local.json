@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plane__list_projects",
+      "mcp__plane__get_workspace_members",
+      "mcp__plane__list_states",
+      "mcp__plane__create_work_item",
+      "mcp__plane__create_work_log"
+    ]
+  }
+}

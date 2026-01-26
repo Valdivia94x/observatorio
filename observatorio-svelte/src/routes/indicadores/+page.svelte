@@ -36,6 +36,18 @@
 		if (ejeParam) {
 			selectedEje = ejeParam;
 		}
+
+		const ubicacionParam = $page.url.searchParams.get('ubicacion');
+		if (ubicacionParam) {
+			// Convertir MunicipioKey a UbicacionKey si viene del mapa de home
+			const ubicacionValue = municipioKeyToUbicacion[ubicacionParam as MunicipioKey];
+			if (ubicacionValue) {
+				selectedUbicacion = ubicacionValue;
+			} else if (allUbicaciones.includes(ubicacionParam as UbicacionKey)) {
+				// Si ya es una UbicacionKey válida, usarla directamente
+				selectedUbicacion = ubicacionParam;
+			}
+		}
 	});
 
 	// Map MunicipioKey to ubicacion values (for interactive map)
