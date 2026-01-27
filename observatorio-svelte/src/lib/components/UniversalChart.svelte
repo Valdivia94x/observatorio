@@ -211,6 +211,8 @@
 					pointHoverBackgroundColor: '#fff',
 					pointHoverBorderColor: color,
 					order: serieType === 'line' ? 0 : 1, // Lines render on top of bars
+					// No mostrar labels en series de línea (se superponen)
+					datalabels: serieType === 'line' ? { display: false } : undefined,
 				};
 			}
 
@@ -296,26 +298,14 @@
 					padding: 12,
 				},
 				datalabels: {
-					display: bloqueGrafica.tipo !== 'radar',
-					// Alineación dinámica para separar etiquetas en gráficas de línea y combo
+					// No mostrar labels en gráficas de líneas (se superponen) ni en radar
+					display: bloqueGrafica.tipo !== 'radar' && bloqueGrafica.tipo !== 'line',
 					anchor: (context: { datasetIndex: number; dataset: { type?: string } }) => {
 						if (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') return 'center';
-						// For combo charts, check dataset type
-						const datasetType = context.dataset?.type;
-						if (bloqueGrafica.tipo === 'line' || datasetType === 'line') {
-							// Serie 1 (índice 0): arriba, Serie 2+ : abajo
-							return context.datasetIndex === 0 ? 'end' : 'start';
-						}
 						return 'end';
 					},
 					align: (context: { datasetIndex: number; dataset: { type?: string } }) => {
 						if (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') return 'center';
-						// For combo charts, check dataset type
-						const datasetType = context.dataset?.type;
-						if (bloqueGrafica.tipo === 'line' || datasetType === 'line') {
-							// Serie 1 (índice 0): arriba, Serie 2+ : abajo
-							return context.datasetIndex === 0 ? 'top' : 'bottom';
-						}
 						return 'top';
 					},
 					offset: (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') ? 0 : 6,
