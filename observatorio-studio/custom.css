@@ -1,0 +1,55 @@
+/* Custom styles for Sanity Studio */
+
+/* =====================================================
+   Ancho mínimo para celdas de @sanity/table
+   ===================================================== */
+
+/* Selectores genéricos para cualquier tabla en el studio */
+table input[type="text"],
+table input:not([type]) {
+  min-width: 60px !important;
+  width: 100% !important;
+}
+
+table td,
+table th {
+  min-width: 80px !important;
+}
+
+/* Selectores específicos para el plugin @sanity/table */
+[data-testid="table-input"] table {
+  table-layout: auto !important;
+  width: max-content !important;
+  min-width: 100% !important;
+}
+
+[data-testid="table-input"] td,
+[data-testid="table-input"] th {
+  min-width: 70px !important;
+  padding: 4px !important;
+}
+
+[data-testid="table-input"] input {
+  min-width: 60px !important;
+  width: 100% !important;
+}
+
+/* Contenedor con scroll horizontal */
+[data-testid="table-input"] > div {
+  overflow-x: auto !important;
+}
+
+/* Selectores por atributos de estilo inline que pueda usar el plugin */
+div[style*="display: table"],
+div[style*="display:table"] {
+  min-width: max-content !important;
+}
+
+/* Forzar que las celdas no colapsen */
+td > input,
+th > input,
+td > div > input,
+th > div > input {
+  min-width: 60px !important;
+  box-sizing: border-box !important;
+}

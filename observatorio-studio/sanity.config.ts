@@ -5,6 +5,7 @@ import {table} from '@sanity/table'
 import {schemaTypes} from './schemaTypes'
 import {structure} from './structure'
 import {esESLocale} from '@sanity/locale-es-es'
+import './custom.css'
 
 export default defineConfig({
   name: 'default',
