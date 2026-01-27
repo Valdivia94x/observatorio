@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { themeStore } from '$lib/stores/theme.svelte';
+	import { unidadMedidaLabels, type UnidadMedidaKey } from '$lib/sanity';
 
 	// Dynamic import for Chart.js (client-side only)
 	let Chart: typeof import('chart.js').Chart;
@@ -67,6 +68,8 @@
 		tablaDatos: TableData;
 		series?: SerieConfig[];
 		colores?: string[];
+		unidadMedida?: UnidadMedidaKey;
+		unidadMedidaPersonalizada?: string;
 	}
 
 	interface Props {
@@ -335,8 +338,26 @@
 
 		// Add scales for non-circular charts
 		if (bloqueGrafica.tipo !== 'doughnut' && bloqueGrafica.tipo !== 'pie' && bloqueGrafica.tipo !== 'radar') {
+			// Obtener etiqueta de unidad de medida
+			let unidadLabel = 'Valor';
+			if (bloqueGrafica.unidadMedida === 'otro') {
+				unidadLabel = bloqueGrafica.unidadMedidaPersonalizada || 'Valor';
+			} else if (bloqueGrafica.unidadMedida) {
+				unidadLabel = unidadMedidaLabels[bloqueGrafica.unidadMedida] || 'Valor';
+			}
+			const isHorizontalBar = bloqueGrafica.tipo === 'horizontalBar';
+
 			baseOptions.scales = {
 				x: {
+					title: {
+						display: true,
+						text: isHorizontalBar ? unidadLabel : 'Período',
+						color: textColor,
+						font: {
+							size: 14,
+							weight: 'bold' as const
+						}
+					},
 					grid: {
 						color: gridColor,
 					},
@@ -348,6 +369,15 @@
 					}
 				},
 				y: {
+					title: {
+						display: true,
+						text: isHorizontalBar ? 'Período' : unidadLabel,
+						color: textColor,
+						font: {
+							size: 14,
+							weight: 'bold' as const
+						}
+					},
 					grid: {
 						color: gridColor,
 					},
@@ -362,7 +392,7 @@
 			};
 
 			// Horizontal bar configuration
-			if (bloqueGrafica.tipo === 'horizontalBar') {
+			if (isHorizontalBar) {
 				baseOptions.indexAxis = 'y';
 			}
 		}
