@@ -243,7 +243,7 @@
 						{#each polygonsToPaths(muni.clipPath, muni.x, muni.y, muni.width, muni.height) as pathD, i}
 							<path
 								d={pathD}
-								class="cursor-pointer transition-all duration-200 {hoveredMunicipio === key ? muni.hoverColor : muni.color} {themeStore.isDark ? 'stroke-white' : 'stroke-slate-800'} stroke-[0.2]"
+								class="cursor-pointer transition-all duration-200 outline-none focus:outline-none {hoveredMunicipio === key ? muni.hoverColor : muni.color} {themeStore.isDark ? 'stroke-white' : 'stroke-slate-800'} stroke-[0.2]"
 								onmouseenter={() => (hoveredMunicipio = key as MunicipioKey)}
 								onmouseleave={() => (hoveredMunicipio = null)}
 								onclick={() => window.location.href = `/indicadores?ubicacion=${key}`}
