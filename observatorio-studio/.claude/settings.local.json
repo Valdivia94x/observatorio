@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(del \"d:\\\\Asus\\\\Documents\\\\Proyecto_Observatorio\\\\observatorio-studio\\\\sanity.config.ts\")"
+      "Bash(del \"d:\\\\Asus\\\\Documents\\\\Proyecto_Observatorio\\\\observatorio-studio\\\\sanity.config.ts\")",
+      "Bash(pnpm run build:*)"
     ]
   }
 }

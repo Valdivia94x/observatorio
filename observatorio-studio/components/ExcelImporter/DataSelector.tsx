@@ -1,5 +1,5 @@
-import {useCallback} from 'react'
-import {Box, Card, Text, Flex, Button, Select, Stack, Switch} from '@sanity/ui'
+import {useCallback, useEffect} from 'react'
+import {Card, Text, Flex, Select, Stack, Switch, TextInput} from '@sanity/ui'
 import styled from 'styled-components'
 import type {CleaningConfig} from './types'
 
@@ -13,7 +13,7 @@ interface DataSelectorProps {
 }
 
 const TableContainer = styled.div`
-  max-height: 350px;
+  max-height: 300px;
   overflow: auto;
   border: 1px solid #e5e5e5;
   border-radius: 4px;
@@ -28,16 +28,12 @@ const DataTable = styled.table`
 
 const TableRow = styled.tr<{$isHeader?: boolean; $isData?: boolean; $isExcluded?: boolean}>`
   background-color: ${(props) => {
-    if (props.$isHeader) return '#e3f2fd'
-    if (props.$isData) return '#e8f5e9'
-    if (props.$isExcluded) return '#fff3e0'
-    return 'transparent'
+    if (props.$isHeader) return '#bbdefb'
+    if (props.$isData) return '#c8e6c9'
+    if (props.$isExcluded) return '#ffffff'
+    return '#ffffff'
   }};
-  cursor: pointer;
-
-  &:hover {
-    filter: brightness(0.95);
-  }
+  color: ${(props) => (props.$isExcluded ? '#999' : '#333')};
 `
 
 const TableCell = styled.td<{$isExcluded?: boolean}>`
@@ -85,6 +81,14 @@ const LegendBox = styled.div<{$color: string}>`
   border-radius: 2px;
 `
 
+const NumberInput = styled(TextInput)`
+  max-width: 80px;
+
+  input {
+    text-align: center;
+  }
+`
+
 export function DataSelector({
   rawData,
   config,
@@ -94,37 +98,98 @@ export function DataSelector({
   onSheetChange,
 }: DataSelectorProps) {
   const maxCols = Math.max(...rawData.map((row) => row.length), 0)
+  const totalRows = rawData.length
 
-  const handleRowClick = useCallback(
-    (rowIndex: number) => {
-      // Si no hay header, establecer como header
-      if (config.headerRow === undefined) {
-        onConfigChange({
-          ...config,
-          headerRow: rowIndex,
-          includedColumns: Array.from({length: maxCols}, (_, i) => i),
-        })
-      }
-      // Si ya hay header pero no inicio de datos, establecer inicio
-      else if (config.dataStartRow === undefined) {
-        if (rowIndex > config.headerRow) {
-          onConfigChange({
-            ...config,
-            dataStartRow: rowIndex,
-          })
+  // Auto-detectar valores iniciales si no hay configuración
+  useEffect(() => {
+    if (config.headerRow === undefined && rawData.length > 0) {
+      // Intentar detectar la primera fila que parece ser encabezado
+      // (tiene texto y la siguiente tiene números)
+      let detectedHeader = 0
+      let detectedDataStart = 1
+
+      for (let i = 0; i < Math.min(rawData.length - 1, 10); i++) {
+        const currentRow = rawData[i]
+        const nextRow = rawData[i + 1]
+
+        if (currentRow && nextRow) {
+          const currentHasText = currentRow.some((cell) => cell && isNaN(Number(cell.replace(/,/g, ''))))
+          const nextHasNumbers = nextRow.some((cell) => cell && !isNaN(Number(cell.replace(/,/g, ''))))
+
+          if (currentHasText && nextHasNumbers) {
+            detectedHeader = i
+            detectedDataStart = i + 1
+            break
+          }
         }
       }
-      // Si ya hay ambos, resetear y empezar de nuevo con este como header
-      else {
+
+      onConfigChange({
+        ...config,
+        headerRow: detectedHeader,
+        dataStartRow: detectedDataStart,
+        dataEndRow: totalRows - 1,
+        includedColumns: Array.from({length: maxCols}, (_, i) => i),
+      })
+    }
+  }, [rawData, config.headerRow, maxCols, totalRows])
+
+  const handleHeaderRowChange = useCallback(
+    (value: string) => {
+      const num = parseInt(value, 10)
+      if (!isNaN(num) && num >= 1 && num <= totalRows) {
+        const newHeaderRow = num - 1 // Convertir a índice 0
         onConfigChange({
           ...config,
-          headerRow: rowIndex,
-          dataStartRow: undefined,
-          dataEndRow: undefined,
+          headerRow: newHeaderRow,
+          // Si el inicio de datos es menor o igual al nuevo header, ajustarlo
+          dataStartRow:
+            config.dataStartRow !== undefined && config.dataStartRow <= newHeaderRow
+              ? newHeaderRow + 1
+              : config.dataStartRow,
         })
       }
     },
-    [config, onConfigChange, maxCols]
+    [config, onConfigChange, totalRows]
+  )
+
+  const handleDataStartChange = useCallback(
+    (value: string) => {
+      const num = parseInt(value, 10)
+      if (!isNaN(num) && num >= 1 && num <= totalRows) {
+        const newDataStart = num - 1
+        // Solo permitir si es mayor que headerRow
+        if (config.headerRow === undefined || newDataStart > config.headerRow) {
+          onConfigChange({
+            ...config,
+            dataStartRow: newDataStart,
+            // Si el fin de datos es menor que el nuevo inicio, ajustarlo
+            dataEndRow:
+              config.dataEndRow !== undefined && config.dataEndRow < newDataStart
+                ? newDataStart
+                : config.dataEndRow,
+          })
+        }
+      }
+    },
+    [config, onConfigChange, totalRows]
+  )
+
+  const handleDataEndChange = useCallback(
+    (value: string) => {
+      const num = parseInt(value, 10)
+      if (!isNaN(num) && num >= 1 && num <= totalRows) {
+        const newDataEnd = num - 1
+        // Solo permitir si es mayor o igual que dataStartRow
+        if (config.dataStartRow === undefined || newDataEnd >= config.dataStartRow) {
+          onConfigChange({
+            ...config,
+            dataEndRow: newDataEnd,
+          })
+        }
+      }
+    },
+    [config, onConfigChange, totalRows]
   )
 
   const handleColumnToggle = useCallback(
@@ -140,24 +205,6 @@ export function DataSelector({
     },
     [config, onConfigChange, maxCols]
   )
-
-  const handleSetDataEnd = useCallback(
-    (rowIndex: number) => {
-      if (config.dataStartRow !== undefined && rowIndex >= config.dataStartRow) {
-        onConfigChange({...config, dataEndRow: rowIndex})
-      }
-    },
-    [config, onConfigChange]
-  )
-
-  const resetSelection = useCallback(() => {
-    onConfigChange({
-      headerRow: undefined,
-      dataStartRow: undefined,
-      dataEndRow: undefined,
-      includedColumns: Array.from({length: maxCols}, (_, i) => i),
-    })
-  }, [onConfigChange, maxCols])
 
   const isColumnIncluded = (colIndex: number) => {
     const cols = config.includedColumns || Array.from({length: maxCols}, (_, i) => i)
@@ -204,64 +251,72 @@ export function DataSelector({
         </Flex>
       </Card>
 
-      {/* Instrucciones */}
+      {/* Controles numéricos para selección de filas */}
       <Card padding={3} tone="primary" radius={2}>
-        <Stack space={2}>
+        <Stack space={3}>
           <Text size={1} weight="medium">
-            Instrucciones:
+            Selecciona el rango de datos (total: {totalRows} filas)
           </Text>
-          <Text size={1}>
-            1. Haz clic en la fila que contiene los <strong>encabezados</strong> (titulos de
-            columnas)
-          </Text>
-          <Text size={1}>
-            2. Luego haz clic en la fila donde <strong>inician los datos</strong>
-          </Text>
-          <Text size={1}>3. Opcionalmente, haz clic en los encabezados de columna para excluirlas</Text>
+
+          <Flex gap={4} wrap="wrap">
+            <Flex gap={2} align="center">
+              <Text size={1}>Fila de encabezados:</Text>
+              <NumberInput
+                type="number"
+                min={1}
+                max={totalRows}
+                value={config.headerRow !== undefined ? config.headerRow + 1 : ''}
+                onChange={(e) => handleHeaderRowChange(e.currentTarget.value)}
+                placeholder="1"
+              />
+            </Flex>
+
+            <Flex gap={2} align="center">
+              <Text size={1}>Primera fila de datos:</Text>
+              <NumberInput
+                type="number"
+                min={1}
+                max={totalRows}
+                value={config.dataStartRow !== undefined ? config.dataStartRow + 1 : ''}
+                onChange={(e) => handleDataStartChange(e.currentTarget.value)}
+                placeholder="2"
+              />
+            </Flex>
+
+            <Flex gap={2} align="center">
+              <Text size={1}>Última fila de datos:</Text>
+              <NumberInput
+                type="number"
+                min={1}
+                max={totalRows}
+                value={config.dataEndRow !== undefined ? config.dataEndRow + 1 : ''}
+                onChange={(e) => handleDataEndChange(e.currentTarget.value)}
+                placeholder={String(totalRows)}
+              />
+            </Flex>
+          </Flex>
         </Stack>
       </Card>
 
-      {/* Leyenda y acciones */}
+      {/* Leyenda */}
       <Flex justify="space-between" align="center">
         <Flex gap={4}>
           <Flex align="center" gap={2}>
-            <LegendBox $color="#e3f2fd" />
+            <LegendBox $color="#bbdefb" />
             <Text size={1}>Encabezados</Text>
           </Flex>
           <Flex align="center" gap={2}>
-            <LegendBox $color="#e8f5e9" />
-            <Text size={1}>Datos</Text>
+            <LegendBox $color="#c8e6c9" />
+            <Text size={1}>Datos a importar</Text>
           </Flex>
           <Flex align="center" gap={2}>
-            <LegendBox $color="#fff3e0" />
-            <Text size={1}>Excluido</Text>
+            <LegendBox $color="#ffffff" />
+            <Text size={1} muted>Excluido</Text>
           </Flex>
         </Flex>
-
-        <Button text="Reiniciar seleccion" mode="ghost" tone="critical" onClick={resetSelection} />
       </Flex>
 
-      {/* Estado actual */}
-      <Card padding={2} tone="default" radius={2}>
-        <Flex gap={4}>
-          <Text size={1}>
-            <strong>Encabezados:</strong>{' '}
-            {config.headerRow !== undefined ? `Fila ${config.headerRow + 1}` : 'No seleccionado'}
-          </Text>
-          <Text size={1}>
-            <strong>Datos desde:</strong>{' '}
-            {config.dataStartRow !== undefined
-              ? `Fila ${config.dataStartRow + 1}`
-              : 'No seleccionado'}
-          </Text>
-          <Text size={1}>
-            <strong>Datos hasta:</strong>{' '}
-            {config.dataEndRow !== undefined ? `Fila ${config.dataEndRow + 1}` : 'Fin del archivo'}
-          </Text>
-        </Flex>
-      </Card>
-
-      {/* Tabla de datos */}
+      {/* Tabla de datos - Vista previa */}
       <TableContainer>
         <DataTable>
           <thead>
@@ -289,35 +344,22 @@ export function DataSelector({
                 config.dataStartRow !== undefined &&
                 rowIdx >= config.dataStartRow &&
                 (config.dataEndRow === undefined || rowIdx <= config.dataEndRow)
-              const isExcluded =
-                config.headerRow !== undefined &&
-                (rowIdx < config.headerRow ||
-                  (config.dataStartRow !== undefined &&
-                    rowIdx > config.headerRow &&
-                    rowIdx < config.dataStartRow))
+              const isExcluded = !isHeader && !isData
 
               return (
                 <TableRow
                   key={rowIdx}
                   $isHeader={isHeader}
                   $isData={isData}
-                  $isExcluded={isExcluded && !isHeader}
-                  onClick={() => handleRowClick(rowIdx)}
-                  onContextMenu={(e) => {
-                    e.preventDefault()
-                    handleSetDataEnd(rowIdx)
-                  }}
-                  title={
-                    config.headerRow === undefined
-                      ? 'Clic para marcar como encabezados'
-                      : config.dataStartRow === undefined
-                        ? 'Clic para marcar inicio de datos'
-                        : 'Clic para cambiar encabezados | Clic derecho para marcar fin de datos'
-                  }
+                  $isExcluded={isExcluded}
                 >
                   <RowNumber>{rowIdx + 1}</RowNumber>
                   {Array.from({length: maxCols}, (_, cellIdx) => (
-                    <TableCell key={cellIdx} $isExcluded={!isColumnIncluded(cellIdx)} title={row[cellIdx] || ''}>
+                    <TableCell
+                      key={cellIdx}
+                      $isExcluded={!isColumnIncluded(cellIdx)}
+                      title={row[cellIdx] || ''}
+                    >
                       {row[cellIdx] || <span style={{color: '#999'}}>-</span>}
                     </TableCell>
                   ))}
@@ -329,7 +371,7 @@ export function DataSelector({
       </TableContainer>
 
       <Text size={1} muted>
-        Tip: Clic derecho en una fila para marcarla como fin de datos
+        Tip: Haz clic en los encabezados de columna (✓/✗) para incluir o excluir columnas
       </Text>
     </Stack>
   )
