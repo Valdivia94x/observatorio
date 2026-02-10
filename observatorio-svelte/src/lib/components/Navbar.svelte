@@ -11,11 +11,11 @@
 <div class="sticky top-0 z-50">
 	<header class="flex items-center justify-between px-4 lg:px-8 xl:px-12 py-4 backdrop-blur-xl backdrop-saturate-180 {themeStore.isDark ? 'bg-slate-800/70 border-slate-700/50' : 'bg-slate-100/70 border-slate-300/50'} border-b shadow-lg transition-all duration-300">
 		<!-- Logo -->
-		<a href="/" class="flex items-center gap-3 ml-2 lg:ml-4 xl:ml-8 shrink-0">
+		<a href="/" class="flex items-center gap-3 ml-1 lg:ml-4 xl:ml-8 shrink-0">
 			<img
 				src="/images/{themeStore.isDark ? 'logoOscuro' : 'logo'}.png"
 				alt="Observatorio de la Laguna"
-				class="h-12 lg:h-14 xl:h-16 w-auto"
+				class="h-10 lg:h-12 xl:h-14 2xl:h-16 w-auto"
 			/>
 		</a>
 
@@ -23,7 +23,7 @@
 		<button
 			onclick={toggleMobileMenu}
 			aria-label="Abrir menú"
-			class="lg:hidden p-2 rounded-lg {themeStore.isDark ? 'text-white hover:bg-slate-700' : 'text-slate-800 hover:bg-slate-200'} transition-colors"
+			class="md:hidden p-2 rounded-lg {themeStore.isDark ? 'text-white hover:bg-slate-700' : 'text-slate-800 hover:bg-slate-200'} transition-colors"
 		>
 			{#if mobileMenuOpen}
 				<!-- X Icon -->
@@ -38,53 +38,63 @@
 			{/if}
 		</button>
 
-		<!-- Desktop Navigation -->
-		<nav class="hidden lg:flex items-center gap-4 xl:gap-6">
-			<a href="/" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400 font-medium tracking-wide text-sm xl:text-base whitespace-nowrap">
+		<!-- Desktop Navigation (centrado) -->
+		<nav class="hidden md:flex flex-1 items-center justify-center gap-1 md:gap-1.5 lg:gap-3 xl:gap-6">
+			<a href="/" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400 font-medium tracking-wide text-[10px] lg:text-xs xl:text-sm 2xl:text-base whitespace-nowrap">
 				INICIO
 			</a>
-			<span class="{themeStore.isDark ? 'text-slate-500' : 'text-slate-400'}">|</span>
-			<a href="/quienes-somos" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400 font-medium tracking-wide text-sm xl:text-base whitespace-nowrap">
+			<span class="{themeStore.isDark ? 'text-slate-500' : 'text-slate-400'} text-[10px] lg:text-xs xl:text-sm">|</span>
+			<a href="/quienes-somos" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400 font-medium tracking-wide text-[10px] lg:text-xs xl:text-sm 2xl:text-base whitespace-nowrap">
 				¿QUIÉNES SOMOS?
 			</a>
-			<span class="{themeStore.isDark ? 'text-slate-500' : 'text-slate-400'}">|</span>
-			<a href="/indicadores" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400 font-medium tracking-wide text-sm xl:text-base whitespace-nowrap">
+			<span class="{themeStore.isDark ? 'text-slate-500' : 'text-slate-400'} text-[10px] lg:text-xs xl:text-sm">|</span>
+			<a href="/indicadores" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400 font-medium tracking-wide text-[10px] lg:text-xs xl:text-sm 2xl:text-base whitespace-nowrap">
 				INDICADORES
 			</a>
-			<span class="{themeStore.isDark ? 'text-slate-500' : 'text-slate-400'}">|</span>
-			<a href="/publicaciones" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400 font-medium tracking-wide text-sm xl:text-base whitespace-nowrap">
+			<span class="{themeStore.isDark ? 'text-slate-500' : 'text-slate-400'} text-[10px] lg:text-xs xl:text-sm">|</span>
+			<a href="/publicaciones" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400 font-medium tracking-wide text-[10px] lg:text-xs xl:text-sm 2xl:text-base whitespace-nowrap">
 				PUBLICACIONES
 			</a>
 
 			<!-- Social Icons -->
-			<div class="flex items-center gap-2 xl:gap-3 ml-2 xl:ml-4">
+			<div class="flex items-center gap-0.5 lg:gap-1 xl:gap-2 2xl:gap-3 ml-0.5 lg:ml-1 xl:ml-2 2xl:ml-4">
 				<a href="https://wa.me/528717189825" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
-					<img src="/images/icons/whatsapp.svg" alt="WhatsApp" class="w-6 h-6 xl:w-7 xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
+					<img src="/images/icons/whatsapp.svg" alt="WhatsApp" class="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
 				</a>
 				<a href="https://instagram.com/observatorio_laguna" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
-					<img src="/images/icons/instagram.svg" alt="Instagram" class="w-6 h-6 xl:w-7 xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
+					<img src="/images/icons/instagram.svg" alt="Instagram" class="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
 				</a>
 				<a href="https://facebook.com/observatoriodelaLaguna" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
-					<img src="/images/icons/facebook.svg" alt="Facebook" class="w-6 h-6 xl:w-7 xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
+					<img src="/images/icons/facebook.svg" alt="Facebook" class="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
 				</a>
 				<a href="https://x.com/ObservatorioLag" target="_blank" rel="noopener noreferrer" aria-label="X" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
-					<img src="/images/icons/X.svg" alt="X" class="w-6 h-6 xl:w-7 xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
+					<img src="/images/icons/X.svg" alt="X" class="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
 				</a>
 			</div>
 
 			<!-- Donate Button -->
 			<a
 				href="/donar"
-				class="ml-2 xl:ml-4 px-4 xl:px-6 py-2 bg-gradient-to-r from-orange-400 to-amber-500 text-white font-bold tracking-wide text-sm xl:text-base rounded-full shadow-lg hover:from-orange-500 hover:to-amber-600 transition-all duration-300 whitespace-nowrap"
+				class="ml-0.5 lg:ml-1 xl:ml-2 2xl:ml-4 px-2 lg:px-3 xl:px-4 2xl:px-6 py-1 lg:py-1.5 xl:py-2 bg-gradient-to-r from-orange-400 to-amber-500 text-white font-bold tracking-wide text-[10px] lg:text-xs xl:text-sm 2xl:text-base rounded-full shadow-lg hover:from-orange-500 hover:to-amber-600 transition-all duration-300 whitespace-nowrap"
 			>
 				DONAR
 			</a>
+
 		</nav>
+
+		<!-- CCI Laguna Logo (alineado a la derecha) -->
+		<a href="https://www.ccilaguna.org.mx/" target="_blank" rel="noopener noreferrer" class="hidden md:block mr-1 lg:mr-4 xl:mr-8 shrink-0">
+			<img
+				src="/images/{themeStore.isDark ? 'logoOscuroCCI' : 'logoCCI'}.png"
+				alt="CCI Laguna"
+				class="h-8 lg:h-10 xl:h-12 w-auto hover:opacity-80 transition-opacity"
+			/>
+		</a>
 	</header>
 
 	<!-- Mobile Menu Dropdown -->
 	{#if mobileMenuOpen}
-		<nav class="lg:hidden {themeStore.isDark ? 'bg-slate-800/95' : 'bg-slate-100/95'} backdrop-blur-lg border-b {themeStore.isDark ? 'border-slate-700' : 'border-slate-300'} px-4 py-4">
+		<nav class="md:hidden {themeStore.isDark ? 'bg-slate-800/95' : 'bg-slate-100/95'} backdrop-blur-lg border-b {themeStore.isDark ? 'border-slate-700' : 'border-slate-300'} px-4 py-4">
 			<div class="flex flex-col gap-4">
 				<a
 					href="/"
@@ -122,6 +132,15 @@
 					class="text-center px-6 py-2 bg-gradient-to-r from-orange-400 to-amber-500 text-white font-bold tracking-wide rounded-full shadow-lg hover:from-orange-500 hover:to-amber-600 transition-all duration-300"
 				>
 					DONAR
+				</a>
+
+				<!-- CCI Laguna Logo Mobile -->
+				<a href="https://www.ccilaguna.org.mx/" target="_blank" rel="noopener noreferrer" class="flex justify-center py-2">
+					<img
+						src="/images/{themeStore.isDark ? 'logoOscuroCCI' : 'logoCCI'}.png"
+						alt="CCI Laguna"
+						class="h-10 w-auto"
+					/>
 				</a>
 
 				<!-- Social Icons & Dark Mode Toggle -->

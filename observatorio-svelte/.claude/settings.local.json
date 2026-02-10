@@ -4,7 +4,8 @@
       "Bash(cat:*)",
       "Bash(npm run check:*)",
       "Bash(npx svelte-check:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git check-ignore:*)"
     ]
   }
 }
