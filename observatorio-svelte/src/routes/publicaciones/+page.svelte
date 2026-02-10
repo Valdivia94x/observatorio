@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { themeStore } from '$lib/stores/theme.svelte';
+	import { voiceAgentStore } from '$lib/stores/voiceAgent.svelte';
 	import type { Publication } from '$lib/sanity';
 
 	let { data } = $props();
@@ -41,6 +42,18 @@
 		'educacion': 'Educación',
 		'seguridad': 'Seguridad',
 	};
+
+	// Enriquecer el contexto del agente de voz con las publicaciones reales
+	$effect(() => {
+		voiceAgentStore.setPageContext({
+			type: 'publicaciones',
+			publications: publications.slice(0, 10).map(p => ({
+				title: p.title,
+				topic: topicLabels[p.topic] || p.topic,
+				date: formatDate(p.publishedAt)
+			}))
+		});
+	});
 
 	const topicColors: Record<string, string> = {
 		'finanzas': 'bg-green-500',

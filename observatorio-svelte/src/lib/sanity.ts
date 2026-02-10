@@ -935,3 +935,196 @@ Cuando el usuario pregunte sobre esta gráfica:
 
 	return sections.join('\n').trim();
 }
+
+// ============================================================
+// CONTEXTO POR SECCIÓN - Tipos y prompt builders para el agente de voz
+// ============================================================
+
+/**
+ * Tipo discriminado para el contexto de cada página/sección.
+ * Permite al agente de voz saber dónde está el usuario y qué contenido hay disponible.
+ */
+export type PageContext =
+	| { type: 'home' }
+	| { type: 'indicadores'; selectedEje?: string; selectedUbicacion?: string; availableEjes: string[] }
+	| { type: 'indicadores-grafica'; grafica: GraficaWidget; indicadorTitle?: string }
+	| { type: 'publicaciones'; publications: { title: string; topic: string; date: string }[] }
+	| { type: 'donar' }
+	| { type: 'quienes-somos' };
+
+/** Destinos de navegación disponibles para el client tool */
+export const NAVIGATION_DESTINATIONS = ['home', 'indicadores', 'publicaciones', 'donar', 'quienes-somos'] as const;
+
+/** Municipios principales de la Comarca Lagunera */
+const MUNICIPIOS_PRINCIPALES = ['Torreón', 'Gómez Palacio', 'Lerdo', 'Matamoros'];
+
+/**
+ * Bloque de instrucciones de navegación compartido por todos los prompts de sección.
+ * Informa a María que puede usar la herramienta navigate_to_section.
+ */
+const NAVIGATION_INSTRUCTIONS = `
+## NAVEGACIÓN
+
+Puedes llevar al usuario a diferentes secciones del sitio web usando la herramienta navigate_to_section.
+Destinos disponibles:
+- home: Página de inicio
+- indicadores: Plataforma de indicadores (opcionalmente puedes especificar un eje temático o una ubicación)
+- publicaciones: Página de publicaciones
+- donar: Página de donaciones
+- quienes-somos: Página de quiénes somos
+
+Cuando el usuario pida ir a alguna sección, usa la herramienta y confirma verbalmente la navegación de forma natural.
+Ejemplo: Si dicen "quiero ver las gráficas de Economía", usa la herramienta con destination="indicadores" y eje="Economía", y di algo como "Claro, te llevo a esa sección".`;
+
+/**
+ * Construye el prompt completo según el contexto de la página actual.
+ * Delega a funciones específicas por tipo de sección.
+ */
+export function buildPageContextPrompt(context: PageContext): string {
+	// Para gráficas, reutilizar la función existente
+	if (context.type === 'indicadores-grafica') {
+		const graficaPrompt = buildVoiceAgentPrompt(context.grafica, context.indicadorTitle);
+		return graficaPrompt + '\n' + NAVIGATION_INSTRUCTIONS;
+	}
+
+	const sections: string[] = [];
+
+	// 1. Prompt base de María
+	sections.push(MARIA_BASE_PROMPT);
+
+	// 2. Contexto específico de la sección
+	switch (context.type) {
+		case 'home':
+			sections.push(buildHomeContext());
+			break;
+		case 'indicadores':
+			sections.push(buildIndicadoresContext(context));
+			break;
+		case 'publicaciones':
+			sections.push(buildPublicacionesContext(context));
+			break;
+		case 'donar':
+			sections.push(buildDonarContext());
+			break;
+		case 'quienes-somos':
+			sections.push(buildQuienesSomosContext());
+			break;
+	}
+
+	// 3. Instrucciones de navegación (compartidas)
+	sections.push(NAVIGATION_INSTRUCTIONS);
+
+	return sections.join('\n').trim();
+}
+
+/** Contexto para la página de inicio */
+function buildHomeContext(): string {
+	return `
+---
+
+## CONTEXTO DE LA SECCIÓN ACTUAL
+
+El usuario está en la **página de inicio** del Observatorio de la Laguna.
+
+Desde aquí puede explorar:
+- **9 ejes temáticos**: Educación, Economía, Seguridad, Empleo, Salud, Participación Ciudadana, Finanzas Públicas, Desarrollo Urbano y Medio Ambiente.
+- **4 municipios** de la Comarca Lagunera: ${MUNICIPIOS_PRINCIPALES.join(', ')}.
+- Secciones del sitio: Indicadores, Publicaciones, Donar y ¿Quiénes Somos?
+
+Si el usuario pregunta qué puede hacer o a dónde ir, guíalo hacia las secciones disponibles.`;
+}
+
+/** Contexto para la página de indicadores (sin gráfica específica) */
+function buildIndicadoresContext(ctx: { selectedEje?: string; selectedUbicacion?: string; availableEjes: string[] }): string {
+	const ejesText = ctx.availableEjes.length > 0
+		? ctx.availableEjes.join(', ')
+		: 'Educación, Economía, Seguridad, Empleo, Salud, Participación Ciudadana, Finanzas Públicas, Desarrollo Urbano, Medio Ambiente';
+
+	let filterInfo = '';
+	if (ctx.selectedEje) {
+		filterInfo += `\n- Eje seleccionado: **${ctx.selectedEje}**`;
+	}
+	if (ctx.selectedUbicacion) {
+		const ubicLabel = ubicacionLabels[ctx.selectedUbicacion as UbicacionKey] || ctx.selectedUbicacion;
+		filterInfo += `\n- Ubicación seleccionada: **${ubicLabel}**`;
+	}
+	if (!filterInfo) {
+		filterInfo = '\n- Sin filtros activos (mostrando todos los indicadores)';
+	}
+
+	return `
+---
+
+## CONTEXTO DE LA SECCIÓN ACTUAL
+
+El usuario está en la **plataforma de indicadores**.
+
+**Filtros actuales:**${filterInfo}
+
+**Ejes temáticos disponibles:** ${ejesText}
+
+**Ubicaciones disponibles:** ${MUNICIPIOS_PRINCIPALES.join(', ')}, Zona Metropolitana, Estatal (Coahuila), Estatal (Durango) y Nacional.
+
+Si el usuario pregunta por un tema o eje específico, puedes navegar directamente a ese eje. Si pregunta por los datos de una gráfica en particular, sugiérele que haga clic en el ícono de micrófono de la gráfica para obtener información detallada.`;
+}
+
+/** Contexto para la página de publicaciones */
+function buildPublicacionesContext(ctx: { publications: { title: string; topic: string; date: string }[] }): string {
+	let publicationsText = '';
+	if (ctx.publications.length > 0) {
+		const items = ctx.publications.slice(0, 10).map(
+			(p, i) => `${i + 1}. "${p.title}" - Tema: ${p.topic} (${p.date})`
+		);
+		publicationsText = `
+
+**Publicaciones recientes:**
+${items.join('\n')}`;
+	} else {
+		publicationsText = '\n\nNo se han cargado las publicaciones aún.';
+	}
+
+	return `
+---
+
+## CONTEXTO DE LA SECCIÓN ACTUAL
+
+El usuario está en la **página de publicaciones** del Observatorio.
+
+Aquí se encuentran análisis, reportes y documentos publicados por el equipo del Observatorio sobre diversos temas de la Comarca Lagunera.${publicationsText}
+
+Si el usuario pregunta sobre una publicación específica, usa la información anterior para responder. Si quiere más detalle sobre una publicación, sugiérele hacer clic en ella para ver el contenido completo.`;
+}
+
+/** Contexto para la página de donaciones */
+function buildDonarContext(): string {
+	return `
+---
+
+## CONTEXTO DE LA SECCIÓN ACTUAL
+
+El usuario está en la **página de donaciones**.
+
+Aquí se muestra la información bancaria para realizar donaciones al Consejo Cívico de las Instituciones, A.C. La información incluye cuenta bancaria Banamex, CLABE interbancaria y datos de facturación.
+
+Si el usuario pregunta cómo donar, explícale que puede hacerlo por transferencia bancaria y que la información está visible en la página. Para solicitar factura, debe enviar su comprobante de pago y datos fiscales a contacto@ccilaguna.org.mx.`;
+}
+
+/** Contexto para la página de quiénes somos */
+function buildQuienesSomosContext(): string {
+	return `
+---
+
+## CONTEXTO DE LA SECCIÓN ACTUAL
+
+El usuario está en la **página de ¿Quiénes Somos?**.
+
+Aquí se explica qué es el Observatorio de la Laguna, su misión y su relación con el CCI Laguna.
+
+**Información de contacto disponible en esta página:**
+- Teléfono: 871-718-98-25
+- Correo: contacto@ccilaguna.org.mx
+- Ubicación: Zona Metropolitana de la Laguna
+- Redes sociales: WhatsApp, Instagram, Facebook y X (Twitter)
+
+Si el usuario pregunta por información de contacto o sobre la organización, usa estos datos para responder.`;
+}

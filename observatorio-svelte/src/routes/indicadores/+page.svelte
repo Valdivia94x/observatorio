@@ -248,6 +248,30 @@
 	// Check if voice agent is loading or connected
 	const isVoiceLoading = $derived(voiceAgentStore.isLoading);
 	const isVoiceConnected = $derived(voiceAgentStore.isConnected);
+
+	// Helper para generar IDs de sección a partir del nombre del eje
+	function slugify(text: string): string {
+		return text
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '') // quitar acentos
+			.replace(/\s+/g, '-')
+			.replace(/[^a-z0-9-]/g, '');
+	}
+
+	// Enriquecer el contexto del agente de voz con los filtros e ejes disponibles
+	$effect(() => {
+		// Solo actualizar contexto de página si no hay gráfica activa
+		if (!voiceAgentStore.activeGrafica) {
+			const ejeNames = allEjes.map(e => e.title);
+			voiceAgentStore.setPageContext({
+				type: 'indicadores',
+				selectedEje: selectedEje !== 'todos' ? selectedEje : undefined,
+				selectedUbicacion: selectedUbicacion !== 'todos' ? selectedUbicacion : undefined,
+				availableEjes: ejeNames
+			});
+		}
+	});
 </script>
 
 <main>
@@ -450,7 +474,7 @@
 				</div>
 			{:else}
 				{#each Object.entries(groupedIndicadores()) as [categoria, ejeData]}
-					<section class="mb-12">
+					<section class="mb-12" id="eje-{slugify(categoria)}">
 						<!-- Indicadores Grid (single column within right section) -->
 						<div class="space-y-6">
 							{#each ejeData.items as indicador}

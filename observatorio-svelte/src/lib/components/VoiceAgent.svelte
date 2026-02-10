@@ -3,13 +3,38 @@
 	import { voiceAgentStore } from '$lib/stores/voiceAgent.svelte';
 	import { themeStore } from '$lib/stores/theme.svelte';
 
+	// Mapa de etiquetas para el indicador de contexto de sección
+	const pageContextLabels: Record<string, string> = {
+		'home': 'Inicio',
+		'indicadores': 'Indicadores',
+		'indicadores-grafica': 'Gráfica',
+		'publicaciones': 'Publicaciones',
+		'donar': 'Donar',
+		'quienes-somos': '¿Quiénes Somos?'
+	};
+
 	// Estados derivados del store
 	const isConnected = $derived(voiceAgentStore.isConnected);
 	const isSpeaking = $derived(voiceAgentStore.isSpeaking);
 	const isListening = $derived(voiceAgentStore.isListening);
 	const isLoading = $derived(voiceAgentStore.isLoading);
 	const error = $derived(voiceAgentStore.error);
-	const hasActiveGrafica = $derived(voiceAgentStore.activeGrafica !== null);
+
+	// Etiqueta de contexto: prioriza gráfica activa, luego contexto de sección
+	const contextLabel = $derived.by(() => {
+		if (voiceAgentStore.activeGrafica) {
+			return voiceAgentStore.activeGrafica.titulo || 'Gráfica seleccionada';
+		}
+		const ctx = voiceAgentStore.pageContext;
+		if (!ctx) return null;
+
+		// Para indicadores con eje seleccionado, mostrar el eje
+		if (ctx.type === 'indicadores' && ctx.selectedEje) {
+			return `Indicadores: ${ctx.selectedEje}`;
+		}
+
+		return pageContextLabels[ctx.type] || null;
+	});
 
 	function handleClick() {
 		voiceAgentStore.toggleConversation();
@@ -26,12 +51,12 @@
 <!-- Floating Voice Agent Button -->
 <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
 	<!-- Context indicator -->
-	{#if hasActiveGrafica && !isConnected && !isLoading}
+	{#if contextLabel && !isConnected && !isLoading}
 		<div
 			class="px-3 py-1.5 rounded-full text-xs font-medium shadow-lg animate-fade-in max-w-[200px] truncate
 				{themeStore.isDark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-700'}"
 		>
-			{voiceAgentStore.activeGrafica?.titulo || 'Gráfica seleccionada'}
+			{contextLabel}
 		</div>
 	{/if}
 
