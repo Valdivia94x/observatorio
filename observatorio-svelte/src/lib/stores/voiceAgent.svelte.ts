@@ -115,6 +115,7 @@ class VoiceAgentStore {
 					}
 				};
 				console.log('Voice Agent - Contexto:', this.activeGrafica ? `Gráfica: ${this.activeGrafica.titulo}` : `Sección: ${this.pageContext?.type}`);
+				console.log('Voice Agent - Prompt completo:', dynamicPrompt);
 			}
 
 			// Iniciar sesión con ElevenLabs
