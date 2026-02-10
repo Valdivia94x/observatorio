@@ -20,30 +20,19 @@
 	});
 
 	// Detectar cambios de ruta y actualizar el contexto del agente de voz
+	// Nota: /indicadores y /publicaciones setean su propio contexto desde sus páginas
 	$effect(() => {
 		const pathname = $page.url.pathname;
 
 		if (pathname === '/') {
 			voiceAgentStore.setPageContext({ type: 'home' });
-		} else if (pathname === '/indicadores') {
-			// Contexto base para indicadores (la página lo enriquece con filtros y ejes reales)
-			voiceAgentStore.setPageContext({
-				type: 'indicadores',
-				availableEjes: []
-			});
-		} else if (pathname === '/publicaciones') {
-			// Contexto base para publicaciones (la página lo enriquece con datos reales)
-			voiceAgentStore.setPageContext({
-				type: 'publicaciones',
-				publications: []
-			});
 		} else if (pathname === '/donar') {
 			voiceAgentStore.setPageContext({ type: 'donar' });
 		} else if (pathname === '/quienes-somos') {
 			voiceAgentStore.setPageContext({ type: 'quienes-somos' });
 		}
 
-		// Limpiar gráfica activa al cambiar de página (ya no aplica)
+		// Limpiar gráfica activa al cambiar de página
 		voiceAgentStore.clearActiveGrafica();
 	});
 </script>
