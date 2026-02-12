@@ -18,6 +18,44 @@
 	let searchQuery = $state('');
 	let hoveredMunicipio = $state<MunicipioKey | null>(null);
 
+	// Datos de interés para el scroll
+	const datosDeInteres = [
+		{
+			texto: 'En la Zona Metropolitana de La Laguna vivimos 1.46 millones de personas, lo que nos coloca como la 10ª metrópoli más grande del país.',
+			icono: 'poblacion'
+		},
+		{
+			texto: 'Cada día circulan 648 mil vehículos: prácticamente un auto por cada dos habitantes.',
+			icono: 'vehiculos'
+		},
+		{
+			texto: 'El salario promedio mensual de un trabajador en la ZML es de $15,582, por debajo del promedio nacional de $18,836.',
+			icono: 'salario'
+		},
+		{
+			texto: '¿Sabías que en el último año, 10,593 jóvenes egresaron de nuestras universidades? La carrera con más estudiantes: docencia.',
+			icono: 'educacion'
+		}
+	];
+
+	let currentDato = $state(0);
+	let scrollInterval: ReturnType<typeof setInterval>;
+	let isPaused = $state(false);
+
+	import { onMount, onDestroy } from 'svelte';
+
+	onMount(() => {
+		scrollInterval = setInterval(() => {
+			if (!isPaused) {
+				currentDato = (currentDato + 1) % datosDeInteres.length;
+			}
+		}, 5000);
+	});
+
+	onDestroy(() => {
+		clearInterval(scrollInterval);
+	});
+
 	// Configuración del mapa - cada municipio con su forma, posición y datos
 	const municipiosMap: Record<MunicipioKey, {
 		nombre: string;
@@ -146,6 +184,81 @@
 		{ nombre: 'Medio Ambiente', color: 'bg-lime-500', icon: 'environment' }
 	];
 </script>
+
+<!-- Scroll de datos de interés -->
+	<div
+		class="w-full overflow-hidden py-3 mb-4"
+		role="region"
+		aria-label="Datos de interés"
+		onmouseenter={() => isPaused = true}
+		onmouseleave={() => isPaused = false}
+	>
+		<div class="max-w-4xl mx-auto px-6 flex items-center gap-4">
+			<!-- Botón anterior -->
+			<button
+				onclick={() => currentDato = (currentDato - 1 + datosDeInteres.length) % datosDeInteres.length}
+				class="shrink-0 p-1 rounded-full {themeStore.isDark ? 'text-slate-400 hover:text-white' : 'text-orange-400 hover:text-orange-600'} transition-colors"
+				aria-label="Dato anterior"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+				</svg>
+			</button>
+
+			<!-- Contenido del dato -->
+			<div class="flex flex-col items-center gap-3 flex-1 min-w-0">
+				<!-- Texto del dato -->
+				<p class="text-lg text-center {themeStore.isDark ? 'text-slate-200' : 'text-slate-700'} leading-snug">
+					{datosDeInteres[currentDato].texto}
+				</p>
+
+				<!-- Espacio para imagen -->
+				<div class="w-12 h-12 mb-2 rounded-full {themeStore.isDark ? 'bg-slate-600' : 'bg-orange-100'} flex items-center justify-center">
+					{#if datosDeInteres[currentDato].icono === 'poblacion'}
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {themeStore.isDark ? 'text-orange-400' : 'text-orange-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+						</svg>
+					{:else if datosDeInteres[currentDato].icono === 'vehiculos'}
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {themeStore.isDark ? 'text-orange-400' : 'text-orange-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 5h8m-4-10l-4 4h8l-4-4zM5 17h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2zm2 0a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z" />
+						</svg>
+					{:else if datosDeInteres[currentDato].icono === 'salario'}
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {themeStore.isDark ? 'text-orange-400' : 'text-orange-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						</svg>
+					{:else if datosDeInteres[currentDato].icono === 'educacion'}
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {themeStore.isDark ? 'text-orange-400' : 'text-orange-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+						</svg>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Botón siguiente -->
+			<button
+				onclick={() => currentDato = (currentDato + 1) % datosDeInteres.length}
+				class="shrink-0 p-1 rounded-full {themeStore.isDark ? 'text-slate-400 hover:text-white' : 'text-orange-400 hover:text-orange-600'} transition-colors"
+				aria-label="Dato siguiente"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+				</svg>
+			</button>
+		</div>
+
+		<!-- Indicadores de posición -->
+		<div class="flex justify-center gap-1.5 mt-2">
+			{#each datosDeInteres as _, i}
+				<button
+					onclick={() => currentDato = i}
+					class="w-2 h-2 rounded-full transition-all {currentDato === i
+						? (themeStore.isDark ? 'bg-orange-400 w-4' : 'bg-orange-500 w-4')
+						: (themeStore.isDark ? 'bg-slate-500' : 'bg-orange-200')}"
+					aria-label="Ir al dato {i + 1}"
+				></button>
+			{/each}
+		</div>
+	</div>
 
 <!-- Subtitle -->
 	<p class="text-center {themeStore.isDark ? 'text-slate-300' : 'text-slate-600'} mb-4 px-6 text-lg">
