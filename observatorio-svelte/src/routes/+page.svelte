@@ -147,6 +147,11 @@
 	];
 </script>
 
+<!-- Subtitle -->
+	<p class="text-center {themeStore.isDark ? 'text-slate-300' : 'text-slate-600'} mb-4 px-6 text-lg">
+		Indicadores técnicos y de percepción de la Zona Metropolitana de la Laguna.
+	</p>
+
 <!-- Search Bar -->
 	<div class="px-6 mb-6">
 		<div class="max-w-2xl mx-auto">
@@ -165,12 +170,6 @@
 			</div>
 		</div>
 	</div>
-
-	<!-- Subtitle -->
-	<p class="text-center {themeStore.isDark ? 'text-slate-300' : 'text-slate-600'} mb-8 px-6 text-2xl">
-		Navega en la plataforma de indicadores técnicos y de percepción<br />
-		más relevante en la Zona Metropolitana de la Laguna.
-	</p>
 
 	<!-- Main Content -->
 	<div class="flex flex-col lg:flex-row gap-6 px-6 pb-8">
