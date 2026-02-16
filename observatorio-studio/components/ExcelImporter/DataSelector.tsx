@@ -1,4 +1,4 @@
-import {useCallback, useEffect} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {Card, Text, Flex, Select, Stack, Switch, TextInput} from '@sanity/ui'
 import styled from 'styled-components'
 import type {CleaningConfig} from './types'
@@ -12,12 +12,13 @@ interface DataSelectorProps {
   onSheetChange?: (sheetName: string) => void
 }
 
-const TableContainer = styled.div`
+const TableContainer = styled.div<{$isDragging?: boolean}>`
   max-height: 300px;
   overflow: auto;
   border: 1px solid #e5e5e5;
   border-radius: 4px;
   font-size: 12px;
+  ${(props) => props.$isDragging && 'user-select: none;'}
 `
 
 const DataTable = styled.table`
@@ -36,7 +37,7 @@ const TableRow = styled.tr<{$isHeader?: boolean; $isData?: boolean; $isExcluded?
   color: ${(props) => (props.$isExcluded ? '#999' : '#333')};
 `
 
-const TableCell = styled.td<{$isExcluded?: boolean}>`
+const TableCell = styled.td<{$isExcluded?: boolean; $isDragSelected?: boolean}>`
   padding: 6px 10px;
   border: 1px solid #e0e0e0;
   white-space: nowrap;
@@ -45,6 +46,13 @@ const TableCell = styled.td<{$isExcluded?: boolean}>`
   text-overflow: ellipsis;
   opacity: ${(props) => (props.$isExcluded ? 0.4 : 1)};
   text-decoration: ${(props) => (props.$isExcluded ? 'line-through' : 'none')};
+  cursor: crosshair;
+  ${(props) =>
+    props.$isDragSelected &&
+    `
+    background-color: rgba(33, 150, 243, 0.2) !important;
+    box-shadow: inset 0 0 0 1.5px rgba(33, 150, 243, 0.5);
+  `}
 `
 
 const RowNumber = styled.td`
@@ -99,6 +107,102 @@ export function DataSelector({
 }: DataSelectorProps) {
   const maxCols = Math.max(...rawData.map((row) => row.length), 0)
   const totalRows = rawData.length
+
+  // --- Drag selection ---
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState<{row: number; col: number} | null>(null)
+  const [dragEnd, setDragEnd] = useState<{row: number; col: number} | null>(null)
+
+  const isDraggingRef = useRef(false)
+  const dragSelectionRef = useRef<{
+    startRow: number
+    endRow: number
+    startCol: number
+    endCol: number
+  } | null>(null)
+  const configRef = useRef(config)
+  const onConfigChangeRef = useRef(onConfigChange)
+
+  isDraggingRef.current = isDragging
+  configRef.current = config
+  onConfigChangeRef.current = onConfigChange
+
+  const dragSelection = useMemo(() => {
+    if (!dragStart || !dragEnd) return null
+    return {
+      startRow: Math.min(dragStart.row, dragEnd.row),
+      endRow: Math.max(dragStart.row, dragEnd.row),
+      startCol: Math.min(dragStart.col, dragEnd.col),
+      endCol: Math.max(dragStart.col, dragEnd.col),
+    }
+  }, [dragStart, dragEnd])
+
+  dragSelectionRef.current = dragSelection
+
+  const isCellInDragSelection = useCallback(
+    (row: number, col: number) => {
+      if (!dragSelection) return false
+      return (
+        row >= dragSelection.startRow &&
+        row <= dragSelection.endRow &&
+        col >= dragSelection.startCol &&
+        col <= dragSelection.endCol
+      )
+    },
+    [dragSelection],
+  )
+
+  const handleCellMouseDown = useCallback(
+    (rowIdx: number, colIdx: number, e: React.MouseEvent) => {
+      e.preventDefault()
+      setIsDragging(true)
+      setDragStart({row: rowIdx, col: colIdx})
+      setDragEnd({row: rowIdx, col: colIdx})
+    },
+    [],
+  )
+
+  const handleCellMouseEnter = useCallback((rowIdx: number, colIdx: number) => {
+    if (isDraggingRef.current) {
+      setDragEnd({row: rowIdx, col: colIdx})
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (!isDraggingRef.current) return
+
+      const sel = dragSelectionRef.current
+      if (sel) {
+        const {startRow, endRow, startCol, endCol} = sel
+        const selectedCols = Array.from({length: endCol - startCol + 1}, (_, i) => startCol + i)
+        const current = configRef.current
+
+        if (startRow === endRow && startCol === endCol) {
+          // Clic en una sola celda — sin acción de drag
+        } else if (startRow === endRow) {
+          // Drag horizontal — solo actualizar columnas incluidas
+          onConfigChangeRef.current({...current, includedColumns: selectedCols})
+        } else {
+          // Drag multi-fila — actualizar rango completo
+          onConfigChangeRef.current({
+            ...current,
+            headerRow: startRow,
+            dataStartRow: startRow + 1,
+            dataEndRow: endRow,
+            includedColumns: selectedCols,
+          })
+        }
+      }
+
+      setIsDragging(false)
+      setDragStart(null)
+      setDragEnd(null)
+    }
+
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => document.removeEventListener('mouseup', handleMouseUp)
+  }, [])
 
   // Auto-detectar valores iniciales si no hay configuración
   useEffect(() => {
@@ -317,7 +421,7 @@ export function DataSelector({
       </Flex>
 
       {/* Tabla de datos - Vista previa */}
-      <TableContainer>
+      <TableContainer $isDragging={isDragging}>
         <DataTable>
           <thead>
             <tr>
@@ -358,7 +462,10 @@ export function DataSelector({
                     <TableCell
                       key={cellIdx}
                       $isExcluded={!isColumnIncluded(cellIdx)}
+                      $isDragSelected={isCellInDragSelection(rowIdx, cellIdx)}
                       title={row[cellIdx] || ''}
+                      onMouseDown={(e) => handleCellMouseDown(rowIdx, cellIdx, e)}
+                      onMouseEnter={() => handleCellMouseEnter(rowIdx, cellIdx)}
                     >
                       {row[cellIdx] || <span style={{color: '#999'}}>-</span>}
                     </TableCell>
@@ -371,7 +478,8 @@ export function DataSelector({
       </TableContainer>
 
       <Text size={1} muted>
-        Tip: Haz clic en los encabezados de columna (✓/✗) para incluir o excluir columnas
+        Tip: Arrastra sobre las celdas para seleccionar el rango de datos. Clic en encabezados de
+        columna (✓/✗) para incluir/excluir columnas
       </Text>
     </Stack>
   )
