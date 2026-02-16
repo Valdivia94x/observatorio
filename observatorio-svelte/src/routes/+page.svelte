@@ -335,7 +335,7 @@
 								</svg>
 							{/if}
 						</div>
-						<span class="{themeStore.isDark ? 'text-white' : 'text-slate-700'} text-xs text-center font-medium">{eje.nombre}</span>
+						<span class="{themeStore.isDark ? 'text-white' : 'text-slate-700'} text-base text-center font-medium">{eje.nombre}</span>
 					</a>
 				{/each}
 			</div>
