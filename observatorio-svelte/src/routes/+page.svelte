@@ -173,15 +173,15 @@
 	}
 
 	const ejes = [
-		{ nombre: 'Educación', color: 'bg-[#8C8C8C]', icon: 'education' },
-		{ nombre: 'Economía', color: 'bg-[#D4A017]', icon: 'economy' },
-		{ nombre: 'Seguridad', color: 'bg-[#C8A200]', icon: 'security' },
-		{ nombre: 'Empleo', color: 'bg-[#7AB648]', icon: 'employment' },
-		{ nombre: 'Salud', color: 'bg-[#D94452]', icon: 'health' },
-		{ nombre: 'Participación Ciudadana', color: 'bg-[#E8832A]', icon: 'participation' },
-		{ nombre: 'Buen Gobierno', color: 'bg-[#7B4FA0]', icon: 'government' },
-		{ nombre: 'Desarrollo Urbano', color: 'bg-[#3B7DD8]', icon: 'urban' },
-		{ nombre: 'Medio Ambiente', color: 'bg-[#4A8C3F]', icon: 'environment' }
+		{ nombre: 'Educación', image: '/images/Principales_Ejes/Educacion.png' },
+		{ nombre: 'Economía', image: '/images/Principales_Ejes/Economia.png' },
+		{ nombre: 'Seguridad', image: '/images/Principales_Ejes/Seguridad.png' },
+		{ nombre: 'Empleo', image: '/images/Principales_Ejes/Empleo.png' },
+		{ nombre: 'Salud', image: '/images/Principales_Ejes/Salud.png' },
+		{ nombre: 'Participación Ciudadana', image: '/images/Principales_Ejes/Participacion_Ciudadana.png' },
+		{ nombre: 'Buen Gobierno', image: '/images/Principales_Ejes/Buen_Gobierno.png' },
+		{ nombre: 'Desarrollo Urbano', image: '/images/Principales_Ejes/Desarrollo_Urbano.png' },
+		{ nombre: 'Medio Ambiente', image: '/images/Principales_Ejes/Medio_Ambiente.png' }
 	];
 </script>
 
@@ -293,47 +293,8 @@
 			<div class="grid grid-cols-3 gap-4">
 				{#each ejes as eje}
 					<a href="/indicadores?eje={encodeURIComponent(eje.nombre)}" class="flex flex-col items-center gap-2 group">
-						<div class="{eje.color} w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-							{#if eje.icon === 'education'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path d="M12 14l9-5-9-5-9 5 9 5z" />
-									<path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-								</svg>
-							{:else if eje.icon === 'economy'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
-							{:else if eje.icon === 'security'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-								</svg>
-							{:else if eje.icon === 'employment'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-								</svg>
-							{:else if eje.icon === 'health'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-								</svg>
-							{:else if eje.icon === 'participation'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-								</svg>
-							{:else if eje.icon === 'government'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-								</svg>
-							{:else if eje.icon === 'urban'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-								</svg>
-							{:else if eje.icon === 'environment'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-								</svg>
-							{/if}
+						<div class="w-16 h-16 rounded-full overflow-hidden group-hover:scale-110 transition-transform shadow-lg">
+							<img src={eje.image} alt={eje.nombre} class="w-full h-full object-cover" />
 						</div>
 						<span class="{themeStore.isDark ? 'text-white' : 'text-slate-700'} text-base text-center font-medium">{eje.nombre}</span>
 					</a>
