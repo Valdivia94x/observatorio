@@ -195,6 +195,10 @@
 		<div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 			{#each datosDeInteres as dato}
 				<div class="flex items-center gap-3 p-4 rounded-xl {themeStore.isDark ? 'bg-slate-700/50 border border-slate-600' : 'bg-white border border-slate-200'} shadow-sm hover:shadow-md transition-shadow">
+					<!-- Texto -->
+					<p class="text-sm leading-snug {themeStore.isDark ? 'text-slate-200' : 'text-slate-700'}">
+						{dato.texto}
+					</p>
 					<!-- Icono -->
 					<div class="shrink-0 w-12 h-12 rounded-full {themeStore.isDark ? 'bg-slate-600' : 'bg-orange-100'} flex items-center justify-center">
 						{#if dato.icono === 'poblacion'}
@@ -215,10 +219,6 @@
 							</svg>
 						{/if}
 					</div>
-					<!-- Texto -->
-					<p class="text-sm leading-snug {themeStore.isDark ? 'text-slate-200' : 'text-slate-700'}">
-						{dato.texto}
-					</p>
 				</div>
 			{/each}
 		</div>
