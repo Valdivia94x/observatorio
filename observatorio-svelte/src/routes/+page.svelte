@@ -173,15 +173,15 @@
 	}
 
 	const ejes = [
-		{ nombre: 'Educación', color: 'bg-teal-500', icon: 'education' },
-		{ nombre: 'Economía', color: 'bg-yellow-500', icon: 'economy' },
-		{ nombre: 'Seguridad', color: 'bg-green-500', icon: 'security' },
-		{ nombre: 'Empleo', color: 'bg-purple-500', icon: 'employment' },
-		{ nombre: 'Salud', color: 'bg-pink-500', icon: 'health' },
-		{ nombre: 'Participación Ciudadana', color: 'bg-orange-400', icon: 'participation' },
-		{ nombre: 'Finanzas Públicas', color: 'bg-purple-700', icon: 'government' },
-		{ nombre: 'Desarrollo Urbano', color: 'bg-cyan-400', icon: 'urban' },
-		{ nombre: 'Medio Ambiente', color: 'bg-lime-500', icon: 'environment' }
+		{ nombre: 'Educación', color: 'bg-[#8C8C8C]', icon: 'education' },
+		{ nombre: 'Economía', color: 'bg-[#D4A017]', icon: 'economy' },
+		{ nombre: 'Seguridad', color: 'bg-[#C8A200]', icon: 'security' },
+		{ nombre: 'Empleo', color: 'bg-[#7AB648]', icon: 'employment' },
+		{ nombre: 'Salud', color: 'bg-[#D94452]', icon: 'health' },
+		{ nombre: 'Participación Ciudadana', color: 'bg-[#E8832A]', icon: 'participation' },
+		{ nombre: 'Buen Gobierno', color: 'bg-[#7B4FA0]', icon: 'government' },
+		{ nombre: 'Desarrollo Urbano', color: 'bg-[#3B7DD8]', icon: 'urban' },
+		{ nombre: 'Medio Ambiente', color: 'bg-[#4A8C3F]', icon: 'environment' }
 	];
 </script>
 
