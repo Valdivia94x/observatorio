@@ -354,11 +354,11 @@
 				{#if hoveredMunicipio}
 					{@const clave = municipioKeyToClave[hoveredMunicipio]}
 					{@const valores = datosLookup[clave]}
-					<div class="absolute top-1/2 left-4 -translate-y-1/2 bg-slate-800/95 text-white p-4 rounded-lg shadow-xl min-w-56 pointer-events-none z-10">
-						<h3 class="text-lg font-bold mb-2 border-b border-slate-600 pb-2">{municipiosMap[hoveredMunicipio].nombre}</h3>
-						<div class="space-y-1.5 text-sm">
+					<div class="absolute top-1/2 left-2 md:left-3 lg:left-4 -translate-y-1/2 bg-slate-800/95 text-white p-2 md:p-3 lg:p-4 rounded-md md:rounded-lg shadow-xl min-w-36 md:min-w-48 lg:min-w-56 pointer-events-none z-10">
+						<h3 class="text-sm md:text-base lg:text-lg font-bold mb-1 md:mb-2 border-b border-slate-600 pb-1 md:pb-2">{municipiosMap[hoveredMunicipio].nombre}</h3>
+						<div class="space-y-0.5 md:space-y-1 lg:space-y-1.5 text-[10px] md:text-xs lg:text-sm">
 							{#each indicadorLabels as ind, i}
-								<div class="flex justify-between gap-4">
+								<div class="flex justify-between gap-2 md:gap-3 lg:gap-4">
 									<span class="text-slate-400">{ind.label}</span>
 									<span class="text-orange-400 font-semibold">{valores?.[i] ?? '—'}{ind.sufijo ?? ''}</span>
 								</div>
