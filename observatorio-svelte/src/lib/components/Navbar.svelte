@@ -58,7 +58,7 @@
 
 			<!-- Social Icons -->
 			<div class="flex items-center gap-0.5 lg:gap-1 xl:gap-2 2xl:gap-3 ml-0.5 lg:ml-1 xl:ml-2 2xl:ml-4">
-				<a href="https://wa.me/528717189825" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
+				<a href="https://wa.me/5218712213303" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
 					<img src="/images/icons/whatsapp.svg" alt="WhatsApp" class="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7 {themeStore.isDark ? 'invert' : ''}" />
 				</a>
 				<a href="https://instagram.com/observatorio_laguna" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
@@ -146,7 +146,7 @@
 				<!-- Social Icons & Dark Mode Toggle -->
 				<div class="flex items-center justify-between pt-4 border-t {themeStore.isDark ? 'border-slate-700' : 'border-slate-300'}">
 					<div class="flex items-center gap-4">
-						<a href="https://wa.me/528717189825" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
+						<a href="https://wa.me/5218712213303" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
 							<img src="/images/icons/whatsapp.svg" alt="WhatsApp" class="w-7 h-7 {themeStore.isDark ? 'invert' : ''}" />
 						</a>
 						<a href="https://instagram.com/caboratoriodelaLaguna" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} hover:text-orange-400">
