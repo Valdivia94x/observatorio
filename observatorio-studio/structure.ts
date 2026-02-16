@@ -36,6 +36,19 @@ export const structure = (S: StructureBuilder) =>
 
       S.divider(),
 
+      // === DATOS DEL MAPA ===
+      S.listItem()
+        .title('🗺️ Datos del Mapa (Inicio)')
+        .id('datosMapa')
+        .child(
+          S.document()
+            .schemaType('datosMapa')
+            .documentId('datosMapa')
+            .title('Datos del Mapa (Inicio)')
+        ),
+
+      S.divider(),
+
       // === CONFIGURACION ===
       S.listItem()
         .title('⚙️ Catalogos')

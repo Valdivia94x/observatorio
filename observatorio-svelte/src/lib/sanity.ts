@@ -426,6 +426,39 @@ array::unique(*[_type == "indicador"].contenido[].ubicacion)
 `;
 
 // ============================================
+// Datos del Mapa (Inicio) - Tooltip municipios
+// ============================================
+
+export interface IndicadorMapa {
+	label: string;
+	sufijo?: string;
+}
+
+export interface MunicipioMapa {
+	clave: string;
+	valores: string[];
+}
+
+export interface DatosMapa {
+	_id: string;
+	indicadores: IndicadorMapa[];
+	municipios: MunicipioMapa[];
+}
+
+export const datosMapaQuery = `
+*[_type == "datosMapa"][0]{
+	indicadores[]{
+		label,
+		sufijo
+	},
+	municipios[]{
+		clave,
+		valores
+	}
+}
+`;
+
+// ============================================
 // Utilidades para filtrado de datos por años
 // ============================================
 
