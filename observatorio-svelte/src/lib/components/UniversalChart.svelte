@@ -64,7 +64,7 @@
 
 	interface BloqueGrafica {
 		titulo?: string;
-		tipo: 'bar' | 'line' | 'doughnut' | 'radar' | 'horizontalBar' | 'pie';
+		tipo: 'bar' | 'line' | 'doughnut' | 'radar' | 'horizontalBar' | 'pie' | 'table';
 		tablaDatos: TableData;
 		series?: SerieConfig[];
 		colores?: string[];
@@ -77,6 +77,9 @@
 	}
 
 	let { bloqueGrafica }: Props = $props();
+
+	// Table mode: render HTML table instead of Chart.js
+	const isTable = $derived(bloqueGrafica.tipo === 'table');
 
 	let canvas: HTMLCanvasElement;
 	let chartInstance: import('chart.js').Chart | null = null;
@@ -460,7 +463,7 @@
 	let chartCreated = false;
 
 	onMount(() => {
-		loadChartJS();
+		if (!isTable) loadChartJS();
 
 		return () => {
 			if (chartInstance) {
@@ -490,20 +493,63 @@
 </script>
 
 <div class="w-full">
-	{#if error}
-		<div class="min-h-[200px] flex items-center justify-center bg-red-500/10 rounded-lg">
-			<p class="text-red-400 text-sm">{error}</p>
+	{#if isTable}
+		{@const rows = bloqueGrafica.tablaDatos?.rows || []}
+		{#if rows.length < 2}
+			<div class="min-h-[200px] flex items-center justify-center bg-red-500/10 rounded-lg">
+				<p class="text-red-400 text-sm">No hay datos suficientes para mostrar la tabla</p>
+			</div>
+		{:else}
+			<div class="overflow-x-auto">
+				<table class="w-full border-collapse text-sm">
+					<thead>
+						<tr>
+							{#each rows[0].cells as cell, i}
+								<th
+									class="px-4 py-3 font-semibold border-b-2 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+									class:text-left={i === 0}
+									class:text-right={i > 0}
+								>
+									{cell}
+								</th>
+							{/each}
+						</tr>
+					</thead>
+					<tbody>
+						{#each rows.slice(1) as row, rowIdx}
+							<tr class={rowIdx % 2 === 1 ? 'bg-slate-50 dark:bg-slate-800/50' : ''}>
+								{#each row.cells as cell, i}
+									<td
+										class="px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+										class:text-left={i === 0}
+										class:text-right={i > 0}
+										class:font-medium={i === 0}
+									>
+										{cell}
+									</td>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{/if}
+	{:else}
+		{#if error}
+			<div class="min-h-[200px] flex items-center justify-center bg-red-500/10 rounded-lg">
+				<p class="text-red-400 text-sm">{error}</p>
+			</div>
+		{/if}
+
+		{#if !chartModulesLoaded && !error}
+			<div class="min-h-[200px] flex items-center justify-center">
+				<p class="text-slate-400 text-sm">Cargando gráfica...</p>
+			</div>
+		{/if}
+
+		<!-- Canvas siempre presente pero oculto hasta que cargue -->
+		<div class="min-h-[250px] relative" class:hidden={!chartModulesLoaded || !!error}>
+			<canvas bind:this={canvas}></canvas>
 		</div>
 	{/if}
-
-	{#if !chartModulesLoaded && !error}
-		<div class="min-h-[200px] flex items-center justify-center">
-			<p class="text-slate-400 text-sm">Cargando gráfica...</p>
-		</div>
-	{/if}
-
-	<!-- Canvas siempre presente pero oculto hasta que cargue -->
-	<div class="min-h-[250px] relative" class:hidden={!chartModulesLoaded || !!error}>
-		<canvas bind:this={canvas}></canvas>
-	</div>
 </div>
