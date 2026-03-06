@@ -44,6 +44,7 @@ export const graficaWidget = defineType({
           {title: 'Dona', value: 'doughnut'},
           {title: 'Pie', value: 'pie'},
           {title: 'Barras Horizontales', value: 'horizontalBar'},
+          {title: 'Tabla', value: 'table'},
         ],
         layout: 'dropdown',
       },
@@ -266,7 +267,7 @@ export const graficaWidget = defineType({
         'Opcional. Configura el estilo visual y color de cada serie. El orden debe coincidir con las filas de la tabla (excluyendo la fila de encabezados).',
       hidden: ({parent}) => {
         const p = parent as {tipo?: string}
-        const tiposNoCombo = ['pie', 'doughnut', 'radar', 'polarArea']
+        const tiposNoCombo = ['pie', 'doughnut', 'radar', 'polarArea', 'table']
         return tiposNoCombo.includes(p?.tipo || '')
       },
       of: [
@@ -353,6 +354,7 @@ export const graficaWidget = defineType({
         doughnut: 'Dona',
         pie: 'Pie',
         horizontalBar: 'Barras Horiz.',
+        table: 'Tabla',
       }
       const ubicacionLabels: Record<string, string> = {
         torreon: 'Torreon',

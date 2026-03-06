@@ -269,6 +269,62 @@ export function ChartPreview(props: ChartPreviewProps) {
     const tipo = value?.tipo || 'bar'
     const chartOptions = getChartOptions()
 
+    // Tabla: renderizar como HTML table
+    if (tipo === 'table' && value?.tablaDatos?.rows) {
+      const rows = value.tablaDatos.rows
+      return (
+        <div style={{overflowX: 'auto'}}>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '13px',
+            }}
+          >
+            <thead>
+              <tr>
+                {rows[0]?.cells.map((cell, i) => (
+                  <th
+                    key={i}
+                    style={{
+                      padding: '8px 12px',
+                      backgroundColor: '#f5f5f5',
+                      borderBottom: '2px solid #ddd',
+                      textAlign: i === 0 ? 'left' : 'right',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {cell}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.slice(1).map((row, rowIdx) => (
+                <tr key={row._key || rowIdx}>
+                  {row.cells.map((cell, cellIdx) => (
+                    <td
+                      key={cellIdx}
+                      style={{
+                        padding: '6px 12px',
+                        borderBottom: '1px solid #eee',
+                        textAlign: cellIdx === 0 ? 'left' : 'right',
+                        fontWeight: cellIdx === 0 ? 500 : 400,
+                        backgroundColor: rowIdx % 2 === 0 ? '#fff' : '#fafafa',
+                      }}
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+
     // Gráfica combinada (mixed chart)
     if (isComboChart) {
       return <Chart type="bar" data={chartData} options={chartOptions} />
@@ -359,7 +415,7 @@ export function ChartPreview(props: ChartPreviewProps) {
             letterSpacing: '0.5px',
           }}
         >
-          Vista Previa de la Grafica {isComboChart && '(Combinada)'}
+          {value?.tipo === 'table' ? 'Vista Previa de la Tabla' : `Vista Previa de la Grafica${isComboChart ? ' (Combinada)' : ''}`}
         </h4>
         <div style={{maxWidth: '100%', height: 'auto'}}>{renderChart()}</div>
       </div>
