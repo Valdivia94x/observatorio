@@ -1,7 +1,10 @@
-import {StructureBuilder} from 'sanity/structure'
+import {StructureBuilder, StructureResolverContext} from 'sanity/structure'
+import {BulkImportPane} from './components/BulkImportPane'
 
-export const structure = (S: StructureBuilder) =>
-  S.list()
+export const structure = (S: StructureBuilder, context: StructureResolverContext) => {
+  const client = context.getClient({apiVersion: '2024-01-01'})
+
+  return S.list()
     .title('Contenido')
     .items([
       // === INDICADORES POR EJE ===
@@ -10,12 +13,40 @@ export const structure = (S: StructureBuilder) =>
         .child(
           S.documentTypeList('eje')
             .title('Selecciona un Eje')
-            .child((ejeId) =>
-              S.documentList()
+            .child(async (ejeId) => {
+              const indicators: {_id: string; title: string}[] = await client.fetch(
+                `*[_type == "indicador" && eje._ref == $ejeId]|order(title asc){_id, title}`,
+                {ejeId},
+              )
+
+              return S.list()
                 .title('Indicadores')
-                .filter('_type == "indicador" && eje._ref == $ejeId')
-                .params({ejeId})
-            )
+                .items([
+                  // Indicadores del eje
+                  ...indicators.map((ind) =>
+                    S.listItem()
+                      .id(ind._id)
+                      .title(ind.title)
+                      .schemaType('indicador')
+                      .child(
+                        S.document()
+                          .documentId(ind._id)
+                          .schemaType('indicador'),
+                      ),
+                  ),
+
+                  S.divider(),
+
+                  // Boton de importacion masiva
+                  S.listItem()
+                    .title('📥 Importar BD Normalizada')
+                    .id('bulk-import')
+                    .child(
+                      S.component(BulkImportPane)
+                        .title('Importar desde Base de Datos Normalizada'),
+                    ),
+                ])
+            }),
         ),
 
       S.divider(),
@@ -44,7 +75,7 @@ export const structure = (S: StructureBuilder) =>
           S.document()
             .schemaType('datosMapa')
             .documentId('datosMapa')
-            .title('Datos del Mapa (Inicio)')
+            .title('Datos del Mapa (Inicio)'),
         ),
 
       S.divider(),
@@ -60,6 +91,7 @@ export const structure = (S: StructureBuilder) =>
                 .title('Ejes Tematicos')
                 .schemaType('eje')
                 .child(S.documentTypeList('eje').title('Ejes Tematicos')),
-            ])
+            ]),
         ),
     ])
+}

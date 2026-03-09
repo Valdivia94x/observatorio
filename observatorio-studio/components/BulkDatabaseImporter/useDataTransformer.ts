@@ -7,6 +7,8 @@ import {
   matchFuente,
   matchUnidades,
   matchPeriodicidad,
+  resolveUbicacion,
+  UBICACION_LABELS,
 } from './mappings'
 
 export function useDataTransformer(rows: NormalizedRow[]): IndicatorPlan[] {
@@ -51,33 +53,24 @@ function buildIndicatorPlan(
   const fuente = first.fuente
   const grupo = first.grupo || ''
 
-  // Separate municipal vs nacional rows
-  const municipalRows = rows.filter(
-    (r) => r.municipio && r.municipio.trim() !== '' && r.nacional !== 'Nacional',
-  )
-  const nacionalRows = rows.filter((r) => r.nacional === 'Nacional')
-
-  const graficas: PlannedGraficaWidget[] = []
-
-  // Build municipal chart
-  if (municipalRows.length > 0) {
-    const chart = buildChart(
-      indicadorName,
-      municipalRows,
-      periodicidad,
-      'municipal',
-      {descripcion, unidades, fuente},
-    )
-    if (chart) graficas.push(chart)
+  // Group rows by ubicacion
+  const ubicacionGroups = new Map<string, NormalizedRow[]>()
+  for (const row of rows) {
+    const ubicacion = resolveUbicacion(row)
+    if (!ubicacion) continue // Skip rows with unrecognized ubicacion
+    const existing = ubicacionGroups.get(ubicacion) || []
+    existing.push(row)
+    ubicacionGroups.set(ubicacion, existing)
   }
 
-  // Build nacional chart
-  if (nacionalRows.length > 0) {
+  // Build one chart per ubicacion
+  const graficas: PlannedGraficaWidget[] = []
+  for (const [ubicacion, ubicacionRows] of ubicacionGroups) {
     const chart = buildChart(
       indicadorName,
-      nacionalRows,
+      ubicacionRows,
       periodicidad,
-      'nacional',
+      ubicacion,
       {descripcion, unidades, fuente},
     )
     if (chart) graficas.push(chart)
@@ -102,23 +95,9 @@ function buildChart(
   indicadorName: string,
   rows: NormalizedRow[],
   periodicidad: string,
-  level: 'municipal' | 'nacional',
+  ubicacion: string,
   metadata: {descripcion: string | null; unidades: string | null; fuente: string | null},
 ): PlannedGraficaWidget | null {
-  // Determine series names (municipalities or "Nacional")
-  const seriesNames: string[] = []
-  if (level === 'municipal') {
-    const uniqueMunicipios = new Set<string>()
-    for (const row of rows) {
-      if (row.municipio) uniqueMunicipios.add(row.municipio.trim())
-    }
-    seriesNames.push(...Array.from(uniqueMunicipios).sort())
-  } else {
-    seriesNames.push('Nacional')
-  }
-
-  if (seriesNames.length === 0) return null
-
   // Collect unique time periods
   const periodsSet = new Set<string>()
   for (const row of rows) {
@@ -132,12 +111,10 @@ function buildChart(
   // Determine which value column to use
   const useAbsolute = ['anual', 'bianual', 'quinquenal'].includes(periodicidad.toLowerCase())
 
-  // Build lookup map: "series|period" → value
+  // Build lookup map: "period" → value
   const valueMap = new Map<string, string>()
   for (const row of rows) {
-    const seriesKey = level === 'municipal' ? (row.municipio?.trim() || '') : 'Nacional'
     const period = formatTimePeriod(periodicidad, row.anio, row.trimestre, row.mes)
-    const key = `${seriesKey}|${period}`
 
     let value: string | null = null
     if (useAbsolute) {
@@ -147,38 +124,31 @@ function buildChart(
     }
 
     if (value !== null) {
-      // Round to 2 decimal places if numeric
       const num = parseFloat(value)
       if (!isNaN(num)) {
         value = parseFloat(num.toFixed(2)).toString()
       }
     }
 
-    valueMap.set(key, value ?? '')
+    valueMap.set(period, value ?? '')
   }
 
   // Build @sanity/table format
-  const tableRows: TableRow[] = []
-
-  // Header row: ["", period1, period2, ...]
-  tableRows.push({
-    _type: 'tableRow',
-    _key: nanoid(),
-    cells: ['', ...periods],
-  })
-
-  // Data rows: ["SeriesName", value1, value2, ...]
-  for (const series of seriesNames) {
-    const cells = [series]
-    for (const period of periods) {
-      cells.push(valueMap.get(`${series}|${period}`) ?? '')
-    }
-    tableRows.push({
+  // Row 0 (header): ["", period1, period2, ...]
+  // Row 1 (data):   ["SeriesName", value1, value2, ...]
+  const seriesName = UBICACION_LABELS[ubicacion] || indicadorName
+  const tableRows: TableRow[] = [
+    {
       _type: 'tableRow',
       _key: nanoid(),
-      cells,
-    })
-  }
+      cells: ['', ...periods],
+    },
+    {
+      _type: 'tableRow',
+      _key: nanoid(),
+      cells: [seriesName, ...periods.map((p) => valueMap.get(p) ?? '')],
+    },
+  ]
 
   const tablaDatos: TableValue = {rows: tableRows}
 
@@ -189,14 +159,14 @@ function buildChart(
   const anioInicio = Math.min(...years)
   const anioFin = Math.max(...years)
 
-  // Chart title
-  const suffix = level === 'municipal' ? '(Municipal)' : '(Nacional)'
-  const titulo = `${indicadorName} ${suffix}`
+  // Chart title: "Indicador (Ubicacion)"
+  const ubicacionLabel = UBICACION_LABELS[ubicacion] || ubicacion
+  const titulo = `${indicadorName} (${ubicacionLabel})`
 
   return {
     titulo,
     tipo: 'line',
-    ubicacion: level === 'nacional' ? 'nacional' : 'general',
+    ubicacion,
     anioInicio,
     anioFin,
     unidadMedida: metadata.unidades ? matchUnidades(metadata.unidades) : 'unidades',

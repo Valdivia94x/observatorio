@@ -1,7 +1,16 @@
 import {useState} from 'react'
-import {Box, Card, Flex, Stack, Text, Badge, Button} from '@sanity/ui'
+import {Box, Card, Flex, Stack, Text, Badge, Button, Select} from '@sanity/ui'
 import {ChevronDownIcon, ChevronRightIcon} from '@sanity/icons'
-import type {IndicatorPlan} from './types'
+import type {ChartType, IndicatorPlan} from './types'
+
+const CHART_TYPE_OPTIONS: {title: string; value: ChartType}[] = [
+  {title: 'Barras', value: 'bar'},
+  {title: 'Linea', value: 'line'},
+  {title: 'Dona', value: 'doughnut'},
+  {title: 'Pie', value: 'pie'},
+  {title: 'Barras Horizontales', value: 'horizontalBar'},
+  {title: 'Tabla', value: 'table'},
+]
 
 interface IndicatorPreviewProps {
   plans: IndicatorPlan[]
@@ -100,38 +109,66 @@ function IndicatorRow({plan}: {plan: IndicatorPlan}) {
 
               {/* Charts detail */}
               {plan.graficas.map((grafica, i) => (
-                <Card key={i} padding={3} radius={2} tone="default" border>
-                  <Stack space={2}>
-                    <Flex gap={3} align="center">
-                      <Text size={1} weight="semibold">
-                        {grafica.titulo}
-                      </Text>
-                      <Badge fontSize={0}>{grafica.ubicacion}</Badge>
-                    </Flex>
-                    <Flex gap={4} wrap="wrap">
-                      <Text size={0} muted>
-                        Tipo: {grafica.tipo}
-                      </Text>
-                      <Text size={0} muted>
-                        Periodo: {grafica.anioInicio} - {grafica.anioFin}
-                      </Text>
-                      <Text size={0} muted>
-                        Series: {grafica.tablaDatos.rows.length - 1}
-                      </Text>
-                      <Text size={0} muted>
-                        Columnas: {grafica.tablaDatos.rows[0]?.cells.length - 1 || 0}
-                      </Text>
-                    </Flex>
-                    {/* Mini table preview */}
-                    <Box style={{overflowX: 'auto', maxHeight: 160}}>
-                      <MiniTable rows={grafica.tablaDatos.rows} />
-                    </Box>
-                  </Stack>
-                </Card>
+                <ChartRow key={i} grafica={grafica} />
               ))}
             </Stack>
           </Box>
         )}
+      </Stack>
+    </Card>
+  )
+}
+
+function ChartRow({grafica}: {grafica: IndicatorPlan['graficas'][number]}) {
+  const [tipo, setTipo] = useState<ChartType>(grafica.tipo as ChartType)
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newType = e.currentTarget.value as ChartType
+    setTipo(newType)
+    grafica.tipo = newType
+  }
+
+  return (
+    <Card padding={3} radius={2} tone="default" border>
+      <Stack space={2}>
+        <Flex gap={3} align="center">
+          <Text size={1} weight="semibold">
+            {grafica.titulo}
+          </Text>
+          <Badge fontSize={0}>{grafica.ubicacion}</Badge>
+        </Flex>
+        <Flex gap={4} wrap="wrap" align="center">
+          <Flex gap={2} align="center">
+            <Text size={0} muted>
+              Tipo:
+            </Text>
+            <Select
+              value={tipo}
+              onChange={handleTypeChange}
+              style={{maxWidth: 180}}
+              fontSize={1}
+            >
+              {CHART_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.title}
+                </option>
+              ))}
+            </Select>
+          </Flex>
+          <Text size={0} muted>
+            Periodo: {grafica.anioInicio} - {grafica.anioFin}
+          </Text>
+          <Text size={0} muted>
+            Series: {grafica.tablaDatos.rows.length - 1}
+          </Text>
+          <Text size={0} muted>
+            Columnas: {grafica.tablaDatos.rows[0]?.cells.length - 1 || 0}
+          </Text>
+        </Flex>
+        {/* Mini table preview */}
+        <Box style={{overflowX: 'auto', maxHeight: 160}}>
+          <MiniTable rows={grafica.tablaDatos.rows} />
+        </Box>
       </Stack>
     </Card>
   )

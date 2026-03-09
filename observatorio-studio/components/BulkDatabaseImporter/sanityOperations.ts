@@ -20,7 +20,7 @@ export async function findExistingIndicators(
   names: string[],
 ): Promise<Map<string, ExistingIndicator>> {
   const lowerNames = names.map((n) => n.toLowerCase())
-  const query = `*[_type == "indicador" && lower(title) in $names]{
+  const query = `*[_type == "indicador" && !(_id in path("drafts.**")) && lower(title) in $names]{
     _id, title, contenido, periodicidad
   }`
   const results: ExistingIndicator[] = await client.fetch(query, {names: lowerNames})
@@ -41,7 +41,7 @@ async function findOrCreateEje(
 
   // Try to find existing
   const existing: ExistingEje | null = await client.fetch(
-    `*[_type == "eje" && lower(title) == lower($name)][0]{_id, title}`,
+    `*[_type == "eje" && !(_id in path("drafts.**")) && lower(title) == lower($name)][0]{_id, title}`,
     {name: grupoName},
   )
 

@@ -54,6 +54,9 @@ export interface PlannedGraficaWidget {
   tablaDatos: TableValue
 }
 
+// Available chart types
+export type ChartType = 'bar' | 'line' | 'doughnut' | 'pie' | 'horizontalBar' | 'table'
+
 // Steps of the bulk import flow
 export type BulkImportStep = 'upload' | 'preview' | 'processing' | 'done'
 
