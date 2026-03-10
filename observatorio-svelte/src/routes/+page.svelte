@@ -46,25 +46,6 @@
 		{ label: 'Indicador 5' },
 	];
 
-	// Datos de interés para el scroll
-	const datosDeInteres = [
-		{
-			texto: 'En la Zona Metropolitana de La Laguna vivimos 1.46 millones de personas, lo que nos coloca como la 10ª metrópoli más grande del país.',
-			icono: 'poblacion'
-		},
-		{
-			texto: 'Cada día circulan 648 mil vehículos: prácticamente un auto por cada dos habitantes.',
-			icono: 'vehiculos'
-		},
-		{
-			texto: 'El salario promedio mensual de un trabajador en la ZML es de $15,582, por debajo del promedio nacional de $18,836.',
-			icono: 'salario'
-		},
-		{
-			texto: '¿Sabías que en el último año, 10,593 jóvenes egresaron de nuestras universidades? La carrera con más estudiantes: docencia.',
-			icono: 'educacion'
-		}
-	];
 
 
 	// Configuración del mapa - cada municipio con su forma, posición y datos
@@ -190,39 +171,6 @@
 	];
 </script>
 
-<!-- Datos de interés - 4 cuadros en fila -->
-	<div class="w-full py-4 mb-4 px-6" role="region" aria-label="Datos de interés">
-		<div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-			{#each datosDeInteres as dato}
-				<div class="flex items-center gap-3 p-4 rounded-xl {themeStore.isDark ? 'bg-slate-700/50 border border-slate-600' : 'bg-white border border-slate-200'} shadow-sm hover:shadow-md transition-shadow">
-					<!-- Texto -->
-					<p class="text-sm leading-snug {themeStore.isDark ? 'text-slate-200' : 'text-slate-700'}">
-						{dato.texto}
-					</p>
-					<!-- Icono -->
-					<div class="shrink-0 w-12 h-12 rounded-full {themeStore.isDark ? 'bg-slate-600' : 'bg-orange-100'} flex items-center justify-center">
-						{#if dato.icono === 'poblacion'}
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {themeStore.isDark ? 'text-orange-400' : 'text-orange-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-							</svg>
-						{:else if dato.icono === 'vehiculos'}
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {themeStore.isDark ? 'text-orange-400' : 'text-orange-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 5h8m-4-10l-4 4h8l-4-4zM5 17h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2zm2 0a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z" />
-							</svg>
-						{:else if dato.icono === 'salario'}
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {themeStore.isDark ? 'text-orange-400' : 'text-orange-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
-						{:else if dato.icono === 'educacion'}
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {themeStore.isDark ? 'text-orange-400' : 'text-orange-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-							</svg>
-						{/if}
-					</div>
-				</div>
-			{/each}
-		</div>
-	</div>
 
 <!-- Subtitle -->
 	<p class="text-center {themeStore.isDark ? 'text-slate-300' : 'text-slate-600'} mb-4 px-6 text-lg">
