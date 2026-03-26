@@ -85,6 +85,18 @@
 	let chartInstance: import('chart.js').Chart | null = null;
 	let error = $state<string | null>(null);
 
+	// Mobile detection
+	const MOBILE_BREAKPOINT = 768;
+	let isMobile = $state(browser ? window.innerWidth < MOBILE_BREAKPOINT : false);
+
+	function handleResize() {
+		const wasMobile = isMobile;
+		isMobile = window.innerWidth < MOBILE_BREAKPOINT;
+		if (wasMobile !== isMobile && chartInstance && chartCreated) {
+			updateChart();
+		}
+	}
+
 	// Beautiful color palette
 	const colorPalette = [
 		{ bg: 'rgba(208, 0, 95, 0.7)', border: 'rgb(208, 0, 95)' },        // #d0005f - Magenta/Pink
@@ -264,19 +276,20 @@
 
 		const baseOptions: Record<string, unknown> = {
 			responsive: true,
-			maintainAspectRatio: true,
+			maintainAspectRatio: !isMobile,
 			plugins: {
 				legend: {
 					display: shouldShowLegend(),
-					position: 'top' as const,
+					position: isMobile ? 'bottom' as const : 'top' as const,
 					labels: {
 						color: textColor,
 						font: {
-							size: 10,
+							size: isMobile ? 9 : 10,
 							weight: 500
 						},
-						padding: 6,
+						padding: isMobile ? 4 : 6,
 						usePointStyle: true,
+						boxWidth: isMobile ? 8 : 40,
 					}
 				},
 				title: {
@@ -284,11 +297,11 @@
 					text: bloqueGrafica.titulo || '',
 					color: textColor,
 					font: {
-						size: 24,
+						size: isMobile ? 16 : 24,
 						weight: 'bold'
 					},
 					padding: {
-						bottom: 10
+						bottom: isMobile ? 6 : 10
 					}
 				},
 				tooltip: {
@@ -298,11 +311,11 @@
 					borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
 					borderWidth: 1,
 					cornerRadius: 8,
-					padding: 12,
+					padding: isMobile ? 8 : 12,
 				},
 				datalabels: {
-					// No mostrar labels en gráficas de líneas (se superponen) ni en radar
-					display: bloqueGrafica.tipo !== 'radar' && bloqueGrafica.tipo !== 'line',
+					// Ocultar data labels en móvil para evitar superposición
+					display: isMobile ? false : (bloqueGrafica.tipo !== 'radar' && bloqueGrafica.tipo !== 'line'),
 					anchor: (context: { datasetIndex: number; dataset: { type?: string } }) => {
 						if (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') return 'center';
 						return 'end';
@@ -343,7 +356,7 @@
 			baseOptions.scales = {
 				x: {
 					title: {
-						display: true,
+						display: !isMobile,
 						text: isHorizontalBar ? unidadLabel : 'Período',
 						color: textColor,
 						font: {
@@ -357,13 +370,16 @@
 					ticks: {
 						color: textColor,
 						font: {
-							size: 15
-						}
+							size: isMobile ? 10 : 15
+						},
+						maxRotation: isMobile ? 45 : 0,
+						autoSkip: isMobile,
+						maxTicksLimit: isMobile ? 8 : undefined,
 					}
 				},
 				y: {
 					title: {
-						display: true,
+						display: !isMobile,
 						text: isHorizontalBar ? 'Período' : unidadLabel,
 						color: textColor,
 						font: {
@@ -377,7 +393,7 @@
 					ticks: {
 						color: textColor,
 						font: {
-							size: 15
+							size: isMobile ? 10 : 15
 						}
 					},
 					beginAtZero: true,
@@ -464,8 +480,10 @@
 
 	onMount(() => {
 		if (!isTable) loadChartJS();
+		window.addEventListener('resize', handleResize);
 
 		return () => {
+			window.removeEventListener('resize', handleResize);
 			if (chartInstance) {
 				chartInstance.destroy();
 				chartInstance = null;
@@ -548,7 +566,11 @@
 		{/if}
 
 		<!-- Canvas siempre presente pero oculto hasta que cargue -->
-		<div class="min-h-[250px] relative" class:hidden={!chartModulesLoaded || !!error}>
+		<div
+			class="relative"
+			class:hidden={!chartModulesLoaded || !!error}
+			style="min-height: {isMobile ? '300px' : '250px'};"
+		>
 			<canvas bind:this={canvas}></canvas>
 		</div>
 	{/if}
