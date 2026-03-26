@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { themeStore } from '$lib/stores/theme.svelte';
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import GraficaConFiltro from '$lib/components/GraficaConFiltro.svelte';
 	import InteractiveMap from '$lib/components/InteractiveMap.svelte';
 	import type { Indicador, Eje, UbicacionKey, PeriodicidadKey, GraficaWidget } from '$lib/sanity';
@@ -22,6 +22,8 @@
 	let selectedUbicacion = $state<string>('todos');
 	// Filtro adicional por nombre de indicador
 	let selectedIndicador = $state<string>('todos');
+	// Flag para evitar que el $effect resetee indicador durante la inicialización desde query params
+	let initialized = $state(false);
 
 	// Read query params on mount
 	onMount(() => {
@@ -40,6 +42,16 @@
 				// Si ya es una UbicacionKey válida, usarla directamente
 				selectedUbicacion = ubicacionParam;
 			}
+		}
+
+		const indicadorParam = $page.url.searchParams.get('indicador');
+		if (indicadorParam) {
+			requestAnimationFrame(() => {
+				selectedIndicador = indicadorParam;
+				setTimeout(() => { initialized = true; }, 0);
+			});
+		} else {
+			setTimeout(() => { initialized = true; }, 0);
 		}
 	});
 
@@ -91,7 +103,7 @@
 
 		return graficas.filter(grafica => {
 			if (selectedUbicacion !== 'todos') {
-				if (grafica.ubicacion !== selectedUbicacion) return false;
+				if (!grafica.ubicacion?.includes(selectedUbicacion as UbicacionKey)) return false;
 			}
 			return true;
 		});
@@ -156,11 +168,13 @@
 		return groups;
 	});
 
-	// Reset indicador filter when other filters change
+	// Reset indicador filter when other filters change (skip during init from query params)
 	$effect(() => {
 		void selectedUbicacion;
 		void selectedEje;
-		selectedIndicador = 'todos';
+		if (untrack(() => initialized)) {
+			selectedIndicador = 'todos';
+		}
 	});
 
 	function getUbicacionLabel(key?: UbicacionKey): string {
@@ -466,9 +480,9 @@
 													</button>
 
 													<div class="flex flex-wrap gap-2 mb-1">
-														{#if grafica.ubicacion}
+														{#if grafica.ubicacion?.length}
 															<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
-																{getUbicacionLabel(grafica.ubicacion)}
+																{grafica.ubicacion.map(u => getUbicacionLabel(u)).join(', ')}
 															</span>
 														{/if}
 														{#if formatearPeriodoGrafica(grafica)}

@@ -135,7 +135,9 @@ function ChartRow({grafica}: {grafica: IndicatorPlan['graficas'][number]}) {
           <Text size={1} weight="semibold">
             {grafica.titulo}
           </Text>
-          <Badge fontSize={0}>{grafica.ubicacion}</Badge>
+          {grafica.ubicacion.map((u, idx) => (
+            <Badge key={idx} fontSize={0}>{u}</Badge>
+          ))}
         </Flex>
         <Flex gap={4} wrap="wrap" align="center">
           <Flex gap={2} align="center">

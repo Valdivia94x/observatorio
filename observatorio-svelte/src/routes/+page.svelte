@@ -231,7 +231,7 @@
 								class="cursor-pointer transition-all duration-200 outline-none focus:outline-none {hoveredMunicipio === key ? muni.hoverColor : muni.color} {themeStore.isDark ? 'stroke-white' : 'stroke-slate-800'} stroke-[0.2]"
 								onmouseenter={() => (hoveredMunicipio = key as MunicipioKey)}
 								onmouseleave={() => (hoveredMunicipio = null)}
-								onclick={() => window.location.href = `/indicadores?ubicacion=${key}`}
+								onclick={() => window.location.href = `/indicadores?ubicacion=${key}&eje=${encodeURIComponent('Desarrollo Urbano')}&indicador=${encodeURIComponent('Crecimiento poblacional')}`}
 								role="button"
 								tabindex={i === 0 ? 0 : -1}
 								aria-label={i === 0 ? muni.nombre : `${muni.nombre} parte ${i + 1}`}

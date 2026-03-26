@@ -44,7 +44,7 @@ export interface IndicatorPlan {
 export interface PlannedGraficaWidget {
   titulo: string
   tipo: string
-  ubicacion: string
+  ubicacion: string[]
   anioInicio: number
   anioFin: number
   unidadMedida: string

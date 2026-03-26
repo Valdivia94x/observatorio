@@ -70,8 +70,8 @@ export const UBICACION_LABELS: Record<string, string> = {
   'gomez-palacio': 'Gomez Palacio',
   lerdo: 'Lerdo',
   matamoros: 'Matamoros',
-  'estatal-coahuila': 'Estatal (Coahuila)',
-  'estatal-durango': 'Estatal (Durango)',
+  'estatal-coahuila': 'Coahuila',
+  'estatal-durango': 'Durango',
   nacional: 'Nacional',
 }
 

@@ -166,7 +166,7 @@ function buildChart(
   return {
     titulo,
     tipo: 'line',
-    ubicacion,
+    ubicacion: [ubicacion],
     anioInicio,
     anioFin,
     unidadMedida: metadata.unidades ? matchUnidades(metadata.unidades) : 'unidades',

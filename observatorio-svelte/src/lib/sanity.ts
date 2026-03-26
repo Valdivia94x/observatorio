@@ -73,22 +73,18 @@ export type UbicacionKey =
 	| 'gomez-palacio'
 	| 'lerdo'
 	| 'matamoros'
-	| 'zona-metropolitana'
 	| 'estatal-coahuila'
 	| 'estatal-durango'
-	| 'nacional'
-	| 'general';
+	| 'nacional';
 
 export const ubicacionLabels: Record<UbicacionKey, string> = {
 	'torreon': 'Torreón',
 	'gomez-palacio': 'Gómez Palacio',
 	'lerdo': 'Lerdo',
 	'matamoros': 'Matamoros',
-	'zona-metropolitana': 'Zona Metropolitana',
-	'estatal-coahuila': 'Estatal (Coahuila)',
-	'estatal-durango': 'Estatal (Durango)',
-	'nacional': 'Nacional',
-	'general': 'General'
+	'estatal-coahuila': 'Coahuila',
+	'estatal-durango': 'Durango',
+	'nacional': 'Nacional'
 };
 
 // Periodicidad types
@@ -168,7 +164,7 @@ export interface GraficaWidget {
 	_type?: 'graficaWidget';
 	titulo?: string;
 	tipo: 'bar' | 'line' | 'doughnut' | 'pie' | 'horizontalBar' | 'table';
-	ubicacion?: UbicacionKey;
+	ubicacion?: UbicacionKey[];
 	anioInicio?: number;
 	anioFin?: number;
 	aniosDisponibles?: number[]; // Fallback para datos discontinuos
@@ -422,7 +418,7 @@ array::unique(*[_type == "indicador"].contenido[].aniosDisponibles[])
 
 // Query para obtener todas las ubicaciones únicas
 export const allUbicacionesQuery = `
-array::unique(*[_type == "indicador"].contenido[].ubicacion)
+array::unique(*[_type == "indicador"].contenido[].ubicacion[])
 `;
 
 // ============================================
@@ -926,7 +922,9 @@ export function buildVoiceAgentPrompt(grafica: GraficaWidget, indicadorTitle?: s
 	}
 
 	// Construir ubicación legible
-	const ubicacionTexto = grafica.ubicacion ? ubicacionLabels[grafica.ubicacion] : 'No especificada';
+	const ubicacionTexto = grafica.ubicacion?.length
+		? grafica.ubicacion.map(u => ubicacionLabels[u] || u).join(', ')
+		: 'No especificada';
 
 	const sections: string[] = [];
 

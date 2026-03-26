@@ -52,24 +52,22 @@ export const graficaWidget = defineType({
     }),
     defineField({
       name: 'ubicacion',
-      title: 'Ubicacion (Filtro 1)',
-      type: 'string',
-      description: 'Selecciona el municipio o region que cubre esta grafica',
+      title: 'Ubicaciones',
+      type: 'array',
+      of: [{type: 'string'}],
+      description: 'Selecciona uno o mas municipios/regiones que cubre esta grafica',
       options: {
         list: [
           {title: 'Torreon', value: 'torreon'},
           {title: 'Gomez Palacio', value: 'gomez-palacio'},
           {title: 'Lerdo', value: 'lerdo'},
           {title: 'Matamoros', value: 'matamoros'},
-          {title: 'Zona Metropolitana', value: 'zona-metropolitana'},
           {title: 'Estatal (Coahuila)', value: 'estatal-coahuila'},
           {title: 'Estatal (Durango)', value: 'estatal-durango'},
           {title: 'Nacional', value: 'nacional'},
-          {title: 'General', value: 'general'},
         ],
-        layout: 'dropdown',
       },
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().min(1),
     }),
     // === RANGO DE AÑOS (Filtro 2 - Opción principal) ===
     defineField({
@@ -361,11 +359,9 @@ export const graficaWidget = defineType({
         'gomez-palacio': 'Gomez Palacio',
         lerdo: 'Lerdo',
         matamoros: 'Matamoros',
-        'zona-metropolitana': 'ZM',
         'estatal-coahuila': 'Coahuila',
         'estatal-durango': 'Durango',
         nacional: 'Nacional',
-        general: 'General',
       }
 
       // Mostrar rango o años específicos
@@ -378,9 +374,13 @@ export const graficaWidget = defineType({
         aniosText = `[${aniosDisponibles.join(', ')}]`
       }
 
+      const ubicacionText = Array.isArray(ubicacion)
+        ? ubicacion.map((u: string) => ubicacionLabels[u] || u).join(', ')
+        : ubicacionLabels[ubicacion] || ubicacion
+
       return {
         title: titulo || 'Sin titulo',
-        subtitle: `${tipoLabels[tipo] || tipo} | ${ubicacionLabels[ubicacion] || ubicacion} ${aniosText}`,
+        subtitle: `${tipoLabels[tipo] || tipo} | ${ubicacionText} ${aniosText}`,
       }
     },
   },
