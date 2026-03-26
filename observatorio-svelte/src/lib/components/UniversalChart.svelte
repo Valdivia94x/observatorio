@@ -372,7 +372,7 @@
 						font: {
 							size: isMobile ? 10 : 15
 						},
-						maxRotation: isMobile ? 45 : 0,
+						maxRotation: isMobile ? 45 : 45,
 						autoSkip: isMobile,
 						maxTicksLimit: isMobile ? 8 : undefined,
 					}
