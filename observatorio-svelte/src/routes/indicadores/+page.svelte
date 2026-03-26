@@ -5,7 +5,7 @@
 	import GraficaConFiltro from '$lib/components/GraficaConFiltro.svelte';
 	import InteractiveMap from '$lib/components/InteractiveMap.svelte';
 	import type { Indicador, Eje, UbicacionKey, PeriodicidadKey, GraficaWidget } from '$lib/sanity';
-	import { ubicacionLabels, periodicidadLabels, anioDisponibleEnGrafica, formatearPeriodoGrafica, extraerAniosDeTablas } from '$lib/sanity';
+	import { ubicacionLabels, periodicidadLabels, formatearPeriodoGrafica } from '$lib/sanity';
 	import type { MunicipioKey } from '$lib/data/municipiosMap';
 	import { voiceAgentStore } from '$lib/stores/voiceAgent.svelte';
 
@@ -15,18 +15,11 @@
 	const allEjes: Eje[] = data.allEjes;
 	const allUbicaciones: UbicacionKey[] = data.allUbicaciones || [];
 
-	// Combinar años de metadata con años extraídos de tablaDatos
-	const aniosDeTablas = extraerAniosDeTablas(indicadores);
-	const aniosDeMetadata: number[] = data.allAnios || [];
-	const allAnios = [...new Set([...aniosDeMetadata, ...aniosDeTablas])].sort((a, b) => a - b);
-
 	// Filter states
 	// Nivel padre (indicador): filtro por eje
 	let selectedEje = $state<string>('todos');
-	// Nivel hijo (gráfica): filtros por ubicación y año
+	// Nivel hijo (gráfica): filtro por ubicación
 	let selectedUbicacion = $state<string>('todos');
-	let selectedAnioInicio = $state<string>('todos');
-	let selectedAnioFin = $state<string>('todos');
 	// Filtro adicional por nombre de indicador
 	let selectedIndicador = $state<string>('todos');
 
@@ -92,49 +85,17 @@
 		return allUbicaciones.filter(u => u).sort();
 	});
 
-	// Available años from server data (sorted descending)
-	const anios = $derived(() => {
-		return allAnios.filter(a => a).sort((a, b) => b - a);
-	});
-
-	// Filter graficas within an indicador based on ubicacion and año
+	// Filter graficas within an indicador based on ubicacion
 	function filterGraficas(graficas: GraficaWidget[] | undefined): GraficaWidget[] {
 		if (!graficas) return [];
 
 		return graficas.filter(grafica => {
-			// Filter by ubicacion (nivel gráfica)
 			if (selectedUbicacion !== 'todos') {
 				if (grafica.ubicacion !== selectedUbicacion) return false;
-			}
-			// Filter by rango de años - la gráfica debe tener al menos un año en el rango
-			const anioInicio = selectedAnioInicio !== 'todos' ? parseInt(selectedAnioInicio) : null;
-			const anioFin = selectedAnioFin !== 'todos' ? parseInt(selectedAnioFin) : null;
-
-			if (anioInicio !== null || anioFin !== null) {
-				// Verificar que la gráfica tenga datos en el rango seleccionado
-				const inicio = anioInicio ?? 1900;
-				const fin = anioFin ?? 2100;
-
-				// Usar anioDisponibleEnGrafica para verificar si hay overlap
-				let tieneAnioEnRango = false;
-				for (let a = inicio; a <= fin; a++) {
-					if (anioDisponibleEnGrafica(grafica, a)) {
-						tieneAnioEnRango = true;
-						break;
-					}
-				}
-				if (!tieneAnioEnRango) return false;
 			}
 			return true;
 		});
 	}
-
-	// Computed: rango de años para pasar a las gráficas
-	const rangoAniosActivo = $derived(() => {
-		const inicio = selectedAnioInicio !== 'todos' ? parseInt(selectedAnioInicio) : null;
-		const fin = selectedAnioFin !== 'todos' ? parseInt(selectedAnioFin) : null;
-		return { inicio, fin };
-	});
 
 	// Step 1: Filter indicadores by eje (nivel padre)
 	const indicadoresByEje = $derived(() => {
@@ -153,8 +114,7 @@
 			}))
 			.filter(ind => {
 				// Only show indicadores that have graficas to display
-				if (selectedUbicacion === 'todos' && selectedAnioInicio === 'todos' && selectedAnioFin === 'todos') {
-					// No filters: show only if has any graficas
+				if (selectedUbicacion === 'todos') {
 					return (ind.contenido?.length ?? 0) > 0;
 				}
 				// With filters: show only if has matching graficas
@@ -200,8 +160,6 @@
 	$effect(() => {
 		void selectedUbicacion;
 		void selectedEje;
-		void selectedAnioInicio;
-		void selectedAnioFin;
 		selectedIndicador = 'todos';
 	});
 
@@ -217,7 +175,7 @@
 
 	// Helper to get graficas to show (filtered or all)
 	function getGraficasToShow(indicador: Indicador & { graficasFiltradas: GraficaWidget[] }): GraficaWidget[] {
-		if (selectedUbicacion !== 'todos' || selectedAnioInicio !== 'todos' || selectedAnioFin !== 'todos') {
+		if (selectedUbicacion !== 'todos') {
 			return indicador.graficasFiltradas || [];
 		}
 		return indicador.contenido || [];
@@ -227,12 +185,10 @@
 		selectedUbicacion = 'todos';
 		selectedEje = 'todos';
 		selectedIndicador = 'todos';
-		selectedAnioInicio = 'todos';
-		selectedAnioFin = 'todos';
 	}
 
 	const hasActiveFilters = $derived(() => {
-		return selectedUbicacion !== 'todos' || selectedEje !== 'todos' || selectedIndicador !== 'todos' || selectedAnioInicio !== 'todos' || selectedAnioFin !== 'todos';
+		return selectedUbicacion !== 'todos' || selectedEje !== 'todos' || selectedIndicador !== 'todos';
 	});
 
 	// Voice agent: inicia conversación directamente con el contexto de la gráfica
@@ -342,46 +298,6 @@
 					<option value="todos">Todos los indicadores</option>
 					{#each indicadorNames() as nombre}
 						<option value={nombre}>{nombre}</option>
-					{/each}
-				</select>
-			</div>
-
-			<!-- Año Inicio Filter (nivel gráfica) -->
-			<div class="flex-1 min-w-[100px]">
-				<label class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm font-medium mb-1 block">
-					Año Inicio
-				</label>
-				<div class="h-px {themeStore.isDark ? 'bg-slate-600' : 'bg-slate-300'}"></div>
-				<select
-					bind:value={selectedAnioInicio}
-					class="{themeStore.isDark
-						? 'bg-slate-800 text-white border-slate-800 focus:border-[#d0005f]'
-						: 'bg-slate-50 text-slate-800 border-slate-200 focus:border-orange-500'}
-						w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-colors"
-				>
-					<option value="todos">Desde</option>
-					{#each anios() as anio}
-						<option value={anio.toString()}>{anio}</option>
-					{/each}
-				</select>
-			</div>
-
-			<!-- Año Fin Filter (nivel gráfica) -->
-			<div class="flex-1 min-w-[100px]">
-				<label class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm font-medium mb-1 block">
-					Año Fin
-				</label>
-				<div class="h-px {themeStore.isDark ? 'bg-slate-600' : 'bg-slate-300'}"></div>
-				<select
-					bind:value={selectedAnioFin}
-					class="{themeStore.isDark
-						? 'bg-slate-800 text-white border-slate-800 focus:border-[#d0005f]'
-						: 'bg-slate-50 text-slate-800 border-slate-200 focus:border-orange-500'}
-						w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-colors"
-				>
-					<option value="todos">Hasta</option>
-					{#each anios() as anio}
-						<option value={anio.toString()}>{anio}</option>
 					{/each}
 				</select>
 			</div>
@@ -568,8 +484,6 @@
 													</div>
 													<GraficaConFiltro
 														grafica={grafica}
-														anioInicio={rangoAniosActivo().inicio}
-														anioFin={rangoAniosActivo().fin}
 													/>
 												</div>
 											{/each}
