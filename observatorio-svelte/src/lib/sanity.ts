@@ -454,6 +454,21 @@ export const datosMapaQuery = `
 }
 `;
 
+// Carousel Slides
+export interface CarouselSlide {
+	_id: string;
+	description: string;
+	imageUrl: string;
+}
+
+export const carouselSlidesQuery = `
+*[_type == "carouselSlide"] | order(order asc) {
+  _id,
+  description,
+  "imageUrl": image.asset->url
+}
+`;
+
 // ============================================
 // Utilidades para filtrado de datos por años
 // ============================================

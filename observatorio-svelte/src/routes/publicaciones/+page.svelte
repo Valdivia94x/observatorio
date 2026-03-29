@@ -2,16 +2,34 @@
 	import { themeStore } from '$lib/stores/theme.svelte';
 </script>
 
-<main class="max-w-4xl mx-auto px-6 py-12">
-	<h1 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-4xl md:text-5xl font-bold mb-4 text-center">
-		PUBLICACIONES
-	</h1>
+<main class="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-center px-6 py-12 overflow-hidden">
+	<!-- Background image -->
+	<div class="absolute inset-0">
+		<img
+			src="/images/SSPublicacionesCCI.png"
+			alt=""
+			class="w-full h-full object-cover object-top"
+		/>
+		<!-- Gradient overlay -->
+		<div class="absolute inset-0 {themeStore.isDark
+			? 'bg-gradient-to-b from-slate-900/70 via-slate-900/50 to-slate-900/75'
+			: 'bg-gradient-to-b from-white/50 via-white/30 to-white/60'}">
+		</div>
+	</div>
 
-	<div class="flex flex-col items-center justify-center py-20">
-		<div class="{themeStore.isDark ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'} border rounded-2xl p-10 md:p-14 text-center shadow-lg max-w-2xl w-full">
+	<!-- Content -->
+	<div class="relative z-10 max-w-2xl w-full text-center">
+		<h1 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-4xl md:text-5xl font-bold mb-12 drop-shadow-sm">
+			PUBLICACIONES
+		</h1>
+
+		<div class="{themeStore.isDark
+				? 'bg-slate-800/60 border-slate-600/50'
+				: 'bg-white/70 border-white/50'}
+				border rounded-2xl p-10 md:p-14 text-center backdrop-blur-md shadow-2xl">
 			<!-- Icon -->
 			<div class="mb-6">
-				<svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto text-orange-500 drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
 				</svg>
 			</div>

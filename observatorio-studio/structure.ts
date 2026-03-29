@@ -15,7 +15,7 @@ export const structure = (S: StructureBuilder, context: StructureResolverContext
             .title('Selecciona un Eje')
             .child(async (ejeId) => {
               const indicators: {_id: string; title: string}[] = await client.fetch(
-                `*[_type == "indicador" && eje._ref == $ejeId]|order(title asc){_id, title}`,
+                `*[_type == "indicador" && !(_id in path("drafts.**")) && eje._ref == $ejeId]|order(title asc){_id, title}`,
                 {ejeId},
               )
 
@@ -76,6 +76,18 @@ export const structure = (S: StructureBuilder, context: StructureResolverContext
             .schemaType('datosMapa')
             .documentId('datosMapa')
             .title('Datos del Mapa (Inicio)'),
+        ),
+
+      S.divider(),
+
+      // === CAROUSEL QUIÉNES SOMOS ===
+      S.listItem()
+        .title('🖼️ Carousel ¿Quiénes Somos?')
+        .schemaType('carouselSlide')
+        .child(
+          S.documentTypeList('carouselSlide')
+            .title('Slides del Carousel')
+            .defaultOrdering([{field: 'order', direction: 'asc'}]),
         ),
 
       S.divider(),
