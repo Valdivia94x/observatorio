@@ -300,17 +300,27 @@ export const graficaWidget = defineType({
               type: 'string',
               description: 'Color hexadecimal (ej: #FF5733)',
             }),
+            defineField({
+              name: 'ejeSecundario',
+              title: 'Usar Eje Y Secundario (derecho)',
+              type: 'boolean',
+              description:
+                'Activa esto cuando esta serie tiene una escala muy diferente a las demas (ej: una serie en miles y otra en porcentaje)',
+              initialValue: false,
+            }),
           ],
           preview: {
             select: {
               nombre: 'nombre',
               tipoSerie: 'tipoSerie',
               color: 'color',
+              ejeSecundario: 'ejeSecundario',
             },
-            prepare({nombre, tipoSerie, color}) {
+            prepare({nombre, tipoSerie, color, ejeSecundario}) {
               const tipoIcon = tipoSerie === 'bar' ? '📊' : '📈'
+              const ejeTag = ejeSecundario ? ' [Eje Der.]' : ''
               return {
-                title: `${tipoIcon} ${nombre || 'Serie sin nombre'}`,
+                title: `${tipoIcon} ${nombre || 'Serie sin nombre'}${ejeTag}`,
                 subtitle: color || 'Color automatico',
               }
             },

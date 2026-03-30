@@ -157,6 +157,7 @@ export interface SerieConfig {
 	nombre: string;
 	tipoSerie: 'line' | 'bar';
 	color?: string;
+	ejeSecundario?: boolean;
 }
 
 export interface GraficaWidget {
@@ -336,7 +337,8 @@ export const indicadorByIdQuery = `
       _key,
       nombre,
       tipoSerie,
-      color
+      color,
+      ejeSecundario
     },
     colores,
     // Campos para agente de voz
@@ -379,7 +381,8 @@ export const allIndicadoresWithGraficasQuery = `
       _key,
       nombre,
       tipoSerie,
-      color
+      color,
+      ejeSecundario
     },
     colores,
     // Campos para agente de voz

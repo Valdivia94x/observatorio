@@ -60,6 +60,7 @@
 		nombre: string;
 		tipoSerie: 'line' | 'bar';
 		color?: string;
+		ejeSecundario?: boolean;
 	}
 
 	interface BloqueGrafica {
@@ -127,6 +128,19 @@
 	function isComboChart(): boolean {
 		const { series, tipo } = bloqueGrafica;
 		return (series?.length ?? 0) > 0 && (tipo === 'bar' || tipo === 'line');
+	}
+
+	// Check if any series uses the secondary axis
+	function hasSecondaryAxis(): boolean {
+		return bloqueGrafica.series?.some(s => s.ejeSecundario === true) ?? false;
+	}
+
+	// Get the color of the first series assigned to a given axis
+	function getAxisColor(secondary: boolean): string | undefined {
+		const { series } = bloqueGrafica;
+		if (!series) return undefined;
+		const match = series.find(s => (s.ejeSecundario === true) === secondary);
+		return match?.color;
 	}
 
 	function transformData() {
@@ -210,6 +224,7 @@
 				const config = series.find(s => s.nombre?.toLowerCase() === seriesLabel.toLowerCase()) || series[index];
 				const serieType = config?.tipoSerie || 'bar';
 				const color = config?.color || colorPalette[index % colorPalette.length].border;
+				const useSecondaryAxis = config?.ejeSecundario === true;
 
 				return {
 					type: serieType as 'line' | 'bar',
@@ -226,6 +241,7 @@
 					pointHoverBackgroundColor: '#fff',
 					pointHoverBorderColor: color,
 					order: serieType === 'line' ? 0 : 1, // Lines render on top of bars
+					yAxisID: useSecondaryAxis ? 'y1' : 'y',
 					// No mostrar labels en series de línea (se superponen)
 					datalabels: serieType === 'line' ? { display: false } : undefined,
 				};
@@ -312,6 +328,14 @@
 					borderWidth: 1,
 					cornerRadius: 8,
 					padding: isMobile ? 8 : 12,
+					callbacks: hasSecondaryAxis() ? {
+						label: (context: { dataset: { label?: string; yAxisID?: string }; parsed: { y: number } }) => {
+							const label = context.dataset.label || '';
+							const value = context.parsed.y?.toLocaleString('es-MX') ?? '';
+							const axis = context.dataset.yAxisID === 'y1' ? ' (eje der.)' : '';
+							return `${label}: ${value}${axis}`;
+						}
+					} : undefined,
 				},
 				datalabels: {
 					// Ocultar data labels en móvil para evitar superposición
@@ -353,7 +377,11 @@
 			}
 			const isHorizontalBar = bloqueGrafica.tipo === 'horizontalBar';
 
-			baseOptions.scales = {
+			const dualAxis = hasSecondaryAxis();
+			const primaryColor = dualAxis ? getAxisColor(false) : undefined;
+			const secondaryColor = dualAxis ? getAxisColor(true) : undefined;
+
+			const scales: Record<string, unknown> = {
 				x: {
 					title: {
 						display: !isMobile,
@@ -378,10 +406,11 @@
 					}
 				},
 				y: {
+					position: 'left',
 					title: {
 						display: !isMobile,
 						text: isHorizontalBar ? 'Período' : unidadLabel,
-						color: textColor,
+						color: primaryColor || textColor,
 						font: {
 							size: 14,
 							weight: 'bold' as const
@@ -391,7 +420,7 @@
 						color: gridColor,
 					},
 					ticks: {
-						color: textColor,
+						color: primaryColor || textColor,
 						font: {
 							size: isMobile ? 10 : 15
 						}
@@ -399,6 +428,38 @@
 					beginAtZero: true,
 				}
 			};
+
+			// Add secondary Y axis if any series uses it
+			if (dualAxis) {
+				// Find the name of the secondary series to use as axis label
+				const secondarySerie = bloqueGrafica.series?.find(s => s.ejeSecundario);
+				const secondaryLabel = secondarySerie?.nombre || 'Eje secundario';
+
+				scales.y1 = {
+					position: 'right',
+					title: {
+						display: !isMobile,
+						text: secondaryLabel,
+						color: secondaryColor || textColor,
+						font: {
+							size: 14,
+							weight: 'bold' as const
+						}
+					},
+					grid: {
+						drawOnChartArea: false, // No dibujar grid del eje secundario para evitar ruido visual
+					},
+					ticks: {
+						color: secondaryColor || textColor,
+						font: {
+							size: isMobile ? 10 : 15
+						}
+					},
+					beginAtZero: true,
+				};
+			}
+
+			baseOptions.scales = scales;
 
 			// Horizontal bar configuration
 			if (isHorizontalBar) {
