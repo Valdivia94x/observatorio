@@ -242,8 +242,11 @@
 					pointHoverBorderColor: color,
 					order: serieType === 'line' ? 0 : 1, // Lines render on top of bars
 					yAxisID: useSecondaryAxis ? 'y1' : 'y',
-					// No mostrar labels en series de línea (se superponen)
-					datalabels: serieType === 'line' ? { display: false } : undefined,
+					datalabels: serieType === 'line'
+						? { display: false }
+						: hasSecondaryAxis()
+							? { anchor: 'center' as const, align: 'center' as const, color: '#fff', font: { size: 10, weight: 600 as const } }
+							: undefined,
 				};
 			}
 
