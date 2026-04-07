@@ -317,7 +317,7 @@
 						weight: 'bold'
 					},
 					padding: {
-						bottom: isMobile ? 6 : 10
+						bottom: isMobile ? 12 : 20
 					}
 				},
 				tooltip: {
@@ -514,10 +514,23 @@
 		}
 
 		try {
+			// Plugin to add spacing between legend and chart area
+			const legendSpacingPlugin = {
+				id: 'legendSpacing',
+				beforeInit(chart: any) {
+					const originalFit = chart.legend.fit;
+					chart.legend.fit = function fit() {
+						originalFit.call(this);
+						this.height += isMobile ? 16 : 30;
+					};
+				}
+			};
+
 			chartInstance = new Chart(ctx, {
 				type: getChartType(),
 				data: { labels, datasets },
-				options: getChartOptions() as Record<string, unknown>
+				options: getChartOptions() as Record<string, unknown>,
+				plugins: [legendSpacingPlugin]
 			});
 			error = null;
 		} catch (e) {
