@@ -2,6 +2,7 @@ import type {IndicadorParser} from './types'
 import {parseRezagoEducativo} from './parsers/rezagoEducativo'
 import {parseResultadosPlanea} from './parsers/resultadosPlanea'
 import {parseNivelEscolaridad} from './parsers/nivelEscolaridad'
+import {parseMatriculaUniversitaria} from './parsers/matriculaUniversitaria'
 
 // Registry: maps indicator name (lowercase) to its parser
 const registry = new Map<string, IndicadorParser>()
@@ -14,6 +15,7 @@ function register(name: string, parser: IndicadorParser) {
 register('Rezago Educativo', parseRezagoEducativo)
 register('Resultados PLANEA', parseResultadosPlanea)
 register('Nivel de Escolaridad', parseNivelEscolaridad)
+register('Matrícula Universitaria', parseMatriculaUniversitaria)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {
