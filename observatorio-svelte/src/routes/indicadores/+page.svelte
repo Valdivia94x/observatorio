@@ -25,12 +25,14 @@
 	// Flag para evitar que el $effect resetee indicador durante la inicialización desde query params
 	let initialized = $state(false);
 
-	// Read query params on mount
+	// Defaults
+	const DEFAULT_EJE = 'Desarrollo Urbano';
+	const DEFAULT_INDICADOR = 'Crecimiento poblacional';
+
+	// Read query params on mount (fallback to defaults)
 	onMount(() => {
 		const ejeParam = $page.url.searchParams.get('eje');
-		if (ejeParam) {
-			selectedEje = ejeParam;
-		}
+		selectedEje = ejeParam || DEFAULT_EJE;
 
 		const ubicacionParam = $page.url.searchParams.get('ubicacion');
 		if (ubicacionParam) {
@@ -45,14 +47,11 @@
 		}
 
 		const indicadorParam = $page.url.searchParams.get('indicador');
-		if (indicadorParam) {
-			requestAnimationFrame(() => {
-				selectedIndicador = indicadorParam;
-				setTimeout(() => { initialized = true; }, 0);
-			});
-		} else {
+		const indicadorValue = indicadorParam || DEFAULT_INDICADOR;
+		requestAnimationFrame(() => {
+			selectedIndicador = indicadorValue;
 			setTimeout(() => { initialized = true; }, 0);
-		}
+		});
 	});
 
 	// Map MunicipioKey to ubicacion values (for interactive map)
@@ -229,6 +228,17 @@
 			.replace(/[^a-z0-9-]/g, '');
 	}
 
+	// Detectar si una gráfica es estatal (ranking de estado completo)
+	function isEstatalGrafica(grafica: GraficaWidget): boolean {
+		return grafica.tipo === 'horizontalBar' &&
+			(grafica.ubicacion?.some(u => u.startsWith('estatal-')) ?? false);
+	}
+
+	// Detectar si un indicador tiene al menos una gráfica estatal visible
+	function hasEstatalGrafica(indicador: any): boolean {
+		return getGraficasToShow(indicador).some((g: GraficaWidget) => isEstatalGrafica(g));
+	}
+
 	// Enriquecer el contexto del agente de voz con los filtros e ejes disponibles
 	$effect(() => {
 		// Solo actualizar contexto de página si no hay gráfica activa
@@ -335,7 +345,7 @@
 	<div class="max-w-7xl mx-auto px-6">
 	<div class="flex flex-col lg:flex-row gap-8">
 		<!-- Left column: Interactive Map (sticky on desktop) -->
-		<div class="lg:w-1/3 lg:sticky lg:top-24 lg:self-start space-y-4">
+		<div class="lg:w-1/3 lg:self-start space-y-4">
 			<!-- Indicador y Eje seleccionado -->
 			<div class="{themeStore.isDark ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-4 shadow-lg">
 				<p class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} font-bold text-lg">
@@ -408,14 +418,13 @@
 						<!-- Indicadores Grid (single column within right section) -->
 						<div class="space-y-6">
 							{#each ejeData.items as indicador}
-								<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-3 shadow-lg">
-									<!-- Indicador Title -->
+								<!-- Indicador Header -->
+								<div class="mb-2">
 									<h3 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-xl font-bold mb-2">
 										{indicador.title}
 									</h3>
 
-									<!-- Metadata -->
-									<div class="flex flex-wrap gap-2 mb-4">
+									<div class="flex flex-wrap gap-2">
 										{#if indicador.rangoCobertura}
 											<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
 												{indicador.rangoCobertura}
@@ -428,82 +437,76 @@
 										{/if}
 									</div>
 
-									<!-- Info Adicional -->
 									{#if indicador.infoAdicional}
-										<div class="{themeStore.isDark ? 'bg-slate-800/50 border-slate-600' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mb-4">
+										<div class="{themeStore.isDark ? 'bg-slate-800/50 border-slate-600' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mt-3">
 											<p class="{themeStore.isDark ? 'text-slate-300' : 'text-amber-900'} text-sm">
 												{indicador.infoAdicional}
 											</p>
 										</div>
 									{/if}
-
-									<!-- Charts (using graficasFiltradas) -->
-									{#if getGraficasToShow(indicador).length > 0}
-										<div class="space-y-6">
-											{#each getGraficasToShow(indicador) as grafica (grafica._key)}
-												<div class="{themeStore.isDark ? 'bg-slate-800/50' : 'bg-slate-50'} rounded-xl px-4 py-2 relative group">
-													<!-- Voice button: click to start conversation about this chart -->
-													<button
-														onclick={() => askAboutGrafica(grafica, indicador.title || '')}
-														disabled={isVoiceLoading && isActiveForVoice(grafica)}
-														class="absolute top-2 right-2 p-2 rounded-full transition-all duration-200 z-10
-															{isActiveForVoice(grafica) && isVoiceConnected
-																? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg ring-2 ring-green-400/50'
-																: isActiveForVoice(grafica) && isVoiceLoading
-																	? 'bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-lg animate-pulse'
-																	: themeStore.isDark
-																		? 'bg-slate-700 text-slate-400 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'
-																		: 'bg-slate-200 text-slate-500 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'}"
-														title={isActiveForVoice(grafica) && isVoiceConnected
-															? 'Conversación activa'
-															: isActiveForVoice(grafica) && isVoiceLoading
-																? 'Conectando...'
-																: 'Preguntar sobre esta gráfica'}
-													>
-														{#if isActiveForVoice(grafica) && isVoiceLoading}
-															<!-- Loading spinner -->
-															<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-																<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-																<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-															</svg>
-														{:else if isActiveForVoice(grafica) && isVoiceConnected}
-															<!-- Connected indicator (sound waves) -->
-															<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-																<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-															</svg>
-														{:else}
-															<!-- Microphone icon -->
-															<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-																<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93h2c0 2.76 2.24 5 5 5s5-2.24 5-5h2c0 4.08-3.06 7.44-7 7.93V19h4v2H8v-2h4v-3.07z"/>
-															</svg>
-														{/if}
-													</button>
-
-													<div class="flex flex-wrap gap-2 mb-1">
-														{#if grafica.ubicacion?.length}
-															<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
-																{grafica.ubicacion.map(u => getUbicacionLabel(u)).join(', ')}
-															</span>
-														{/if}
-														{#if formatearPeriodoGrafica(grafica)}
-															<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
-																• {formatearPeriodoGrafica(grafica)}
-															</span>
-														{/if}
-														{#if grafica.periodoEspecifico}
-															<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
-																• {grafica.periodoEspecifico}
-															</span>
-														{/if}
-													</div>
-													<GraficaConFiltro
-														grafica={grafica}
-													/>
-												</div>
-											{/each}
-										</div>
-									{/if}
 								</div>
+
+								<!-- Individual Chart Cards -->
+								{#if getGraficasToShow(indicador).length > 0}
+									{#each getGraficasToShow(indicador) as grafica (grafica._key)}
+										<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isEstatalGrafica(grafica) ? 'estatal-full-bleed' : ''}">
+											<!-- Voice button -->
+											<button
+												onclick={() => askAboutGrafica(grafica, indicador.title || '')}
+												disabled={isVoiceLoading && isActiveForVoice(grafica)}
+												class="absolute top-3 right-3 p-2 rounded-full transition-all duration-200 z-10
+													{isActiveForVoice(grafica) && isVoiceConnected
+														? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg ring-2 ring-green-400/50'
+														: isActiveForVoice(grafica) && isVoiceLoading
+															? 'bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-lg animate-pulse'
+															: themeStore.isDark
+																? 'bg-slate-700 text-slate-400 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'
+																: 'bg-slate-200 text-slate-500 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'}"
+												title={isActiveForVoice(grafica) && isVoiceConnected
+													? 'Conversación activa'
+													: isActiveForVoice(grafica) && isVoiceLoading
+														? 'Conectando...'
+														: 'Preguntar sobre esta gráfica'}
+											>
+												{#if isActiveForVoice(grafica) && isVoiceLoading}
+													<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+														<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+														<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+													</svg>
+												{:else if isActiveForVoice(grafica) && isVoiceConnected}
+													<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+														<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+													</svg>
+												{:else}
+													<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+														<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93h2c0 2.76 2.24 5 5 5s5-2.24 5-5h2c0 4.08-3.06 7.44-7 7.93V19h4v2H8v-2h4v-3.07z"/>
+													</svg>
+												{/if}
+											</button>
+
+											<div class="flex flex-wrap gap-2 mb-1">
+												{#if grafica.ubicacion?.length}
+													<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
+														{grafica.ubicacion.map(u => getUbicacionLabel(u)).join(', ')}
+													</span>
+												{/if}
+												{#if formatearPeriodoGrafica(grafica)}
+													<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
+														• {formatearPeriodoGrafica(grafica)}
+													</span>
+												{/if}
+												{#if grafica.periodoEspecifico}
+													<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
+														• {grafica.periodoEspecifico}
+													</span>
+												{/if}
+											</div>
+											<GraficaConFiltro
+												grafica={grafica}
+											/>
+										</div>
+									{/each}
+								{/if}
 							{/each}
 						</div>
 					</section>
@@ -513,3 +516,17 @@
 	</div>
 	</div>
 </main>
+
+<style>
+	@media (min-width: 1024px) {
+		:global(.estatal-full-bleed) {
+			margin-left: calc(-50% - 2rem);
+			width: calc(150% + 2rem);
+			position: relative;
+			z-index: 10;
+		}
+		:global(.estatal-full-bleed.bg-slate-700\/50) {
+			background-color: rgb(51 65 85) !important;
+		}
+	}
+</style>

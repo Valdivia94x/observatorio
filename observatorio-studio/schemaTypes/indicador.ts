@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {ContenidoArrayInput} from '../components/ContenidoArrayInput'
 
 export const indicador = defineType({
   name: 'indicador',
@@ -71,7 +72,10 @@ export const indicador = defineType({
       description: 'Agrega una o mas graficas. Cada grafica tiene sus propios filtros de ubicacion y años.',
       options: {
         modal: { type: 'dialog', width: 'auto' },
-      }
+      },
+      components: {
+        input: ContenidoArrayInput,
+      },
     }),
   ],
   preview: {
