@@ -28,7 +28,7 @@ register('Indicadores básicos de secundaria', parseIndicadoresSecundaria)
 register('Indicadores básicos de primaria', parseIndicadoresPrimaria)
 register('Indicadores básicos de preescolar', parseIndicadoresPreescolar)
 register('Indicadores básicos de media superior', parseIndicadoresMediaSuperior)
-register('Egresados universitarios por género y sostenimiento', parseEgresadosUniversitarios)
+register('Egresados Universitarios', parseEgresadosUniversitarios)
 register('Egresados Posgrado', parseEgresadosPosgrado)
 
 // === Public API ===
