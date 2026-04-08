@@ -239,6 +239,12 @@
 		return getGraficasToShow(indicador).some((g: GraficaWidget) => isEstatalGrafica(g));
 	}
 
+	// Detectar si TODAS las gráficas visibles son estatales (para cambiar layout)
+	const allGraficasAreEstatal = $derived(() => {
+		const allGraficas = finalFilteredIndicadores().flatMap(ind => getGraficasToShow(ind));
+		return allGraficas.length > 0 && allGraficas.every(g => isEstatalGrafica(g));
+	});
+
 	// Enriquecer el contexto del agente de voz con los filtros e ejes disponibles
 	$effect(() => {
 		// Solo actualizar contexto de página si no hay gráfica activa
@@ -341,11 +347,11 @@
 		</div>
 	</div>
 
-	<!-- Two-column layout: Map on left, Charts on right -->
+	<!-- Layout: side-by-side (default) or stacked (all estatal) -->
 	<div class="max-w-7xl mx-auto px-6">
-	<div class="flex flex-col lg:flex-row gap-8">
-		<!-- Left column: Interactive Map (sticky on desktop) -->
-		<div class="lg:w-1/3 lg:self-start space-y-4">
+	<div class="{allGraficasAreEstatal() ? 'flex flex-col items-center gap-8' : 'flex flex-col lg:flex-row gap-8'}">
+		<!-- Map column -->
+		<div class="{allGraficasAreEstatal() ? 'w-full max-w-sm space-y-4' : 'lg:w-1/3 lg:self-start space-y-4'}">
 			<!-- Indicador y Eje seleccionado -->
 			<div class="{themeStore.isDark ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-4 shadow-lg">
 				<p class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} font-bold text-lg">
@@ -389,8 +395,8 @@
 			</div>
 		</div>
 
-		<!-- Right column: Charts -->
-		<div class="lg:w-2/3">
+		<!-- Charts column -->
+		<div class="{allGraficasAreEstatal() ? 'w-full' : 'lg:w-2/3'}">
 			{#if finalFilteredIndicadores().length === 0}
 				<div class="text-center py-16">
 					<svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto mb-4 {themeStore.isDark ? 'text-slate-600' : 'text-slate-300'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -449,7 +455,7 @@
 								<!-- Individual Chart Cards -->
 								{#if getGraficasToShow(indicador).length > 0}
 									{#each getGraficasToShow(indicador) as grafica (grafica._key)}
-										<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isEstatalGrafica(grafica) ? 'estatal-full-bleed' : ''}">
+										<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isEstatalGrafica(grafica) && !allGraficasAreEstatal() ? 'estatal-full-bleed' : ''}">
 											<!-- Voice button -->
 											<button
 												onclick={() => askAboutGrafica(grafica, indicador.title || '')}
