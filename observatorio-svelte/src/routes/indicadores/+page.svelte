@@ -167,9 +167,8 @@
 		return groups;
 	});
 
-	// Reset indicador filter when other filters change (skip during init from query params)
+	// Reset indicador filter when eje changes (skip during init from query params)
 	$effect(() => {
-		void selectedUbicacion;
 		void selectedEje;
 		if (untrack(() => initialized)) {
 			selectedIndicador = 'todos';
