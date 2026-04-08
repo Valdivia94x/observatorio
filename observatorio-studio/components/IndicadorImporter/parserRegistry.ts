@@ -27,7 +27,7 @@ register('Indicadores básicos de secundaria', parseIndicadoresSecundaria)
 register('Indicadores básicos de primaria', parseIndicadoresPrimaria)
 register('Indicadores básicos de preescolar', parseIndicadoresPreescolar)
 register('Indicadores básicos de media superior', parseIndicadoresMediaSuperior)
-register('Egresados Universitarios', parseEgresadosUniversitarios)
+register('Egresados universitarios por género y sostenimiento', parseEgresadosUniversitarios)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {
