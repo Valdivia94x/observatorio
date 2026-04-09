@@ -384,6 +384,10 @@
 			const dualAxis = hasSecondaryAxis();
 			const primaryColor = dualAxis ? getAxisColor(false) : undefined;
 			const secondaryColor = dualAxis ? getAxisColor(true) : undefined;
+			// Use primary series name as left axis label when dual-axis
+			const primarySerieLabel = dualAxis
+				? bloqueGrafica.series?.find(s => !s.ejeSecundario)?.nombre
+				: undefined;
 
 			const scales: Record<string, unknown> = {
 				x: {
@@ -413,7 +417,7 @@
 					position: 'left',
 					title: {
 						display: !isMobile,
-						text: isHorizontalBar ? 'Período' : unidadLabel,
+						text: isHorizontalBar ? 'Período' : (primarySerieLabel || unidadLabel),
 						color: primaryColor || textColor,
 						font: {
 							size: 14,
