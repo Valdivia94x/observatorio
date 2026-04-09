@@ -14,6 +14,8 @@ import {parseAniosEscolaridad} from './parsers/aniosEscolaridad'
 import {parseIndicadoresOcupacion} from './parsers/indicadoresOcupacion'
 import {parseIndicadoresDesocupacion} from './parsers/indicadoresDesocupacion'
 import {parseTrabajadoresIMSS} from './parsers/trabajadoresIMSS'
+import {parseSalariosIMSS} from './parsers/salariosIMSS'
+import {parsePatronesIMSS} from './parsers/patronesIMSS'
 
 // Registry: maps indicator name (lowercase) to its parser
 const registry = new Map<string, IndicadorParser>()
@@ -38,6 +40,8 @@ register('Años promedio de escolaridad', parseAniosEscolaridad)
 register('Indicadores de Ocupación', parseIndicadoresOcupacion)
 register('Indicadores de Desocupación', parseIndicadoresDesocupacion)
 register('Trabajadores registrados en el IMSS', parseTrabajadoresIMSS)
+register('Salarios de trabajadores registrados en el IMSS', parseSalariosIMSS)
+register('Patrones Asegurados IMSS', parsePatronesIMSS)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {

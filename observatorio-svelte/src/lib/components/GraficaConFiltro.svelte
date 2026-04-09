@@ -1,5 +1,6 @@
 <script lang="ts">
 	import UniversalChart from './UniversalChart.svelte';
+	import ChartModal from './ChartModal.svelte';
 	import type { GraficaWidget } from '$lib/sanity';
 	import { getFuente } from '$lib/sanity';
 
@@ -8,13 +9,23 @@
 	}
 
 	let { grafica }: Props = $props();
+
+	let showModal = $state(false);
 </script>
 
 <div class="grafica-con-filtro">
-	<!-- Chart -->
-	{#key grafica._key}
-		<UniversalChart bloqueGrafica={grafica} />
-	{/key}
+	<!-- Chart (clickable) -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="cursor-pointer transition-opacity hover:opacity-80"
+		onclick={() => showModal = true}
+		title="Click para ampliar"
+	>
+		{#key grafica._key}
+			<UniversalChart bloqueGrafica={grafica} />
+		{/key}
+	</div>
 
 	<!-- Descripción y Fuente -->
 	{#if grafica.descripcionContexto || grafica.fuente}
@@ -32,3 +43,8 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Modal -->
+{#if showModal}
+	<ChartModal grafica={grafica} onClose={() => showModal = false} />
+{/if}

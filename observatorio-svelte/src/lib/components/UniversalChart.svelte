@@ -349,6 +349,7 @@
 					},
 					align: (context: { datasetIndex: number; dataset: { type?: string } }) => {
 						if (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') return 'center';
+						if (bloqueGrafica.tipo === 'horizontalBar') return 'end';
 						return 'top';
 					},
 					offset: (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') ? 0 : 6,

@@ -164,6 +164,15 @@
 			groups[ejeTitle].items.push(indicador);
 		});
 
+		// Sort: indicators with only estatal charts go last within each group
+		for (const group of Object.values(groups)) {
+			group.items.sort((a, b) => {
+				const aAllEstatal = getGraficasToShow(a).length > 0 && getGraficasToShow(a).every(g => isEstatalGrafica(g)) ? 1 : 0;
+				const bAllEstatal = getGraficasToShow(b).length > 0 && getGraficasToShow(b).every(g => isEstatalGrafica(g)) ? 1 : 0;
+				return aAllEstatal - bAllEstatal;
+			});
+		}
+
 		return groups;
 	});
 
@@ -185,12 +194,17 @@
 		return periodicidadLabels[key] || key;
 	}
 
-	// Helper to get graficas to show (filtered or all)
+	// Helper to get graficas to show (filtered or all), estatal charts always last
 	function getGraficasToShow(indicador: Indicador & { graficasFiltradas: GraficaWidget[] }): GraficaWidget[] {
-		if (selectedUbicacion !== 'todos') {
-			return indicador.graficasFiltradas || [];
-		}
-		return indicador.contenido || [];
+		const graficas = selectedUbicacion !== 'todos'
+			? (indicador.graficasFiltradas || [])
+			: (indicador.contenido || []);
+
+		return [...graficas].sort((a, b) => {
+			const aEstatal = isEstatalGrafica(a) ? 1 : 0;
+			const bEstatal = isEstatalGrafica(b) ? 1 : 0;
+			return aEstatal - bEstatal;
+		});
 	}
 
 	function clearFilters() {
