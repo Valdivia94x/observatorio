@@ -124,6 +124,30 @@
 		return hex;
 	}
 
+	// Wrap a long label into multiple lines of max `maxWidth` chars
+	function wrapLabel(label: string, maxWidth: number): string[] {
+		if (label.length <= maxWidth) return [label];
+		const words = label.split(/\s+/);
+		const lines: string[] = [];
+		let current = '';
+		for (const word of words) {
+			if (current && (current + ' ' + word).length > maxWidth) {
+				lines.push(current);
+				current = word;
+			} else {
+				current = current ? current + ' ' + word : word;
+			}
+		}
+		if (current) lines.push(current);
+		return lines;
+	}
+
+	// Determine if labels are "short" (should rotate) or "long" (should wrap)
+	function hasLongLabels(labels: string[]): boolean {
+		const avgLength = labels.reduce((sum, l) => sum + l.length, 0) / (labels.length || 1);
+		return avgLength > 10;
+	}
+
 	// Check if this is a combo chart
 	function isComboChart(): boolean {
 		const { series, tipo } = bloqueGrafica;
@@ -181,6 +205,11 @@
 			labels = headerRow;
 			dataStartIndex = 0;
 		}
+
+		// Wrap long labels into multiline arrays for Chart.js
+		const processedLabels: (string | string[])[] = hasLongLabels(labels)
+			? labels.map(l => wrapLabel(l, isMobile ? 12 : 16))
+			: labels;
 
 		const isPieOrDoughnut = tipo === 'doughnut' || tipo === 'pie';
 		const comboChart = isComboChart();
@@ -270,7 +299,7 @@
 			};
 		});
 
-		return { labels, datasets };
+		return { labels: processedLabels, datasets };
 	}
 
 	function getChartType(): 'bar' | 'line' | 'doughnut' | 'radar' | 'pie' {
@@ -292,6 +321,10 @@
 		const isDark = themeStore.isDark;
 		const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 		const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+		// Check if X-axis labels are long (for rotation vs wrap decision)
+		const rawLabels = bloqueGrafica.tablaDatos?.rows?.[0]?.cells?.slice(1) || [];
+		const labelsAreLong = hasLongLabels(rawLabels);
 
 		const baseOptions: Record<string, unknown> = {
 			responsive: true,
@@ -406,9 +439,10 @@
 					ticks: {
 						color: textColor,
 						font: {
-							size: isMobile ? 10 : 15
+							size: isMobile ? 9 : 12
 						},
-						maxRotation: isMobile ? 45 : 45,
+						maxRotation: labelsAreLong ? 0 : 90,
+						minRotation: labelsAreLong ? 0 : 90,
 						autoSkip: isMobile,
 						maxTicksLimit: isMobile ? 8 : undefined,
 					}
