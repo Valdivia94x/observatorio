@@ -176,11 +176,12 @@
 		return groups;
 	});
 
-	// Reset indicador filter when eje changes (skip during init from query params)
+	// Select first indicador when eje changes (skip during init from query params)
 	$effect(() => {
 		void selectedEje;
 		if (untrack(() => initialized)) {
-			selectedIndicador = 'todos';
+			const names = indicadorNames();
+			selectedIndicador = names.length > 0 ? names[0] : '';
 		}
 	});
 
@@ -194,28 +195,33 @@
 		return periodicidadLabels[key] || key;
 	}
 
+	// Check if a grafica is ZML (has all 4 municipalities)
+	function isZmlGrafica(grafica: GraficaWidget): boolean {
+		const ub = grafica.ubicacion || [];
+		return ub.length >= 4 &&
+			ub.includes('torreon') && ub.includes('gomez-palacio') &&
+			ub.includes('lerdo') && ub.includes('matamoros');
+	}
+
 	// Helper to get graficas to show (filtered or all), estatal charts always last
 	function getGraficasToShow(indicador: Indicador & { graficasFiltradas: GraficaWidget[] }): GraficaWidget[] {
 		const graficas = selectedUbicacion !== 'todos'
 			? (indicador.graficasFiltradas || [])
 			: (indicador.contenido || []);
 
-		return [...graficas].sort((a, b) => {
+		// Hide ZML charts when municipal charts exist for the same indicator
+		const hasMunicipal = graficas.some(g => !isZmlGrafica(g) && !isEstatalGrafica(g));
+		const filtered = hasMunicipal
+			? graficas.filter(g => !isZmlGrafica(g))
+			: graficas;
+
+		return [...filtered].sort((a, b) => {
 			const aEstatal = isEstatalGrafica(a) ? 1 : 0;
 			const bEstatal = isEstatalGrafica(b) ? 1 : 0;
 			return aEstatal - bEstatal;
 		});
 	}
 
-	function clearFilters() {
-		selectedUbicacion = 'todos';
-		selectedEje = 'todos';
-		selectedIndicador = 'todos';
-	}
-
-	const hasActiveFilters = $derived(() => {
-		return selectedUbicacion !== 'todos' || selectedEje !== 'todos' || selectedIndicador !== 'todos';
-	});
 
 	// Voice agent: inicia conversación directamente con el contexto de la gráfica
 	function askAboutGrafica(grafica: GraficaWidget, indicadorTitle: string) {
@@ -318,7 +324,6 @@
 						: 'bg-slate-50 text-slate-800 border-slate-200 focus:border-orange-500'}
 						w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-colors"
 				>
-					<option value="todos">Todos los ejes</option>
 					{#each ejes() as eje}
 						<option value={eje}>{eje}</option>
 					{/each}
@@ -338,24 +343,12 @@
 						: 'bg-slate-50 text-slate-800 border-slate-200 focus:border-orange-500'}
 						w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-colors"
 				>
-					<option value="todos">Todos los indicadores</option>
 					{#each indicadorNames() as nombre}
 						<option value={nombre}>{nombre}</option>
 					{/each}
 				</select>
 			</div>
 
-			<!-- Clear Filters Button -->
-			{#if hasActiveFilters()}
-				<div class="flex items-end">
-					<button
-						onclick={clearFilters}
-						class="px-4 py-2 text-sm font-medium text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
-					>
-						Limpiar filtros
-					</button>
-				</div>
-			{/if}
 			</div>
 		</div>
 	</div>
@@ -416,20 +409,8 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
 					</svg>
 					<p class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-lg mb-2">
-						{#if hasActiveFilters()}
-							No se encontraron indicadores con los filtros seleccionados.
-						{:else}
-							No hay indicadores disponibles por el momento.
-						{/if}
+						No hay indicadores disponibles por el momento.
 					</p>
-					{#if hasActiveFilters()}
-						<button
-							onclick={clearFilters}
-							class="text-orange-500 hover:text-orange-400 text-sm font-medium"
-						>
-							Limpiar filtros
-						</button>
-					{/if}
 				</div>
 			{:else}
 				{#each Object.entries(groupedIndicadores()) as [categoria, ejeData]}

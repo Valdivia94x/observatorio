@@ -431,7 +431,8 @@
 						font: {
 							size: 14,
 							weight: 'bold' as const
-						}
+						},
+						padding: {top: 15}
 					},
 					grid: {
 						color: gridColor,
