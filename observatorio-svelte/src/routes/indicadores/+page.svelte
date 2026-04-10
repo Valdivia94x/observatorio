@@ -133,11 +133,11 @@
 			});
 	});
 
-	// Filtered indicadores names (depends on eje filter)
+	// Indicador names depend only on eje filter, not ubicacion
 	const indicadorNames = $derived(() => {
 		const unique = new Set<string>();
-		indicadoresConGraficasFiltradas().forEach(ind => {
-			if (ind.title) unique.add(ind.title);
+		indicadoresByEje().forEach(ind => {
+			if (ind.title && (ind.contenido?.length ?? 0) > 0) unique.add(ind.title);
 		});
 		return Array.from(unique).sort();
 	});
@@ -180,7 +180,7 @@
 	$effect(() => {
 		void selectedEje;
 		if (untrack(() => initialized)) {
-			const names = indicadorNames();
+			const names = untrack(() => indicadorNames());
 			selectedIndicador = names.length > 0 ? names[0] : '';
 		}
 	});
