@@ -487,6 +487,21 @@
 				const secondarySerie = bloqueGrafica.series?.find(s => s.ejeSecundario);
 				const secondaryLabel = secondarySerie?.nombre || 'Eje secundario';
 
+				// Calculate max for secondary axis (double the max value so line stays at mid-height)
+				const rows = bloqueGrafica.tablaDatos?.rows || [];
+				const seriesNames = bloqueGrafica.series?.filter(s => s.ejeSecundario).map(s => s.nombre.toLowerCase()) || [];
+				let secondaryMax: number | undefined;
+				for (const row of rows.slice(1)) {
+					if (seriesNames.includes(row.cells[0]?.toLowerCase())) {
+						for (const val of row.cells.slice(1)) {
+							const num = parseFloat(val);
+							if (!isNaN(num) && (secondaryMax === undefined || num > secondaryMax)) {
+								secondaryMax = num;
+							}
+						}
+					}
+				}
+
 				scales.y1 = {
 					position: 'right',
 					title: {
@@ -499,7 +514,7 @@
 						}
 					},
 					grid: {
-						drawOnChartArea: false, // No dibujar grid del eje secundario para evitar ruido visual
+						drawOnChartArea: false,
 					},
 					ticks: {
 						color: secondaryColor || textColor,
@@ -508,6 +523,7 @@
 						}
 					},
 					beginAtZero: true,
+					max: secondaryMax !== undefined ? Math.ceil(secondaryMax * 2) : undefined,
 				};
 			}
 
