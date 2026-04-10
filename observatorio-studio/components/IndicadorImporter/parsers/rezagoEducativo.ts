@@ -191,7 +191,7 @@ function parseRankingEstatales(sheet: XLSX.Sheet): GeneratedGrafica[] {
 
     graficas.push({
       titulo: `Ranking de Rezago Educativo en ${config.estado}`,
-      tipo: 'horizontalBar',
+      tipo: 'bar',
       ubicacion: config.ubicacion,
       tablaDatos,
       unidadMedida: 'porcentaje',

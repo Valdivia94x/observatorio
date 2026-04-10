@@ -249,8 +249,7 @@
 
 	// Detectar si una gráfica es estatal (ranking de estado completo)
 	function isEstatalGrafica(grafica: GraficaWidget): boolean {
-		return grafica.tipo === 'horizontalBar' &&
-			(grafica.ubicacion?.some(u => u.startsWith('estatal-')) ?? false);
+		return grafica.ubicacion?.some(u => u.startsWith('estatal-')) ?? false;
 	}
 
 	// Detectar si un indicador tiene al menos una gráfica estatal visible

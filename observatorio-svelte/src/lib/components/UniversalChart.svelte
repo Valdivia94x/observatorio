@@ -144,7 +144,9 @@
 	}
 
 	// Determine if labels are "short" (should rotate) or "long" (should wrap)
+	// Many labels (>15) always rotate regardless of length
 	function hasLongLabels(labels: string[]): boolean {
+		if (labels.length > 15) return false;
 		const avgLength = labels.reduce((sum, l) => sum + l.length, 0) / (labels.length || 1);
 		return avgLength > 10;
 	}

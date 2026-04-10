@@ -62,7 +62,7 @@ export function parseAniosEscolaridad(workbook: XLSX.WorkBook): GeneratedGrafica
 
     graficas.push({
       titulo: `Años Promedio de Escolaridad en ${config.estado}`,
-      tipo: 'horizontalBar',
+      tipo: 'bar',
       ubicacion: config.ubicacion,
       tablaDatos,
       unidadMedida: 'otro',
