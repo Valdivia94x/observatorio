@@ -328,7 +328,7 @@
 
 		const baseOptions: Record<string, unknown> = {
 			responsive: true,
-			maintainAspectRatio: !isMobile,
+			maintainAspectRatio: false,
 			plugins: {
 				legend: {
 					display: shouldShowLegend(),
@@ -692,7 +692,7 @@
 		<div
 			class="relative"
 			class:hidden={!chartModulesLoaded || !!error}
-			style="min-height: {isMobile ? '300px' : '250px'};"
+			style="min-height: {isMobile ? '350px' : '400px'};"
 		>
 			<canvas bind:this={canvas}></canvas>
 		</div>
