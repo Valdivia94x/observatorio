@@ -75,9 +75,10 @@
 
 	interface Props {
 		bloqueGrafica: BloqueGrafica;
+		fillHeight?: boolean;
 	}
 
-	let { bloqueGrafica }: Props = $props();
+	let { bloqueGrafica, fillHeight = false }: Props = $props();
 
 	// Table mode: render HTML table instead of Chart.js
 	const isTable = $derived(bloqueGrafica.tipo === 'table');
@@ -633,7 +634,7 @@
 	});
 </script>
 
-<div class="w-full">
+<div class="w-full {fillHeight ? 'h-full' : ''}">
 	{#if isTable}
 		{@const rows = bloqueGrafica.tablaDatos?.rows || []}
 		{#if rows.length < 2}
@@ -692,7 +693,7 @@
 		<div
 			class="relative"
 			class:hidden={!chartModulesLoaded || !!error}
-			style="min-height: {isMobile ? '350px' : '400px'};"
+			style="{fillHeight ? 'height: 100%;' : 'min-height: ' + (isMobile ? '350px' : '400px') + ';'}"
 		>
 			<canvas bind:this={canvas}></canvas>
 		</div>

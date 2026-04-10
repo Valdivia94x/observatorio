@@ -31,7 +31,7 @@
 	onclick={handleBackdropClick}
 >
 	<!-- Modal -->
-	<div class="{themeStore.isDark ? 'bg-slate-800' : 'bg-white'} rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
+	<div class="{themeStore.isDark ? 'bg-slate-800' : 'bg-white'} rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
 		<!-- Header -->
 		<div class="flex items-center justify-between px-6 py-4 border-b {themeStore.isDark ? 'border-slate-700' : 'border-slate-200'}">
 			<div>
@@ -56,10 +56,12 @@
 		</div>
 
 		<!-- Chart -->
-		<div class="flex-1 overflow-auto p-6">
-			{#key 'modal-' + grafica._key}
-				<UniversalChart bloqueGrafica={grafica} />
-			{/key}
+		<div class="flex-1 overflow-auto p-6 min-h-0">
+			<div class="h-full">
+				{#key 'modal-' + grafica._key}
+					<UniversalChart bloqueGrafica={grafica} fillHeight={true} />
+				{/key}
+			</div>
 
 			{#if grafica.descripcionContexto}
 				<p class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm mt-4">
