@@ -96,15 +96,32 @@
 		return allUbicaciones.filter(u => u).sort();
 	});
 
+	// Map municipio to its state
+	const municipioToEstado: Record<string, string> = {
+		'torreon': 'estatal-coahuila',
+		'matamoros': 'estatal-coahuila',
+		'gomez-palacio': 'estatal-durango',
+		'lerdo': 'estatal-durango',
+	};
+
 	// Filter graficas within an indicador based on ubicacion
 	function filterGraficas(graficas: GraficaWidget[] | undefined): GraficaWidget[] {
 		if (!graficas) return [];
 
+		if (selectedUbicacion === 'todos') return graficas;
+
+		const hasMunicipal = graficas.some(g => !isEstatalGrafica(g) && !isZmlGrafica(g));
+		const hasEstatal = graficas.some(g => isEstatalGrafica(g));
+		const estadoSlug = municipioToEstado[selectedUbicacion];
+
 		return graficas.filter(grafica => {
-			if (selectedUbicacion !== 'todos') {
-				if (!grafica.ubicacion?.includes(selectedUbicacion as UbicacionKey)) return false;
+			// Municipal: match by ubicacion
+			if (grafica.ubicacion?.includes(selectedUbicacion as UbicacionKey)) return true;
+			// Estatal: include if indicator has both types and state matches
+			if (hasMunicipal && hasEstatal && estadoSlug && isEstatalGrafica(grafica)) {
+				return grafica.ubicacion?.includes(estadoSlug as UbicacionKey) ?? false;
 			}
-			return true;
+			return false;
 		});
 	}
 
@@ -368,7 +385,7 @@
 			</div>
 
 			<!-- Mapa interactivo -->
-			<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl p-6 shadow-lg">
+			<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-3 shadow-lg">
 				<h1 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-2xl font-bold mb-1">
 					ENTIDAD/MUNICIPIO
 				</h1>
@@ -448,7 +465,7 @@
 								<!-- Individual Chart Cards -->
 								{#if getGraficasToShow(indicador).length > 0}
 									{#each getGraficasToShow(indicador) as grafica (grafica._key)}
-										<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isEstatalGrafica(grafica) && !allGraficasAreEstatal() ? 'estatal-full-bleed' : ''}">
+										<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isEstatalGrafica(grafica) && !allGraficasAreEstatal() ? 'estatal-full-bleed' : ''} {isEstatalGrafica(grafica) && selectedUbicacion !== 'todos' && !allGraficasAreEstatal() ? 'mt-12' : ''}">
 											<!-- Voice button -->
 											<button
 												onclick={() => askAboutGrafica(grafica, indicador.title || '')}
