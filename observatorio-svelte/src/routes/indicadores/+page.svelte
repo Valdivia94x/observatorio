@@ -522,8 +522,6 @@
 		:global(.estatal-full-bleed) {
 			margin-left: calc(-50% - 2rem);
 			width: calc(150% + 2rem);
-			position: relative;
-			z-index: 10;
 		}
 		:global(.estatal-full-bleed.bg-slate-700\/50) {
 			background-color: rgb(51 65 85) !important;
