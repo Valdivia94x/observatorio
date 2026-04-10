@@ -277,7 +277,7 @@
 					datalabels: serieType === 'line'
 						? { display: false }
 						: hasSecondaryAxis()
-							? { anchor: 'center' as const, align: 'center' as const, color: '#fff', font: { size: 10, weight: 600 as const } }
+							? { anchor: 'end' as const, align: 'top' as const, offset: -2, font: { size: 10, weight: 600 as const } }
 							: undefined,
 				};
 			}
@@ -390,7 +390,7 @@
 						if (bloqueGrafica.tipo === 'horizontalBar') return 'end';
 						return 'top';
 					},
-					offset: (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie' || bloqueGrafica.tipo === 'stackedBar') ? 0 : 6,
+					offset: (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie' || bloqueGrafica.tipo === 'stackedBar') ? 0 : -2,
 					color: bloqueGrafica.tipo === 'stackedBar' ? '#fff' : (isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)'),
 					font: {
 						size: 10,
