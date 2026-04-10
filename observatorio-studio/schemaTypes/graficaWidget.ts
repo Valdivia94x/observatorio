@@ -40,6 +40,7 @@ export const graficaWidget = defineType({
       options: {
         list: [
           {title: 'Barras', value: 'bar'},
+          {title: 'Barras Apiladas', value: 'stackedBar'},
           {title: 'Linea', value: 'line'},
           {title: 'Dona', value: 'doughnut'},
           {title: 'Pie', value: 'pie'},
@@ -358,6 +359,7 @@ export const graficaWidget = defineType({
     prepare({titulo, tipo, ubicacion, anioInicio, anioFin, aniosDisponibles}) {
       const tipoLabels: Record<string, string> = {
         bar: 'Barras',
+        stackedBar: 'Barras Apiladas',
         line: 'Linea',
         doughnut: 'Dona',
         pie: 'Pie',

@@ -130,7 +130,7 @@ export function parseResultadosPlanea(workbook: XLSX.WorkBook): GeneratedGrafica
 
       graficas.push({
         titulo: `Resultados PLANEA - ${nivel} en ${municipio}`,
-        tipo: 'bar',
+        tipo: 'stackedBar',
         ubicacion: ubicacionSlug ? [ubicacionSlug] : ['torreon'],
         tablaDatos,
         unidadMedida: 'porcentaje',

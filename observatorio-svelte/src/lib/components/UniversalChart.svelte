@@ -65,7 +65,7 @@
 
 	interface BloqueGrafica {
 		titulo?: string;
-		tipo: 'bar' | 'line' | 'doughnut' | 'radar' | 'horizontalBar' | 'pie' | 'table';
+		tipo: 'bar' | 'stackedBar' | 'line' | 'doughnut' | 'radar' | 'horizontalBar' | 'pie' | 'table';
 		tablaDatos: TableData;
 		series?: SerieConfig[];
 		colores?: string[];
@@ -303,7 +303,7 @@
 	}
 
 	function getChartType(): 'bar' | 'line' | 'doughnut' | 'radar' | 'pie' {
-		if (bloqueGrafica.tipo === 'horizontalBar') {
+		if (bloqueGrafica.tipo === 'horizontalBar' || bloqueGrafica.tipo === 'stackedBar') {
 			return 'bar';
 		}
 		return bloqueGrafica.tipo;
@@ -378,15 +378,17 @@
 					display: isMobile ? false : (bloqueGrafica.tipo !== 'radar' && bloqueGrafica.tipo !== 'line'),
 					anchor: (context: { datasetIndex: number; dataset: { type?: string } }) => {
 						if (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') return 'center';
+						if (bloqueGrafica.tipo === 'stackedBar') return 'center';
 						return 'end';
 					},
 					align: (context: { datasetIndex: number; dataset: { type?: string } }) => {
 						if (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') return 'center';
+						if (bloqueGrafica.tipo === 'stackedBar') return 'center';
 						if (bloqueGrafica.tipo === 'horizontalBar') return 'end';
 						return 'top';
 					},
-					offset: (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') ? 0 : 6,
-					color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+					offset: (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie' || bloqueGrafica.tipo === 'stackedBar') ? 0 : 6,
+					color: bloqueGrafica.tipo === 'stackedBar' ? '#fff' : (isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)'),
 					font: {
 						size: 10,
 						weight: 600
@@ -422,8 +424,11 @@
 				? bloqueGrafica.series?.find(s => !s.ejeSecundario)?.nombre
 				: undefined;
 
+			const isStacked = bloqueGrafica.tipo === 'stackedBar';
+
 			const scales: Record<string, unknown> = {
 				x: {
+					stacked: isStacked,
 					title: {
 						display: !isMobile,
 						text: isHorizontalBar ? unidadLabel : 'Período',
@@ -449,6 +454,7 @@
 					}
 				},
 				y: {
+					stacked: isStacked,
 					position: 'left',
 					title: {
 						display: !isMobile,
