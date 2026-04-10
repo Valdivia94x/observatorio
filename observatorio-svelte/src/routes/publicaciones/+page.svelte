@@ -2,7 +2,7 @@
 	import { themeStore } from '$lib/stores/theme.svelte';
 </script>
 
-<main class="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-center px-6 py-12 overflow-hidden">
+<main class="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-center px-6 py-12 overflow-hidden md:-mt-14 md:-mb-10">
 	<!-- Background image -->
 	<div class="absolute inset-0">
 		<img

@@ -280,7 +280,7 @@
 
 <main>
 	<!-- Header Section -->
-	<div class="max-w-7xl mx-auto px-6 py-2">
+	<div class="max-w-7xl mx-auto px-6 pb-2 md:-mt-8">
 		<h1 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-4xl md:text-4xl font-bold mb-4 text-center">
 			Plataforma de Indicadores
 		</h1>

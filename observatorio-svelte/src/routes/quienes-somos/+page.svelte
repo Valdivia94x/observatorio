@@ -46,7 +46,7 @@
 </script>
 
 <!-- Main Content -->
-<main class="max-w-4xl mx-auto px-6 py-12">
+<main class="max-w-4xl mx-auto px-6 py-12 md:-mt-8">
 	<h1 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-4xl md:text-5xl font-bold mb-8 text-center">
 		¿QUIÉNES SOMOS?
 	</h1>
