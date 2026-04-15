@@ -11,6 +11,7 @@ export interface GeneratedGrafica {
   fuentePersonalizada?: string
   descripcionContexto?: string
   ocultarValores?: boolean
+  colores?: string[]
   series?: {
     nombre: string
     tipoSerie: 'line' | 'bar'

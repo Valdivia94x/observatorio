@@ -88,6 +88,7 @@ export function IndicadorImporter({onComplete}: IndicadorImporterProps) {
         fuentePersonalizada: g.fuentePersonalizada,
         descripcionContexto: g.descripcionContexto,
         ocultarValores: g.ocultarValores,
+        colores: g.colores,
         series: g.series?.map((s) => ({
           _type: 'serieConfig',
           _key: nanoid(),

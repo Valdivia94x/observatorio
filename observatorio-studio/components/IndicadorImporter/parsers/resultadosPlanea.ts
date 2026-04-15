@@ -136,6 +136,7 @@ export function parseResultadosPlanea(workbook: XLSX.WorkBook): GeneratedGrafica
         unidadMedida: 'porcentaje',
         fuente: 'sep',
         descripcionContexto: `Resultados de la prueba PLANEA en nivel ${nivel} para ${municipio}. Porcentaje de alumnos por nivel de logro en Lenguaje y Comunicación y Matemáticas, desglosado por tipo de escuela.`,
+        colores: ['#dc2626', '#f97316', '#eab308', '#22c55e'],
       })
     }
   }
