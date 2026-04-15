@@ -285,7 +285,7 @@
 
 			// Normal chart: use colores[] or default palette
 			const color = colores?.[index]
-				? { bg: hexToRgba(colores[index], 0.7), border: colores[index] }
+				? { bg: hexToRgba(colores[index], 0.95), border: colores[index] }
 				: colorPalette[index % colorPalette.length];
 
 			return {
