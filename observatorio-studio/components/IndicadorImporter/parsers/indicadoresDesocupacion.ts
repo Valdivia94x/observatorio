@@ -123,11 +123,12 @@ function parseSeccion2NivelInstruccion(data: (string | number | null)[][]): Gene
 
   return [{
     titulo: 'Desocupados por Nivel de Instrucción en la ZML',
-    tipo: 'bar',
+    tipo: 'stackedBar',
     ubicacion: ZML_UBICACION,
     tablaDatos,
     unidadMedida: 'habitantes',
     fuente: 'inegi',
     descripcionContexto: 'Población desocupada por nivel de instrucción en la ZML por trimestre. Fuente: ENOE, INEGI.',
+    ocultarValores: true,
   }]
 }

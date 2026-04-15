@@ -10,6 +10,7 @@ export interface GeneratedGrafica {
   fuente?: string
   fuentePersonalizada?: string
   descripcionContexto?: string
+  ocultarValores?: boolean
   series?: {
     nombre: string
     tipoSerie: 'line' | 'bar'

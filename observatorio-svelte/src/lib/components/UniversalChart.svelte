@@ -71,6 +71,7 @@
 		colores?: string[];
 		unidadMedida?: UnidadMedidaKey;
 		unidadMedidaPersonalizada?: string;
+		ocultarValores?: boolean;
 	}
 
 	interface Props {
@@ -325,6 +326,25 @@
 		const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 		const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
+		// Extract symbol (% or $) from axis title and move to ticks
+		function extractAxisSymbol(label: string): { cleanLabel: string; tickCallback?: (value: number | string) => string } {
+			if (label.includes('%') || label.toLowerCase().includes('porcentaje')) {
+				const cleanLabel = label.replace(/\s*\(%?\)\s*|\s*%\s*/g, '').replace(/porcentaje/i, 'Porcentaje').trim();
+				return {
+					cleanLabel,
+					tickCallback: (value: number | string) => `${value}%`,
+				};
+			}
+			if (label.includes('$') || label.toLowerCase().includes('pesos')) {
+				const cleanLabel = label.replace(/\s*\(\$?\)\s*|\s*\$\s*/g, '').trim();
+				return {
+					cleanLabel,
+					tickCallback: (value: number | string) => `$${Number(value).toLocaleString('es-MX')}`,
+				};
+			}
+			return { cleanLabel: label };
+		}
+
 		// Check if X-axis labels are long (for rotation vs wrap decision)
 		const rawLabels = bloqueGrafica.tablaDatos?.rows?.[0]?.cells?.slice(1) || [];
 		const labelsAreLong = hasLongLabels(rawLabels);
@@ -378,7 +398,7 @@
 				},
 				datalabels: {
 					// Ocultar data labels en móvil para evitar superposición
-					display: isMobile ? false : (bloqueGrafica.tipo !== 'radar' && bloqueGrafica.tipo !== 'line'),
+					display: bloqueGrafica.ocultarValores ? false : (isMobile ? false : (bloqueGrafica.tipo !== 'radar' && bloqueGrafica.tipo !== 'line')),
 					anchor: (context: { datasetIndex: number; dataset: { type?: string } }) => {
 						if (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie') return 'center';
 						if (bloqueGrafica.tipo === 'stackedBar') return 'center';
@@ -429,6 +449,9 @@
 
 			const isStacked = bloqueGrafica.tipo === 'stackedBar';
 
+			const yLabel = isHorizontalBar ? 'Período' : (primarySerieLabel || unidadLabel);
+			const yAxis = extractAxisSymbol(yLabel);
+
 			const scales: Record<string, unknown> = {
 				x: {
 					stacked: isStacked,
@@ -461,7 +484,7 @@
 					position: 'left',
 					title: {
 						display: !isMobile,
-						text: isHorizontalBar ? 'Período' : (primarySerieLabel || unidadLabel),
+						text: yAxis.cleanLabel,
 						color: primaryColor || textColor,
 						font: {
 							size: 14,
@@ -475,7 +498,8 @@
 						color: primaryColor || textColor,
 						font: {
 							size: isMobile ? 10 : 15
-						}
+						},
+						callback: yAxis.tickCallback,
 					},
 					beginAtZero: true,
 				}
@@ -486,6 +510,7 @@
 				// Find the name of the secondary series to use as axis label
 				const secondarySerie = bloqueGrafica.series?.find(s => s.ejeSecundario);
 				const secondaryLabel = secondarySerie?.nombre || 'Eje secundario';
+				const y1Axis = extractAxisSymbol(secondaryLabel);
 
 				// Calculate max for secondary axis (double the max value so line stays at mid-height)
 				const rows = bloqueGrafica.tablaDatos?.rows || [];
@@ -506,7 +531,7 @@
 					position: 'right',
 					title: {
 						display: !isMobile,
-						text: secondaryLabel,
+						text: y1Axis.cleanLabel,
 						color: secondaryColor || textColor,
 						font: {
 							size: 14,
@@ -520,7 +545,8 @@
 						color: secondaryColor || textColor,
 						font: {
 							size: isMobile ? 10 : 15
-						}
+						},
+						callback: y1Axis.tickCallback,
 					},
 					beginAtZero: true,
 					max: secondaryMax !== undefined ? Math.ceil(secondaryMax * 2) : undefined,

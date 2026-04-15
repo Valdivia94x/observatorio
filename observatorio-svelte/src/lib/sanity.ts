@@ -180,6 +180,7 @@ export interface GraficaWidget {
 	fuente?: FuenteKey;
 	fuentePersonalizada?: string;
 	descripcionContexto?: string;
+	ocultarValores?: boolean;
 }
 
 // Helpers para obtener valores legibles de unidad de medida y fuente
@@ -346,7 +347,8 @@ export const indicadorByIdQuery = `
     unidadMedidaPersonalizada,
     fuente,
     fuentePersonalizada,
-    descripcionContexto
+    descripcionContexto,
+    ocultarValores
   }
 }
 `;
@@ -390,7 +392,8 @@ export const allIndicadoresWithGraficasQuery = `
     unidadMedidaPersonalizada,
     fuente,
     fuentePersonalizada,
-    descripcionContexto
+    descripcionContexto,
+    ocultarValores
   }
 }
 `;

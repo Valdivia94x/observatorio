@@ -199,6 +199,13 @@ export const graficaWidget = defineType({
         'Opcional. Informacion adicional que ayude al agente de voz a interpretar los datos (metodologia, notas importantes, contexto historico, etc.)',
     }),
     defineField({
+      name: 'ocultarValores',
+      title: 'Ocultar Valores en las Barras',
+      type: 'boolean',
+      description: 'Si se activa, no se mostraran los numeros sobre cada barra/segmento',
+      initialValue: false,
+    }),
+    defineField({
       name: 'tablaDatos',
       title: 'Tabla de Datos',
       type: 'table',
