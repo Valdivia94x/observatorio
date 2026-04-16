@@ -192,7 +192,7 @@ function parseSeccion3Salarios(data: (string | number | null)[][]): GeneratedGra
 
   return [{
     titulo: 'Rangos Salariales en la ZML',
-    tipo: 'horizontalBar',
+    tipo: 'bar',
     ubicacion: ZML_UBICACION,
     tablaDatos,
     unidadMedida: 'porcentaje',

@@ -471,7 +471,7 @@
 					ticks: {
 						color: textColor,
 						font: {
-							size: isMobile ? 9 : 12
+							size: labelsAreLong ? (isMobile ? 7 : 9) : (isMobile ? 9 : 12)
 						},
 						maxRotation: labelsAreLong ? 0 : 90,
 						minRotation: labelsAreLong ? 0 : 90,
