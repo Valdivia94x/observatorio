@@ -85,6 +85,7 @@ function parseSeccion1PoblacionOcupada(data: (string | number | null)[][]): Gene
     unidadMedida: 'habitantes',
     fuente: 'inegi',
     descripcionContexto: 'Población ocupada por género en la Zona Metropolitana de la Laguna por trimestre. Fuente: ENOE, INEGI.',
+    colores: ['#3b82f6', '#d0005f'],
   }]
 }
 
