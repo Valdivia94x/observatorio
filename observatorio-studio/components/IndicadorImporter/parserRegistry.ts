@@ -12,6 +12,7 @@ import {parseEgresadosUniversitarios} from './parsers/egresadosUniversitarios'
 import {parseEgresadosPosgrado} from './parsers/egresadosPosgrado'
 import {parseAniosEscolaridad} from './parsers/aniosEscolaridad'
 import {parseCrecimientoPIB} from './parsers/crecimientoPIB'
+import {parseExportaciones} from './parsers/exportaciones'
 import {parseIndicadoresOcupacion} from './parsers/indicadoresOcupacion'
 import {parseIndicadoresDesocupacion} from './parsers/indicadoresDesocupacion'
 import {parseTrabajadoresIMSS} from './parsers/trabajadoresIMSS'
@@ -39,6 +40,7 @@ register('Egresados Universitarios', parseEgresadosUniversitarios)
 register('Egresados Posgrado', parseEgresadosPosgrado)
 register('Años promedio de escolaridad', parseAniosEscolaridad)
 register('Crecimiento Económico PIB', parseCrecimientoPIB)
+register('Exportaciones', parseExportaciones)
 register('Indicadores de Ocupación', parseIndicadoresOcupacion)
 register('Indicadores de Desocupación', parseIndicadoresDesocupacion)
 register('Trabajadores registrados en el IMSS', parseTrabajadoresIMSS)
