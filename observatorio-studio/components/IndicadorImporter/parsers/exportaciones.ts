@@ -235,5 +235,6 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
     unidadMedida: 'miles-pesos',
     fuente: 'inegi',
     descripcionContexto: 'Ranking de entidades federativas por exportaciones totales en miles de dólares, 2025. Fuente: INEGI.',
+    ocultarValores: true,
   }]
 }
