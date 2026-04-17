@@ -248,6 +248,7 @@ function parseSeccion3Genero(data: (string | number | null)[][]): GeneratedGrafi
       fuente: 'otra',
       fuentePersonalizada: 'IMSS',
       descripcionContexto: `Salario promedio diario por género de trabajadores registrados en el IMSS en ${name}.`,
+      colores: ['#3b82f6', '#d0005f'],
     })
   }
 
