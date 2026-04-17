@@ -14,6 +14,7 @@ import {parseAniosEscolaridad} from './parsers/aniosEscolaridad'
 import {parseCrecimientoPIB} from './parsers/crecimientoPIB'
 import {parseExportaciones} from './parsers/exportaciones'
 import {parseInflacion} from './parsers/inflacion'
+import {parseInversionExtranjera} from './parsers/inversionExtranjera'
 import {parseIndicadoresOcupacion} from './parsers/indicadoresOcupacion'
 import {parseIndicadoresDesocupacion} from './parsers/indicadoresDesocupacion'
 import {parseTrabajadoresIMSS} from './parsers/trabajadoresIMSS'
@@ -43,6 +44,7 @@ register('Años promedio de escolaridad', parseAniosEscolaridad)
 register('Crecimiento Económico PIB', parseCrecimientoPIB)
 register('Exportaciones', parseExportaciones)
 register('Inflación', parseInflacion)
+register('Inversión Extranjera Directa', parseInversionExtranjera)
 register('Indicadores de Ocupación', parseIndicadoresOcupacion)
 register('Indicadores de Desocupación', parseIndicadoresDesocupacion)
 register('Trabajadores registrados en el IMSS', parseTrabajadoresIMSS)
