@@ -49,7 +49,7 @@ register('Indicadores de Ocupación', parseIndicadoresOcupacion)
 register('Indicadores de Desocupación', parseIndicadoresDesocupacion)
 register('Trabajadores registrados en el IMSS', parseTrabajadoresIMSS)
 register('Salarios de trabajadores registrados en el IMSS', parseSalariosIMSS)
-register('Patrones Asegurados IMSS', parsePatronesIMSS)
+register('Patrones Afiliados en el IMSS', parsePatronesIMSS)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {
