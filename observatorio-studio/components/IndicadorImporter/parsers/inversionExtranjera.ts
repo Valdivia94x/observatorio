@@ -169,10 +169,10 @@ function parseRanking(sheet: XLSX.Sheet): GeneratedGrafica[] {
   if (entidades.length === 0) return []
 
   const tableRows: TableRow[] = [
-    makeRow(['#', 'Entidad Federativa', 'IED (millones USD)']),
+    makeRow(['Entidad Federativa', 'IED (millones USD)']),
   ]
   for (let i = 0; i < entidades.length; i++) {
-    tableRows.push(makeRow([String(i + 1), entidades[i], valores[i]]))
+    tableRows.push(makeRow([entidades[i], valores[i]]))
   }
 
   return [{
