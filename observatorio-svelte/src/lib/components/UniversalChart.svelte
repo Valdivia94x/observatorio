@@ -421,8 +421,10 @@
 					clip: false,
 					formatter: (value: number) => {
 						if (value === 0) return '';
-						// Format large numbers with commas
-						return value.toLocaleString('es-MX');
+						const formatted = value.toLocaleString('es-MX');
+						if (bloqueGrafica.unidadMedida === 'pesos' || bloqueGrafica.unidadMedida === 'miles-pesos' || bloqueGrafica.unidadMedida === 'millones-pesos') return `$${formatted}`;
+						if (bloqueGrafica.unidadMedida === 'porcentaje') return `${formatted}%`;
+						return formatted;
 					}
 				}
 			}
