@@ -168,19 +168,20 @@ function parseRanking(sheet: XLSX.Sheet): GeneratedGrafica[] {
 
   if (entidades.length === 0) return []
 
+  const tableRows: TableRow[] = [
+    makeRow(['#', 'Entidad Federativa', 'IED (millones USD)']),
+  ]
+  for (let i = 0; i < entidades.length; i++) {
+    tableRows.push(makeRow([String(i + 1), entidades[i], valores[i]]))
+  }
+
   return [{
     titulo: 'Ranking Nacional de IED 2025',
-    tipo: 'bar',
+    tipo: 'table',
     ubicacion: ['estatal-coahuila', 'estatal-durango'],
-    tablaDatos: {
-      rows: [
-        makeRow(['', ...entidades]),
-        makeRow(['IED (millones USD)', ...valores]),
-      ],
-    },
+    tablaDatos: {rows: tableRows},
     unidadMedida: 'millones-pesos',
     fuente: 'economia',
     descripcionContexto: 'Ranking de entidades federativas por Inversión Extranjera Directa, millones de dólares, 2025. Fuente: Secretaría de Economía.',
-    ocultarValores: true,
   }]
 }
