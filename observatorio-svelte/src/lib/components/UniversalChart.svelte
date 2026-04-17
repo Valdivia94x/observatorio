@@ -739,7 +739,7 @@
 		<div
 			class="relative"
 			class:hidden={!chartModulesLoaded || !!error}
-			style="{fillHeight ? 'height: 100%;' : 'min-height: ' + (isMobile ? '350px' : '400px') + ';'}"
+			style="{fillHeight ? 'height: 100%;' : 'min-height: ' + (bloqueGrafica.tipo === 'horizontalBar' ? (isMobile ? '400px' : '500px') : (isMobile ? '350px' : '400px')) + ';'}"
 		>
 			<canvas bind:this={canvas}></canvas>
 		</div>
