@@ -161,9 +161,9 @@ function parseRanking(sheet: XLSX.Sheet): GeneratedGrafica[] {
 
   for (let i = headerIdx + 1; i < data.length; i++) {
     const row = data[i]
-    if (!row || !row[1]) break
-    entidades.push(String(row[1]).trim())
-    valores.push(round2(Number(row[2] || 0)))
+    if (!row || !row[0]) break
+    entidades.push(String(row[0]).trim())
+    valores.push(round2(Number(row[1] || 0)))
   }
 
   if (entidades.length === 0) return []
