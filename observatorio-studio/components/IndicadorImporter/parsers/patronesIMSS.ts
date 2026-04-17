@@ -201,7 +201,7 @@ function parseSeccion2Tamano(data: (string | number | null)[][]): GeneratedGrafi
 
     graficas.push({
       titulo: `Patrones por Tamaño en ${name}`,
-      tipo: 'horizontalBar',
+      tipo: 'table',
       ubicacion,
       tablaDatos,
       unidadMedida: 'unidades',
