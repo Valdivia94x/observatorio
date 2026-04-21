@@ -17,6 +17,7 @@ import {parseInflacion} from './parsers/inflacion'
 import {parseInversionExtranjera} from './parsers/inversionExtranjera'
 import {parseProductividadLaboral} from './parsers/productividadLaboral'
 import {parseUnidadesEconomicas} from './parsers/unidadesEconomicas'
+import {parseRemesas} from './parsers/remesas'
 import {parseIndicadoresOcupacion} from './parsers/indicadoresOcupacion'
 import {parseIndicadoresDesocupacion} from './parsers/indicadoresDesocupacion'
 import {parseTrabajadoresIMSS} from './parsers/trabajadoresIMSS'
@@ -49,6 +50,7 @@ register('Inflación', parseInflacion)
 register('Inversión Extranjera Directa', parseInversionExtranjera)
 register('Productividad Laboral', parseProductividadLaboral)
 register('Unidades Económicas', parseUnidadesEconomicas)
+register('Remesas histórico', parseRemesas)
 register('Indicadores de Ocupación', parseIndicadoresOcupacion)
 register('Indicadores de Desocupación', parseIndicadoresDesocupacion)
 register('Trabajadores registrados en el IMSS', parseTrabajadoresIMSS)
