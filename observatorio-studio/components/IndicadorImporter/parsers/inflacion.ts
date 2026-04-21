@@ -122,17 +122,19 @@ function parseSeccion2Componentes(data: (string | number | null)[][]): Generated
 
   if (componentes.length === 0) return []
 
-  const tablaDatos: TableValue = {
-    rows: [
-      makeRow(['', ...componentes]),
-      makeRow(['ZML', ...zmlVals]),
-      makeRow(['Nacional', ...nacVals]),
-    ],
+  // Transpose: components as rows, ZML/Nacional as columns
+  const tableRows: TableRow[] = [
+    makeRow(['Componente', 'ZML (%)', 'Nacional (%)']),
+  ]
+  for (let i = 0; i < componentes.length; i++) {
+    tableRows.push(makeRow([componentes[i], zmlVals[i], nacVals[i]]))
   }
+
+  const tablaDatos: TableValue = {rows: tableRows}
 
   return [{
     titulo: 'Inflación por Componente: ZML vs Nacional',
-    tipo: 'horizontalBar',
+    tipo: 'table',
     ubicacion: ZML_UBICACION,
     tablaDatos,
     unidadMedida: 'porcentaje',

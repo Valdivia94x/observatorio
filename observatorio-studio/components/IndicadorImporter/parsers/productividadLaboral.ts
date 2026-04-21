@@ -65,8 +65,8 @@ function parseSeccionBarras(
     else break
   }
 
-  // Collect all location rows
-  const tableRows: TableRow[] = [makeRow(['', ...anios])]
+  // Collect locations and generate one chart per location
+  const graficas: GeneratedGrafica[] = []
 
   for (let i = sectionIdx + 2; i < data.length; i++) {
     const row = data[i]
@@ -74,21 +74,25 @@ function parseSeccionBarras(
     const name = String(row[1]).trim()
     if (!name) break
     const valores = anios.map((_, idx) => round2(Number(row[idx + 2] || 0)))
-    tableRows.push(makeRow([name, ...valores]))
+    const ubicacion = MUNICIPIO_UBICACION[name.toLowerCase()] || ['torreon']
+
+    graficas.push({
+      titulo: `${titulo} en ${name}`,
+      tipo: 'bar',
+      ubicacion,
+      tablaDatos: {
+        rows: [
+          makeRow(['', ...anios]),
+          makeRow([name, ...valores]),
+        ],
+      },
+      unidadMedida: unidad,
+      fuente: 'inegi',
+      descripcionContexto: `${descripcion} ${name}. Fuente: INEGI, Censos Económicos.`,
+    })
   }
 
-  if (tableRows.length <= 1) return []
-
-  return [{
-    titulo,
-    tipo: 'bar',
-    ubicacion: ['estatal-coahuila', 'estatal-durango', 'torreon', 'gomez-palacio', 'lerdo', 'matamoros'],
-    tablaDatos: {rows: tableRows},
-    unidadMedida: unidad,
-    fuente: 'inegi',
-    descripcionContexto: `${descripcion} Fuente: INEGI, Censos Económicos.`,
-    ocultarValores: true,
-  }]
+  return graficas
 }
 
 // Section 3: Tables of product by economic activity per location

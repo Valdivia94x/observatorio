@@ -348,6 +348,7 @@
 		// Check if X-axis labels are long (for rotation vs wrap decision)
 		const rawLabels = bloqueGrafica.tablaDatos?.rows?.[0]?.cells?.slice(1) || [];
 		const labelsAreLong = hasLongLabels(rawLabels);
+		const shouldRotate = !labelsAreLong && rawLabels.length > 10;
 
 		const baseOptions: Record<string, unknown> = {
 			responsive: true,
@@ -475,8 +476,8 @@
 						font: {
 							size: labelsAreLong ? (isMobile ? 7 : 9) : (isMobile ? 9 : 12)
 						},
-						maxRotation: labelsAreLong ? 0 : 90,
-						minRotation: labelsAreLong ? 0 : 90,
+						maxRotation: shouldRotate ? 90 : 0,
+						minRotation: shouldRotate ? 90 : 0,
 						autoSkip: isMobile,
 						maxTicksLimit: isMobile ? 8 : undefined,
 					}

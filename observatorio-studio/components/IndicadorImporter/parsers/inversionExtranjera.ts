@@ -127,7 +127,7 @@ function parseTipoInversion(sheet: XLSX.Sheet): GeneratedGrafica[] {
 
     graficas.push({
       titulo: `IED por Tipo de Inversión en ${estado}`,
-      tipo: 'stackedBar',
+      tipo: 'table',
       ubicacion,
       tablaDatos: {rows: tableRows},
       unidadMedida: 'millones-pesos',
