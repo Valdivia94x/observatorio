@@ -178,7 +178,7 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
 
     graficas.push({
       titulo: `Exportaciones por Subactividad en ${block.name}`,
-      tipo: 'horizontalBar',
+      tipo: 'table',
       ubicacion: block.ubicacion,
       tablaDatos,
       unidadMedida: 'miles-pesos',
@@ -229,7 +229,7 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
 
   return [{
     titulo: 'Ranking Nacional de Exportaciones 2025',
-    tipo: 'bar',
+    tipo: 'table',
     ubicacion: ['estatal-coahuila', 'estatal-durango'],
     tablaDatos,
     unidadMedida: 'miles-pesos',
