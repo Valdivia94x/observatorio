@@ -689,6 +689,9 @@
 				<p class="text-red-400 text-sm">No hay datos suficientes para mostrar la tabla</p>
 			</div>
 		{:else}
+			{#if bloqueGrafica.titulo}
+				<h3 class="text-lg md:text-xl font-bold mb-3 {fillHeight ? '' : ''} dark:text-white text-slate-800">{bloqueGrafica.titulo}</h3>
+			{/if}
 			<div class="overflow-x-auto">
 				<table class="w-full border-collapse text-sm">
 					<thead>
