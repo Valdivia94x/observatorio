@@ -168,13 +168,15 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
 
     if (actividades.length === 0) continue
 
-    const tablaDatos: TableValue = {
-      rows: [
-        makeRow(['', ...actividades]),
-        makeRow(['2024', ...val2024]),
-        makeRow(['2025', ...val2025]),
-      ],
+    // Transpose: subactividades as rows, years as columns
+    const tableRows: TableRow[] = [
+      makeRow(['Subactividad', '2024', '2025']),
+    ]
+    for (let j = 0; j < actividades.length; j++) {
+      tableRows.push(makeRow([actividades[j], val2024[j], val2025[j]]))
     }
+
+    const tablaDatos: TableValue = {rows: tableRows}
 
     graficas.push({
       titulo: `Exportaciones por Subactividad en ${block.name}`,
@@ -220,12 +222,14 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
 
   if (entidades.length === 0) return []
 
-  const tablaDatos: TableValue = {
-    rows: [
-      makeRow(['', ...entidades]),
-      makeRow(['Exportaciones (miles USD)', ...valores]),
-    ],
+  const tableRows: TableRow[] = [
+    makeRow(['Entidad Federativa', 'Exportaciones (miles USD)']),
+  ]
+  for (let i = 0; i < entidades.length; i++) {
+    tableRows.push(makeRow([entidades[i], valores[i]]))
   }
+
+  const tablaDatos: TableValue = {rows: tableRows}
 
   return [{
     titulo: 'Ranking Nacional de Exportaciones 2025',
