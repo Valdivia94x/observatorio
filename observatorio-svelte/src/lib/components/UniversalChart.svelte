@@ -163,6 +163,38 @@
 		return bloqueGrafica.series?.some(s => s.ejeSecundario === true) ?? false;
 	}
 
+	// Formatea un valor numérico con el símbolo/etiqueta de su unidad
+	function formatValueWithUnit(value: number, unidad?: string): string {
+		if (value === null || value === undefined || isNaN(value)) return '';
+		const formatted = value.toLocaleString('es-MX');
+		switch (unidad) {
+			case 'pesos':
+			case 'miles-pesos':
+			case 'millones-pesos':
+				return `$${formatted}`;
+			case 'porcentaje':
+				return `${formatted}%`;
+			case 'habitantes':
+			case 'miles-habitantes':
+				return `${formatted} hab.`;
+			case 'tasa-100mil':
+				return `${formatted} por 100k hab.`;
+			case 'hectareas':
+				return `${formatted} ha`;
+			case 'kilometros':
+				return `${formatted} km`;
+			case 'toneladas':
+				return `${formatted} t`;
+			case 'litros':
+				return `${formatted} L`;
+			case 'unidades':
+				return `${formatted} unid.`;
+			case 'indice':
+			default:
+				return formatted;
+		}
+	}
+
 	// Get the color of the first series assigned to a given axis
 	function getAxisColor(secondary: boolean): string | undefined {
 		const { series } = bloqueGrafica;
@@ -388,14 +420,28 @@
 					borderWidth: 1,
 					cornerRadius: 8,
 					padding: isMobile ? 8 : 12,
-					callbacks: hasSecondaryAxis() ? {
-						label: (context: { dataset: { label?: string; yAxisID?: string }; parsed: { y: number } }) => {
+					callbacks: {
+						label: (context: { dataset: { label?: string; yAxisID?: string }; parsed: any }) => {
 							const label = context.dataset.label || '';
-							const value = context.parsed.y?.toLocaleString('es-MX') ?? '';
-							const axis = context.dataset.yAxisID === 'y1' ? ' (eje der.)' : '';
-							return `${label}: ${value}${axis}`;
+							const isHorizontal = bloqueGrafica.tipo === 'horizontalBar';
+							const isPie = bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie';
+							let rawValue: number;
+							if (isPie) {
+								rawValue = typeof context.parsed === 'number' ? context.parsed : (context.parsed?.y ?? 0);
+							} else if (isHorizontal) {
+								rawValue = context.parsed?.x ?? 0;
+							} else {
+								rawValue = context.parsed?.y ?? 0;
+							}
+							// Si la serie es del eje secundario y su nombre incluye "%", tratar como porcentaje
+							const isSecondary = context.dataset.yAxisID === 'y1';
+							const isPercentageSeries = isSecondary && (label.includes('%') || label.toLowerCase().includes('porcentaje'));
+							const unidad = isPercentageSeries ? 'porcentaje' : bloqueGrafica.unidadMedida;
+							const formatted = formatValueWithUnit(rawValue, unidad);
+							const axis = hasSecondaryAxis() && isSecondary ? ' (eje der.)' : '';
+							return label ? `${label}: ${formatted}${axis}` : formatted;
 						}
-					} : undefined,
+					},
 				},
 				datalabels: {
 					// Ocultar data labels en móvil para evitar superposición

@@ -233,6 +233,11 @@
 			: graficas;
 
 		return [...filtered].sort((a, b) => {
+			// Primero gráficas, luego tablas
+			const aTable = a.tipo === 'table' ? 1 : 0;
+			const bTable = b.tipo === 'table' ? 1 : 0;
+			if (aTable !== bTable) return aTable - bTable;
+			// Dentro de cada grupo, estatales al final
 			const aEstatal = isEstatalGrafica(a) ? 1 : 0;
 			const bEstatal = isEstatalGrafica(b) ? 1 : 0;
 			return aEstatal - bEstatal;
@@ -274,10 +279,42 @@
 		return getGraficasToShow(indicador).some((g: GraficaWidget) => isEstatalGrafica(g));
 	}
 
-	// Detectar si TODAS las gráficas visibles son estatales (para cambiar layout)
-	const allGraficasAreEstatal = $derived(() => {
+	// Una gráfica ocupa el ancho completo si es tabla o tiene 10+ columnas de datos
+	function isWideGrafica(grafica: GraficaWidget): boolean {
+		if (grafica.tipo === 'table') return true;
+		const rows = grafica.tablaDatos?.rows;
+		if (!rows || rows.length === 0) return false;
+		const columnCount = (rows[0]?.cells?.length || 1) - 1;
+		return columnCount >= 10;
+	}
+
+	// Detectar si TODAS las gráficas visibles son anchas (para apilar bajo el mapa)
+	const allGraficasAreWide = $derived(() => {
 		const allGraficas = finalFilteredIndicadores().flatMap(ind => getGraficasToShow(ind));
-		return allGraficas.length > 0 && allGraficas.every(g => isEstatalGrafica(g));
+		return allGraficas.length > 0 && allGraficas.every(g => isWideGrafica(g));
+	});
+
+	// Descripciones extendidas por indicador (se muestran junto al mapa cuando solo hay tablas/gráficas anchas)
+	const indicadorDescripciones: Record<string, string> = {
+		'Unidades Económicas': `Las <strong>unidades económicas</strong> son los establecimientos donde se realiza la producción de bienes, la comercialización de mercancías o la prestación de servicios. Este indicador, basado en los <strong>Censos Económicos 2024 del INEGI</strong>, dimensiona el tamaño y la composición del aparato productivo de Coahuila, Durango y los municipios de la Región Lagunera.
+
+Se presentan dos vistas complementarias:
+
+<strong>Por tamaño de empresa</strong>: clasifica los establecimientos según el número de personas ocupadas (micro, pequeñas, medianas y grandes). Permite identificar el peso de las MIPYMES en el tejido productivo regional —característica estructural de la economía mexicana— y reconocer en qué municipios se concentran las empresas de mayor escala.
+
+<strong>Por actividad económica</strong>: agrupa las unidades por sector productivo (industrias manufactureras, comercio, servicios, transportes, etc.), revelando la vocación económica de cada localidad. Comparar Torreón, Gómez Palacio, Lerdo y Matamoros con sus entidades respectivas ayuda a entender especializaciones locales y oportunidades de diversificación.`,
+		'Inflación': `La <strong>inflación</strong> mide el aumento sostenido y generalizado de los precios de bienes y servicios que consumen los hogares. Este indicador se construye con el <strong>Índice Nacional de Precios al Consumidor (INPC) del INEGI</strong> y permite comparar la dinámica de precios de la <strong>Zona Metropolitana de La Laguna (ZML)</strong> —que incluye Torreón, Gómez Palacio, Lerdo y Matamoros— frente al promedio nacional.
+
+Se presentan dos vistas complementarias:
+
+<strong>Inflación anual: ZML vs Nacional</strong>: muestra la variación porcentual mensual respecto al mismo mes del año anterior. Permite identificar si la región experimenta presiones inflacionarias por encima o por debajo del país, así como detectar puntos de inflexión asociados a choques de oferta, política monetaria o cambios estacionales.
+
+<strong>Inflación por componente</strong>: descompone la tasa anual en los grandes rubros del gasto (alimentos, energéticos, vivienda, transporte, servicios, etc.) y los compara entre la ZML y el nivel nacional. Esta vista es clave para entender qué categorías están encareciendo el costo de vida en la región y diseñar estrategias de mitigación focalizadas.`,
+	};
+
+	const currentDescripcion = $derived(() => {
+		if (selectedIndicador === 'todos') return null;
+		return indicadorDescripciones[selectedIndicador] || null;
 	});
 
 	// Enriquecer el contexto del agente de voz con los filtros e ejes disponibles
@@ -369,56 +406,79 @@
 		</div>
 	</div>
 
-	<!-- Layout: side-by-side (default) or stacked (all estatal) -->
-	<div class="max-w-7xl mx-auto px-6">
-	<div class="{allGraficasAreEstatal() ? 'flex flex-col items-center gap-8' : 'flex flex-col lg:flex-row gap-8'}">
-		<!-- Map column -->
-		<div class="{allGraficasAreEstatal() ? 'w-full max-w-sm space-y-4' : 'lg:w-1/3 lg:self-start space-y-4'}">
-			<!-- Indicador y Eje seleccionado -->
-			<div class="{themeStore.isDark ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-4 shadow-lg">
-				<p class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} font-bold text-lg">
-					{selectedIndicador !== 'todos' ? selectedIndicador : 'Todos los indicadores'}
-				</p>
-				<p class="{themeStore.isDark ? 'text-[#03bdcf]' : 'text-slate-500'} text-lg">
-					{selectedEje !== 'todos' ? selectedEje : 'Todos los ejes'}{selectedIndicador !== 'todos' ? ` / ${selectedIndicador}` : ''}
-				</p>
-			</div>
-
-			<!-- Mapa interactivo -->
-			<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-3 shadow-lg">
-				<h1 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-2xl font-bold mb-1">
-					ENTIDAD/MUNICIPIO
-				</h1>
-				<div class="h-px {themeStore.isDark ? 'bg-slate-600' : 'bg-slate-300'}"></div>
-				<h2 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-lg font-bold mb-4">
-					Selecciona un área
-				</h2>
-				<InteractiveMap
-					onMunicipioClick={handleMapClick}
-					selectedMunicipio={selectedMapKey()}
-					showTooltip={true}
-					compact={true}
-				/>
-				{#if selectedUbicacion !== 'todos' && ubicacionToMunicipioKey[selectedUbicacion]}
-					<p class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm text-center mt-4">
-						Mostrando gráficas de <span class="font-semibold text-orange-500">{getUbicacionLabel(selectedUbicacion as UbicacionKey)}</span>
-					</p>
-					<button
-						onclick={() => selectedUbicacion = 'todos'}
-						class="w-full mt-2 px-4 py-2 text-sm font-medium text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
-					>
-						Ver todas las ubicaciones
-					</button>
-				{:else}
-					<p class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm text-center mt-4">
-						Haz clic en un municipio para filtrar
-					</p>
-				{/if}
-			</div>
+	{#snippet mapColumnContent()}
+		<!-- Indicador y Eje seleccionado -->
+		<div class="{themeStore.isDark ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-4 shadow-lg">
+			<p class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} font-bold text-lg">
+				{selectedIndicador !== 'todos' ? selectedIndicador : 'Todos los indicadores'}
+			</p>
+			<p class="{themeStore.isDark ? 'text-[#03bdcf]' : 'text-slate-500'} text-lg">
+				{selectedEje !== 'todos' ? selectedEje : 'Todos los ejes'}{selectedIndicador !== 'todos' ? ` / ${selectedIndicador}` : ''}
+			</p>
 		</div>
 
+		<!-- Mapa interactivo -->
+		<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-3 shadow-lg">
+			<h1 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-2xl font-bold mb-1">
+				ENTIDAD/MUNICIPIO
+			</h1>
+			<div class="h-px {themeStore.isDark ? 'bg-slate-600' : 'bg-slate-300'}"></div>
+			<h2 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-lg font-bold mb-4">
+				Selecciona un área
+			</h2>
+			<InteractiveMap
+				onMunicipioClick={handleMapClick}
+				selectedMunicipio={selectedMapKey()}
+				showTooltip={true}
+				compact={true}
+			/>
+			{#if selectedUbicacion !== 'todos' && ubicacionToMunicipioKey[selectedUbicacion]}
+				<p class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm text-center mt-4">
+					Mostrando gráficas de <span class="font-semibold text-orange-500">{getUbicacionLabel(selectedUbicacion as UbicacionKey)}</span>
+				</p>
+				<button
+					onclick={() => selectedUbicacion = 'todos'}
+					class="w-full mt-2 px-4 py-2 text-sm font-medium text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
+				>
+					Ver todas las ubicaciones
+				</button>
+			{:else}
+				<p class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-600'} text-sm text-center mt-4">
+					Haz clic en un municipio para filtrar
+				</p>
+			{/if}
+		</div>
+	{/snippet}
+
+	<!-- Layout: side-by-side (default) or stacked (all wide). Map siempre a la izquierda. -->
+	<div class="max-w-7xl mx-auto px-6">
+	<div class="{allGraficasAreWide() ? 'flex flex-col gap-8' : 'flex flex-col lg:flex-row gap-8'}">
+		<!-- Map area: cuando está apilado + tiene descripción, mapa y descripción comparten fila -->
+		{#if allGraficasAreWide() && currentDescripcion()}
+			<div class="flex flex-col lg:flex-row gap-8">
+				<div class="lg:w-1/3 space-y-4">
+					{@render mapColumnContent()}
+				</div>
+				<div class="lg:w-2/3">
+					<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl p-6 shadow-lg h-full">
+						<h2 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-xl font-bold mb-3">
+							Acerca de este indicador
+						</h2>
+						<div class="h-px {themeStore.isDark ? 'bg-slate-600' : 'bg-slate-300'} mb-4"></div>
+						<div class="{themeStore.isDark ? 'text-slate-300' : 'text-slate-700'} text-sm leading-relaxed space-y-3 whitespace-pre-line">
+							{@html currentDescripcion()}
+						</div>
+					</div>
+				</div>
+			</div>
+		{:else}
+			<div class="{allGraficasAreWide() ? 'lg:w-1/3 space-y-4' : 'lg:w-1/3 lg:self-start space-y-4'}">
+				{@render mapColumnContent()}
+			</div>
+		{/if}
+
 		<!-- Charts column -->
-		<div class="{allGraficasAreEstatal() ? 'w-full' : 'lg:w-2/3'}">
+		<div class="{allGraficasAreWide() ? 'w-full' : 'lg:w-2/3'}">
 			{#if finalFilteredIndicadores().length === 0}
 				<div class="text-center py-16">
 					<svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto mb-4 {themeStore.isDark ? 'text-slate-600' : 'text-slate-300'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -465,7 +525,7 @@
 								<!-- Individual Chart Cards -->
 								{#if getGraficasToShow(indicador).length > 0}
 									{#each getGraficasToShow(indicador) as grafica (grafica._key)}
-										<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isEstatalGrafica(grafica) && !allGraficasAreEstatal() ? 'estatal-full-bleed' : ''} {isEstatalGrafica(grafica) && selectedUbicacion !== 'todos' && !allGraficasAreEstatal() ? 'mt-12' : ''}">
+										<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isWideGrafica(grafica) && !allGraficasAreWide() ? 'wide-full-bleed' : ''} {isEstatalGrafica(grafica) && selectedUbicacion !== 'todos' && !allGraficasAreWide() ? 'mt-12' : ''}">
 											<!-- Voice button -->
 											<button
 												onclick={() => askAboutGrafica(grafica, indicador.title || '')}
@@ -535,11 +595,11 @@
 
 <style>
 	@media (min-width: 1024px) {
-		:global(.estatal-full-bleed) {
+		:global(.wide-full-bleed) {
 			margin-left: calc(-50% - 2rem);
 			width: calc(150% + 2rem);
 		}
-		:global(.estatal-full-bleed.bg-slate-700\/50) {
+		:global(.wide-full-bleed.bg-slate-700\/50) {
 			background-color: rgb(51 65 85) !important;
 		}
 	}
