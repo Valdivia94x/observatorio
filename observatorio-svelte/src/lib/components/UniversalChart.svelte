@@ -163,6 +163,16 @@
 		return bloqueGrafica.series?.some(s => s.ejeSecundario === true) ?? false;
 	}
 
+	// Formatea una celda de tabla: si es numérica, aplica el símbolo de la unidad
+	function formatTableCell(cell: string, rowLabel: string): string {
+		if (cell === null || cell === undefined || cell === '') return cell;
+		const num = Number(cell);
+		if (isNaN(num)) return cell;
+		const labelHasPercent = typeof rowLabel === 'string' && rowLabel.includes('%');
+		const unidad = labelHasPercent ? 'porcentaje' : bloqueGrafica.unidadMedida;
+		return formatValueWithUnit(num, unidad);
+	}
+
 	// Formatea un valor numérico con el símbolo/etiqueta de su unidad
 	function formatValueWithUnit(value: number, unidad?: string): string {
 		if (value === null || value === undefined || isNaN(value)) return '';
@@ -763,7 +773,7 @@
 										class:text-right={i > 0}
 										class:font-medium={i === 0}
 									>
-										{cell}
+										{i === 0 ? cell : formatTableCell(cell, row.cells[0])}
 									</td>
 								{/each}
 							</tr>
