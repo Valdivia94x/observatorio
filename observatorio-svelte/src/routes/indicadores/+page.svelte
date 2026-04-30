@@ -233,15 +233,23 @@
 			: graficas;
 
 		return [...filtered].sort((a, b) => {
-			// Primero gráficas, luego tablas
-			const aTable = a.tipo === 'table' ? 1 : 0;
-			const bTable = b.tipo === 'table' ? 1 : 0;
-			if (aTable !== bTable) return aTable - bTable;
+			// Ordenar por "ancho" ascendente: narrow charts → wide charts → tablas
+			const aRank = widthRank(a);
+			const bRank = widthRank(b);
+			if (aRank !== bRank) return aRank - bRank;
 			// Dentro de cada grupo, estatales al final
 			const aEstatal = isEstatalGrafica(a) ? 1 : 0;
 			const bEstatal = isEstatalGrafica(b) ? 1 : 0;
 			return aEstatal - bEstatal;
 		});
+	}
+
+	// Rango de "ancho" de una gráfica (para ordenar de menos a más ancho)
+	function widthRank(g: GraficaWidget): number {
+		if (g.tipo === 'table') return 2;
+		const rows = g.tablaDatos?.rows;
+		const cols = (rows?.[0]?.cells?.length || 1) - 1;
+		return cols >= 10 ? 1 : 0;
 	}
 
 
@@ -310,6 +318,31 @@ Se presentan dos vistas complementarias:
 <strong>Inflación anual: ZML vs Nacional</strong>: muestra la variación porcentual mensual respecto al mismo mes del año anterior. Permite identificar si la región experimenta presiones inflacionarias por encima o por debajo del país, así como detectar puntos de inflexión asociados a choques de oferta, política monetaria o cambios estacionales.
 
 <strong>Inflación por componente</strong>: descompone la tasa anual en los grandes rubros del gasto (alimentos, energéticos, vivienda, transporte, servicios, etc.) y los compara entre la ZML y el nivel nacional. Esta vista es clave para entender qué categorías están encareciendo el costo de vida en la región y diseñar estrategias de mitigación focalizadas.`,
+		'Años promedio de escolaridad': `Los <strong>años promedio de escolaridad</strong> miden el nivel educativo alcanzado por la población de 15 años y más, expresado como el número promedio de grados aprobados dentro del Sistema Educativo Nacional. Es uno de los componentes del Índice de Desarrollo Humano y un reflejo directo de la calidad del capital humano disponible para la actividad productiva.
+
+Los datos provienen del <strong>Censo de Población y Vivienda 2020 del INEGI</strong> y se desagregan a nivel municipal para Coahuila y Durango.
+
+<strong>¿Por qué es relevante?</strong>
+
+A nivel nacional el promedio se ubica cerca de los 9.7 años —equivalente a secundaria completa—; comparar cada municipio contra ese referente permite identificar rezagos estructurales. Mayores niveles de escolaridad se asocian con salarios más altos, menor informalidad laboral y mayor productividad. Detectar municipios por debajo del promedio estatal ayuda a focalizar políticas educativas y programas de becas o regularización.
+
+Las gráficas presentan el ranking de municipios de cada entidad para visualizar disparidades intra-estatales y ubicar a la Región Lagunera en el contexto de Coahuila y Durango.`,
+		'Indicadores de Desocupación': `Los <strong>indicadores de desocupación</strong> miden a la población en edad de trabajar que, sin estar ocupada, busca activamente un empleo. Se construyen con la <strong>Encuesta Nacional de Ocupación y Empleo (ENOE) del INEGI</strong> y se reportan trimestralmente para la <strong>Zona Metropolitana de La Laguna (ZML)</strong>: Torreón, Gómez Palacio, Lerdo y Matamoros.
+
+Se presentan dos vistas complementarias:
+
+<strong>Población Desocupada en la ZML</strong>: combina el número absoluto de personas desocupadas (barras) con la tasa de desempleo (línea, eje secundario), que expresa el porcentaje que representan respecto a la Población Económicamente Activa (PEA). Su comportamiento trimestral revela el efecto de ciclos económicos, choques externos y patrones estacionales sobre el empleo regional.
+
+<strong>Desocupados por Nivel de Instrucción</strong>: descompone la población desocupada según la escolaridad alcanzada (primaria, secundaria, media superior y superior). Esta vista responde una pregunta crítica para el diseño de política pública: ¿el desempleo regional se concentra en perfiles de baja calificación o también afecta a la población con estudios técnicos y universitarios? Permite distinguir entre desempleo friccional, estructural y por desfase entre la oferta educativa y la demanda productiva.`,
+		'Patrones Afiliados en el IMSS': `Los <strong>patrones afiliados al IMSS</strong> son los empleadores —personas físicas o morales— registrados ante el Instituto Mexicano del Seguro Social como responsables de inscribir a sus trabajadores. Constituyen uno de los mejores proxies disponibles del <strong>número de empresas formales</strong> activas en una localidad y, por tanto, un indicador adelantado del dinamismo empresarial regional.
+
+La fuente es el <strong>IMSS</strong>, con datos administrativos actualizados al cierre de cada periodo.
+
+Se presentan dos vistas complementarias:
+
+<strong>Patrones Afiliados en el IMSS</strong> (por ubicación): muestra la evolución anual del número total de patrones registrados en cada municipio de la Región Lagunera y en la ZML agregada. Permite identificar tendencias de creación o cierre de empresas formales, el impacto de la coyuntura económica y la capacidad de la región para atraer nuevas unidades productivas.
+
+<strong>Patrones por Tamaño de Registro Patronal</strong>: clasifica a los patrones según el rango de personas ocupadas que reportan (desde 1 trabajador hasta más de 1,000). Revela la estructura empresarial local —si predominan microempresas o si existe una capa robusta de empresas medianas y grandes— y cómo evoluciona esa composición entre cortes anuales. Es clave para entender la base productiva y la capacidad regional de generación de empleo formal.`,
 	};
 
 	const currentDescripcion = $derived(() => {

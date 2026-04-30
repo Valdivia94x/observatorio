@@ -47,8 +47,10 @@ function parseSeccion1Comparativo(data: (string | number | null)[][]): Generated
   const anios: string[] = []
   for (let c = 1; c < yearRow.length; c++) {
     const val = yearRow[c]
-    if (val && String(val).match(/^\d{4}$/)) anios.push(String(val))
-    else break
+    if (val && String(val).match(/^\d{4}$/)) {
+      const año = String(val)
+      anios.push(año === '2025' ? '2025*' : año)
+    } else break
   }
 
   // Data rows (skip sub-header row)
@@ -75,7 +77,7 @@ function parseSeccion1Comparativo(data: (string | number | null)[][]): Generated
     tablaDatos: {rows: tableRows},
     unidadMedida: 'porcentaje',
     fuente: 'inegi',
-    descripcionContexto: 'Variación porcentual anual del PIB. Comparativo Coahuila, Durango y Nacional. Fuente: INEGI, ITAEE.',
+    descripcionContexto: 'Variación porcentual anual del PIB. Comparativo Coahuila, Durango y Nacional. *2025 corresponde únicamente al primer trimestre. Fuente: INEGI, ITAEE.',
   }]
 }
 
