@@ -812,15 +812,34 @@
 			{#if getUnitSubtitle()}
 				<p class="text-xs md:text-sm italic mb-3 {themeStore.isDark ? 'text-slate-300' : 'text-slate-500'}">{getUnitSubtitle()}</p>
 			{/if}
+			{@const isRankHeader = (idx: number) => typeof rows[0].cells[idx] === 'string' && rows[0].cells[idx].trim() === '#'}
+		{@const hasRankColumn = isRankHeader(0)}
+		{@const rankColStyle = 'width: 5rem; min-width: 5rem; max-width: 5rem;'}
+		{@const colCount = rows[0].cells.length}
+		{@const fixedColStyle = (i: number) => {
+			if (!hasRankColumn) return '';
+			if (i === 0) return rankColStyle;
+			if (colCount === 3) return i === 1 ? 'width: 65%;' : 'width: 30%;';
+			return '';
+		}}
 			<div class="overflow-x-auto">
-				<table class="w-full border-collapse text-sm">
+				<table class="w-full border-collapse text-sm" style={hasRankColumn ? 'table-layout: fixed;' : ''}>
+					{#if hasRankColumn}
+						<colgroup>
+							{#each rows[0].cells as _, i}
+								<col style={fixedColStyle(i)} />
+							{/each}
+						</colgroup>
+					{/if}
 					<thead>
 						<tr>
 							{#each rows[0].cells as cell, i}
 								<th
-									class="px-4 py-3 font-semibold border-b-2 {themeStore.isDark ? 'border-slate-600 bg-slate-800 text-slate-200' : 'border-slate-300 bg-slate-100 text-slate-900'}"
-									class:text-left={i === 0}
-									class:text-right={i > 0}
+									class="py-3 font-semibold border-b-2 {isRankHeader(i) ? 'px-1' : 'px-4'} {themeStore.isDark ? 'border-slate-600 bg-slate-800 text-slate-200' : 'border-slate-300 bg-slate-100 text-slate-900'}"
+									style={isRankHeader(i) ? rankColStyle : ''}
+									class:text-left={(i === 0 && !isRankHeader(i)) || (hasRankColumn && i === 1)}
+									class:text-center={isRankHeader(i)}
+									class:text-right={i > 0 && !(hasRankColumn && i === 1)}
 								>
 									{cell}
 								</th>
@@ -829,13 +848,16 @@
 					</thead>
 					<tbody>
 						{#each rows.slice(1) as row, rowIdx}
-							<tr class={rowIdx % 2 === 1 ? (themeStore.isDark ? 'bg-slate-800/50' : 'bg-slate-50') : ''}>
+							{@const isTotalRow = row.cells.some(c => typeof c === 'string' && c.trim().toLowerCase().startsWith('total '))}
+							<tr class="{rowIdx % 2 === 1 ? (themeStore.isDark ? 'bg-slate-800/50' : 'bg-slate-50') : ''} {isTotalRow ? 'font-bold ' + (themeStore.isDark ? 'bg-slate-700/70' : 'bg-slate-100') : ''}">
 								{#each row.cells as cell, i}
 									<td
-										class="px-4 py-2.5 border-b {themeStore.isDark ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-900'}"
-										class:text-left={i === 0}
-										class:text-right={i > 0}
-										class:font-medium={i === 0}
+										class="py-2.5 border-b {isRankHeader(i) ? 'px-1' : 'px-4'} {themeStore.isDark ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-900'} {isTotalRow ? 'border-t-2 ' + (themeStore.isDark ? 'border-t-slate-500' : 'border-t-slate-400') : ''}"
+										style={isRankHeader(i) ? rankColStyle : ''}
+										class:text-left={(i === 0 && !isRankHeader(i)) || (hasRankColumn && i === 1)}
+										class:text-center={isRankHeader(i)}
+										class:text-right={i > 0 && !(hasRankColumn && i === 1)}
+										class:font-medium={i === 0 && !isRankHeader(i)}
 									>
 										{i === 0 ? cell : formatTableCell(cell, row.cells[0])}
 									</td>

@@ -209,6 +209,7 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
 
   const entidades: string[] = []
   const valores: string[] = []
+  let nacionalValor: string | null = null
 
   for (let i = dataStartRow; i < data.length; i++) {
     const row = data[i]
@@ -216,6 +217,10 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
     const name = String(row[1]).trim()
     const val = row[2]
     if (val === null || val === undefined) continue
+    if (name.toLowerCase() === 'nacional') {
+      nacionalValor = Math.round(Number(val)).toString()
+      continue
+    }
     entidades.push(name)
     valores.push(Math.round(Number(val)).toString())
   }
@@ -223,10 +228,13 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
   if (entidades.length === 0) return []
 
   const tableRows: TableRow[] = [
-    makeRow(['Entidad Federativa', 'Exportaciones (miles USD)']),
+    makeRow(['#', 'Entidad Federativa', 'Exportaciones (miles USD)']),
   ]
   for (let i = 0; i < entidades.length; i++) {
-    tableRows.push(makeRow([entidades[i], valores[i]]))
+    tableRows.push(makeRow([(i + 1).toString(), entidades[i], valores[i]]))
+  }
+  if (nacionalValor !== null) {
+    tableRows.push(makeRow(['', 'Total Nacional', nacionalValor]))
   }
 
   const tablaDatos: TableValue = {rows: tableRows}
