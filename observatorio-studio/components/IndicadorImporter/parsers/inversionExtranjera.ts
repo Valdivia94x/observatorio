@@ -158,21 +158,31 @@ function parseRanking(sheet: XLSX.Sheet): GeneratedGrafica[] {
 
   const entidades: string[] = []
   const valores: string[] = []
+  let nacionalValor: string | null = null
 
   for (let i = headerIdx + 1; i < data.length; i++) {
     const row = data[i]
     if (!row || !row[0]) break
-    entidades.push(String(row[0]).trim())
-    valores.push(round2(Number(row[1] || 0)))
+    const name = String(row[0]).trim()
+    const val = round2(Number(row[1] || 0))
+    if (name.toLowerCase() === 'nacional') {
+      nacionalValor = val
+      continue
+    }
+    entidades.push(name)
+    valores.push(val)
   }
 
   if (entidades.length === 0) return []
 
   const tableRows: TableRow[] = [
-    makeRow(['Entidad Federativa', 'IED (millones USD)']),
+    makeRow(['#', 'Entidad Federativa', 'IED (millones USD)']),
   ]
   for (let i = 0; i < entidades.length; i++) {
-    tableRows.push(makeRow([entidades[i], valores[i]]))
+    tableRows.push(makeRow([(i + 1).toString(), entidades[i], valores[i]]))
+  }
+  if (nacionalValor !== null) {
+    tableRows.push(makeRow(['', 'Total Nacional', nacionalValor]))
   }
 
   return [{

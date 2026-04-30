@@ -225,7 +225,7 @@
 			case 'litros':
 				return `${formatted} L`;
 			case 'unidades':
-				return `${formatted} unid.`;
+				return formatted;
 			case 'indice':
 			default:
 				return formatted;
@@ -395,7 +395,7 @@
 		const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 		const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
-		// Abrevia números grandes con separador de miles: 12345678 → "$12.35M"
+		// Abrevia números grandes solo a partir del millón: 12345678 → "$12.35M"; valores menores se muestran completos con coma de miles
 		function formatCurrencyShort(value: number | string): string {
 			const n = Number(value);
 			if (!isFinite(n)) return `$${value}`;
@@ -404,7 +404,6 @@
 			if (abs >= 1e12) return `${sign}$${(abs / 1e12).toLocaleString('es-MX', {maximumFractionDigits: 2})}B`;
 			if (abs >= 1e9) return `${sign}$${(abs / 1e9).toLocaleString('es-MX', {maximumFractionDigits: 2})}MM`;
 			if (abs >= 1e6) return `${sign}$${(abs / 1e6).toLocaleString('es-MX', {maximumFractionDigits: 2})}M`;
-			if (abs >= 1e3) return `${sign}$${(abs / 1e3).toLocaleString('es-MX', {maximumFractionDigits: 1})}K`;
 			return `${sign}$${abs.toLocaleString('es-MX')}`;
 		}
 

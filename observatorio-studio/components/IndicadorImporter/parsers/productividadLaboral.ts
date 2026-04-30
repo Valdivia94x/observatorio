@@ -127,7 +127,6 @@ function parseSeccion3Tablas(data: (string | number | null)[][]): GeneratedGrafi
 
       const tableRows: TableRow[] = [
         makeRow(['Actividad Económica', 'Millones de pesos']),
-        makeRow([locationName + ' (Total)', totalVal]),
       ]
 
       // Read activities
@@ -140,6 +139,8 @@ function parseSeccion3Tablas(data: (string | number | null)[][]): GeneratedGrafi
         const valStr = val === 'C' || val === null || val === undefined ? 'C' : round2(Number(val))
         tableRows.push(makeRow([actName, valStr]))
       }
+
+      tableRows.push(makeRow([`Total ${locationName}`, totalVal]))
 
       const cleanName = locationName.trim()
       const ubicacion = MUNICIPIO_UBICACION[cleanName.toLowerCase()] || ['torreon']

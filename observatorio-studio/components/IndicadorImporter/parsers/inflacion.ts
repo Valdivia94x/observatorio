@@ -133,12 +133,12 @@ function parseSeccion2Componentes(data: (string | number | null)[][]): Generated
   const tablaDatos: TableValue = {rows: tableRows}
 
   return [{
-    titulo: 'Inflación por Componente: ZML vs Nacional',
+    titulo: 'Inflación por Componente a Marzo 2026: ZML vs Nacional',
     tipo: 'table',
     ubicacion: ZML_UBICACION,
     tablaDatos,
     unidadMedida: 'porcentaje',
     fuente: 'inegi',
-    descripcionContexto: 'Inflación anual por componente del INPC, comparativo ZML vs Nacional. Fuente: INEGI, INPC.',
+    descripcionContexto: 'Inflación anual por componente del INPC a marzo 2026, comparativo ZML vs Nacional. Fuente: INEGI, INPC.',
   }]
 }
