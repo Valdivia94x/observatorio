@@ -87,7 +87,7 @@ function parseSeccion1Entidades(data: (string | number | null)[][]): GeneratedGr
       tipo: 'bar',
       ubicacion,
       tablaDatos,
-      unidadMedida: 'miles-pesos',
+      unidadMedida: 'miles-dolares',
       fuente: 'inegi',
       descripcionContexto: `Exportaciones trimestrales de ${entidad} en miles de dólares (barras) y porcentaje del total nacional (línea). Fuente: INEGI.`,
       series: [
@@ -183,7 +183,7 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
       tipo: 'table',
       ubicacion: block.ubicacion,
       tablaDatos,
-      unidadMedida: 'miles-pesos',
+      unidadMedida: 'miles-dolares',
       fuente: 'inegi',
       descripcionContexto: `Principales subactividades de exportación en ${block.name}, miles de dólares. Fuente: INEGI.`,
     })
@@ -236,7 +236,7 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
     tipo: 'table',
     ubicacion: ['estatal-coahuila', 'estatal-durango'],
     tablaDatos,
-    unidadMedida: 'miles-pesos',
+    unidadMedida: 'miles-dolares',
     fuente: 'inegi',
     descripcionContexto: 'Ranking de entidades federativas por exportaciones totales en miles de dólares, 2025. Fuente: INEGI.',
     ocultarValores: true,

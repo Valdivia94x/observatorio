@@ -93,7 +93,7 @@ export function parseRemesas(workbook: XLSX.WorkBook): GeneratedGrafica[] {
       tipo: 'bar',
       ubicacion,
       tablaDatos,
-      unidadMedida: 'millones-pesos',
+      unidadMedida: 'millones-dolares',
       fuente: 'banxico',
       descripcionContexto: `Ingresos por remesas en ${loc.name}, millones de dólares. Fuente: Banxico.`,
     })

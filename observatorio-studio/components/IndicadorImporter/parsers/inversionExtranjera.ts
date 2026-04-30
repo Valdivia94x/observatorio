@@ -78,7 +78,7 @@ function parseTipoInversion(sheet: XLSX.Sheet): GeneratedGrafica[] {
       tipo: 'bar',
       ubicacion,
       tablaDatos,
-      unidadMedida: 'millones-pesos',
+      unidadMedida: 'millones-dolares',
       fuente: 'economia',
       descripcionContexto: `Inversión Extranjera Directa total en ${displayName}, millones de dólares. Fuente: Secretaría de Economía.`,
     })
@@ -130,7 +130,7 @@ function parseTipoInversion(sheet: XLSX.Sheet): GeneratedGrafica[] {
       tipo: 'table',
       ubicacion,
       tablaDatos: {rows: tableRows},
-      unidadMedida: 'millones-pesos',
+      unidadMedida: 'millones-dolares',
       fuente: 'economia',
       descripcionContexto: `Inversión Extranjera Directa por tipo de inversión en ${estado}, millones de dólares. Fuente: Secretaría de Economía.`,
     })
@@ -180,7 +180,7 @@ function parseRanking(sheet: XLSX.Sheet): GeneratedGrafica[] {
     tipo: 'table',
     ubicacion: ['estatal-coahuila', 'estatal-durango'],
     tablaDatos: {rows: tableRows},
-    unidadMedida: 'millones-pesos',
+    unidadMedida: 'millones-dolares',
     fuente: 'economia',
     descripcionContexto: 'Ranking de entidades federativas por Inversión Extranjera Directa, millones de dólares, 2025. Fuente: Secretaría de Economía.',
   }]

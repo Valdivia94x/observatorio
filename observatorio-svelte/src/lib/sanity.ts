@@ -109,6 +109,7 @@ export const desagregacionLabels: Record<DesagregacionKey, string> = {
 
 // Unidad de medida types (para agente de voz)
 export type UnidadMedidaKey = 'porcentaje' | 'pesos' | 'miles-pesos' | 'millones-pesos' |
+	'dolares' | 'miles-dolares' | 'millones-dolares' |
 	'habitantes' | 'miles-habitantes' | 'tasa-100mil' | 'indice' | 'unidades' |
 	'hectareas' | 'kilometros' | 'toneladas' | 'litros' | 'otro';
 
@@ -117,6 +118,9 @@ export const unidadMedidaLabels: Record<UnidadMedidaKey, string> = {
 	'pesos': 'Pesos (MXN)',
 	'miles-pesos': 'Miles de pesos',
 	'millones-pesos': 'Millones de pesos',
+	'dolares': 'Dólares (USD)',
+	'miles-dolares': 'Miles de dólares',
+	'millones-dolares': 'Millones de dólares',
 	'habitantes': 'Habitantes',
 	'miles-habitantes': 'Miles de habitantes',
 	'tasa-100mil': 'Tasa por 100,000 habitantes',

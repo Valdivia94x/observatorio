@@ -37,6 +37,7 @@
 			chartjs.RadialLinearScale,
 			// Plugins
 			chartjs.Title,
+			chartjs.SubTitle,
 			chartjs.Tooltip,
 			chartjs.Legend,
 			chartjs.Filler,
@@ -163,6 +164,28 @@
 		return bloqueGrafica.series?.some(s => s.ejeSecundario === true) ?? false;
 	}
 
+	// Devuelve el subtítulo de unidad (escala/personalizada) o null cuando es redundante
+	function getUnitSubtitle(): string | null {
+		const u = bloqueGrafica.unidadMedida;
+		if (u === 'otro') {
+			const custom = bloqueGrafica.unidadMedidaPersonalizada?.trim();
+			return custom ? custom : null;
+		}
+		switch (u) {
+			case 'miles-pesos': return 'Miles de pesos';
+			case 'millones-pesos': return 'Millones de pesos';
+			case 'miles-dolares': return 'Miles de dólares';
+			case 'millones-dolares': return 'Millones de dólares';
+			case 'miles-habitantes': return 'Miles de habitantes';
+			case 'tasa-100mil': return 'Tasa por 100,000 habitantes';
+			case 'hectareas': return 'Hectáreas';
+			case 'kilometros': return 'Kilómetros';
+			case 'toneladas': return 'Toneladas';
+			case 'litros': return 'Litros';
+			default: return null;
+		}
+	}
+
 	// Formatea una celda de tabla: si es numérica, aplica el símbolo de la unidad
 	function formatTableCell(cell: string, rowLabel: string): string {
 		if (cell === null || cell === undefined || cell === '') return cell;
@@ -182,6 +205,10 @@
 			case 'miles-pesos':
 			case 'millones-pesos':
 				return `$${formatted}`;
+			case 'dolares':
+			case 'miles-dolares':
+			case 'millones-dolares':
+				return `$${formatted} USD`;
 			case 'porcentaje':
 				return `${formatted}%`;
 			case 'habitantes':
@@ -368,6 +395,26 @@
 		const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 		const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
+		// Abrevia números grandes con separador de miles: 12345678 → "$12.35M"
+		function formatCurrencyShort(value: number | string): string {
+			const n = Number(value);
+			if (!isFinite(n)) return `$${value}`;
+			const abs = Math.abs(n);
+			const sign = n < 0 ? '-' : '';
+			if (abs >= 1e12) return `${sign}$${(abs / 1e12).toLocaleString('es-MX', {maximumFractionDigits: 2})}B`;
+			if (abs >= 1e9) return `${sign}$${(abs / 1e9).toLocaleString('es-MX', {maximumFractionDigits: 2})}MM`;
+			if (abs >= 1e6) return `${sign}$${(abs / 1e6).toLocaleString('es-MX', {maximumFractionDigits: 2})}M`;
+			if (abs >= 1e3) return `${sign}$${(abs / 1e3).toLocaleString('es-MX', {maximumFractionDigits: 1})}K`;
+			return `${sign}$${abs.toLocaleString('es-MX')}`;
+		}
+
+		// Detecta si la unidadMedida del bloque es monetaria
+		function isCurrencyUnit(): boolean {
+			const u = bloqueGrafica.unidadMedida;
+			return u === 'pesos' || u === 'miles-pesos' || u === 'millones-pesos' ||
+				u === 'dolares' || u === 'miles-dolares' || u === 'millones-dolares';
+		}
+
 		// Extract symbol (% or $) from axis title and move to ticks
 		function extractAxisSymbol(label: string): { cleanLabel: string; tickCallback?: (value: number | string) => string } {
 			if (label.includes('%') || label.toLowerCase().includes('porcentaje')) {
@@ -377,11 +424,11 @@
 					tickCallback: (value: number | string) => `${value}%`,
 				};
 			}
-			if (label.includes('$') || label.toLowerCase().includes('pesos')) {
+			if (label.includes('$') || label.toLowerCase().includes('pesos') || label.toLowerCase().includes('dólares') || label.toLowerCase().includes('dolares') || isCurrencyUnit()) {
 				const cleanLabel = label.replace(/\s*\(\$?\)\s*|\s*\$\s*/g, '').trim();
 				return {
 					cleanLabel,
-					tickCallback: (value: number | string) => `$${Number(value).toLocaleString('es-MX')}`,
+					tickCallback: (value: number | string) => formatCurrencyShort(value),
 				};
 			}
 			return { cleanLabel: label };
@@ -417,6 +464,19 @@
 					font: {
 						size: isMobile ? 16 : 24,
 						weight: 'bold'
+					},
+					padding: {
+						bottom: getUnitSubtitle() ? 2 : (isMobile ? 12 : 20)
+					}
+				},
+				subtitle: {
+					display: !!getUnitSubtitle(),
+					text: getUnitSubtitle() || '',
+					color: isDark ? 'rgba(203, 213, 225, 0.85)' : 'rgba(71, 85, 105, 0.85)',
+					font: {
+						size: isMobile ? 11 : 13,
+						weight: 'normal',
+						style: 'italic'
 					},
 					padding: {
 						bottom: isMobile ? 12 : 20
@@ -480,6 +540,7 @@
 						if (value === 0) return '';
 						const formatted = value.toLocaleString('es-MX');
 						if (bloqueGrafica.unidadMedida === 'pesos' || bloqueGrafica.unidadMedida === 'miles-pesos' || bloqueGrafica.unidadMedida === 'millones-pesos') return `$${formatted}`;
+						if (bloqueGrafica.unidadMedida === 'dolares' || bloqueGrafica.unidadMedida === 'miles-dolares' || bloqueGrafica.unidadMedida === 'millones-dolares') return `$${formatted}`;
 						if (bloqueGrafica.unidadMedida === 'porcentaje') return `${formatted}%`;
 						return formatted;
 					}
@@ -746,7 +807,10 @@
 			</div>
 		{:else}
 			{#if bloqueGrafica.titulo}
-				<h3 class="text-lg md:text-xl font-bold mb-3 {fillHeight ? '' : ''} {themeStore.isDark ? 'text-white' : 'text-slate-800'}">{bloqueGrafica.titulo}</h3>
+				<h3 class="text-lg md:text-xl font-bold {fillHeight ? '' : ''} {getUnitSubtitle() ? 'mb-0' : 'mb-3'} {themeStore.isDark ? 'text-white' : 'text-slate-800'}">{bloqueGrafica.titulo}</h3>
+			{/if}
+			{#if getUnitSubtitle()}
+				<p class="text-xs md:text-sm italic mb-3 {themeStore.isDark ? 'text-slate-300' : 'text-slate-500'}">{getUnitSubtitle()}</p>
 			{/if}
 			<div class="overflow-x-auto">
 				<table class="w-full border-collapse text-sm">
