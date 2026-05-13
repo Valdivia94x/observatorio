@@ -621,6 +621,7 @@
 						callback: yAxis.tickCallback,
 					},
 					beginAtZero: true,
+					max: (isStacked && bloqueGrafica.unidadMedida === 'porcentaje') ? 100 : undefined,
 				}
 			};
 
