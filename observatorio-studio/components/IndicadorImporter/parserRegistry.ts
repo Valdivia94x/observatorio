@@ -23,6 +23,14 @@ import {parseIndicadoresDesocupacion} from './parsers/indicadoresDesocupacion'
 import {parseTrabajadoresIMSS} from './parsers/trabajadoresIMSS'
 import {parseSalariosIMSS} from './parsers/salariosIMSS'
 import {parsePatronesIMSS} from './parsers/patronesIMSS'
+import {parseDeudaTotalRegistrada} from './parsers/deudaTotalRegistrada'
+import {parseDeudaSOMA} from './parsers/deudaSOMA'
+import {parseEgresosSOMA} from './parsers/egresosSOMA'
+import {parseGastoRubros} from './parsers/gastoRubros'
+import {parseIngresosMunicipales} from './parsers/ingresosMunicipales'
+import {parseIngresosSOMA} from './parsers/ingresosSOMA'
+import {parseRecaudacionPredial} from './parsers/recaudacionPredial'
+import {parseTrabajadoresNomina} from './parsers/trabajadoresNomina'
 
 // Registry: maps indicator name (lowercase) to its parser
 const registry = new Map<string, IndicadorParser>()
@@ -56,6 +64,14 @@ register('Indicadores de Desocupación', parseIndicadoresDesocupacion)
 register('Trabajadores registrados en el IMSS', parseTrabajadoresIMSS)
 register('Salarios de trabajadores registrados en el IMSS', parseSalariosIMSS)
 register('Patrones Afiliados en el IMSS', parsePatronesIMSS)
+register('Deuda Total registrada', parseDeudaTotalRegistrada)
+register('Deuda de los Sistemas Operadores de Agua', parseDeudaSOMA)
+register('Egresos de los Sistemas Operadores de Agua', parseEgresosSOMA)
+register('Gasto ejercido por rubros', parseGastoRubros)
+register('Ingresos Municipales', parseIngresosMunicipales)
+register('Ingresos de los Sistemas Operadores de Agua', parseIngresosSOMA)
+register('Recaudación del impuesto predial', parseRecaudacionPredial)
+register('Trabajadores registrados en la Nómina del Ayuntamiento', parseTrabajadoresNomina)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {
