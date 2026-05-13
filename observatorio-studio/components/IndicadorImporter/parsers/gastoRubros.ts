@@ -116,6 +116,7 @@ function parsePorcentajes(
     unidadMedida: 'porcentaje',
     fuente: 'municipal',
     descripcionContexto: `Gasto ejercido por rubro en el municipio de ${muni.display}, distribución porcentual anual. Fuente: Transparencia Municipal del Ayuntamiento de ${muni.display}.`,
+    ocultarValores: true,
   }
 }
 

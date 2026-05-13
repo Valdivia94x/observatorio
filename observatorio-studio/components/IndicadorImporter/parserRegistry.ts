@@ -71,7 +71,7 @@ register('Gasto ejercido por rubros', parseGastoRubros)
 register('Ingresos Municipales', parseIngresosMunicipales)
 register('Ingresos de los Sistemas Operadores de Agua', parseIngresosSOMA)
 register('Recaudación del impuesto predial', parseRecaudacionPredial)
-register('Trabajadores registrados en la Nómina del Ayuntamiento', parseTrabajadoresNomina)
+register('Trabajadores registrados en la nómina', parseTrabajadoresNomina)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {

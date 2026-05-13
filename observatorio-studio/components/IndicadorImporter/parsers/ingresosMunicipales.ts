@@ -113,6 +113,7 @@ function parseFuentes(
     unidadMedida: 'millones-pesos',
     fuente: 'municipal',
     descripcionContexto: `Ingresos municipales de ${muni.display} desagregados por fuente de financiamiento (federal, propio, financiamientos), millones de pesos. Fuente: Transparencia Municipal del Ayuntamiento de ${muni.display}.`,
+    ocultarValores: true,
   }
 }
 
