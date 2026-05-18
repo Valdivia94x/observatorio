@@ -114,8 +114,9 @@ function parsePorcentajes(
     ubicacion: [muni.ubicacion],
     tablaDatos: {rows: tableRows},
     unidadMedida: 'porcentaje',
-    fuente: 'municipal',
-    descripcionContexto: `Gasto ejercido por rubro del Sistema Operador de Agua de ${muni.display}, distribución porcentual anual. Fuente: Transparencia Municipal del Ayuntamiento de ${muni.display}.`,
+    fuente: 'otra',
+    fuentePersonalizada: `Transparencia Municipal del Ayuntamiento de ${muni.display}`,
+    descripcionContexto: `Gasto ejercido por rubro del Sistema Operador de Agua de ${muni.display}, distribución porcentual anual.`,
     ocultarValores: true,
   }
 }
@@ -160,7 +161,8 @@ function parseMontos(
     ubicacion: [muni.ubicacion],
     tablaDatos: {rows: tableRows},
     unidadMedida: 'pesos',
-    fuente: 'municipal',
-    descripcionContexto: `Gasto ejercido por rubro del Sistema Operador de Agua de ${muni.display}, montos anuales en pesos. Fuente: Transparencia Municipal del Ayuntamiento de ${muni.display}.`,
+    fuente: 'otra',
+    fuentePersonalizada: `Transparencia Municipal del Ayuntamiento de ${muni.display}`,
+    descripcionContexto: `Gasto ejercido por rubro del Sistema Operador de Agua de ${muni.display}, montos anuales en pesos.`,
   }
 }

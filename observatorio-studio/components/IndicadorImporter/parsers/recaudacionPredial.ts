@@ -76,7 +76,7 @@ export function parseRecaudacionPredial(workbook: XLSX.WorkBook): GeneratedGrafi
       tablaDatos: {rows: tableRows},
       unidadMedida: 'pesos',
       fuente: 'shcp',
-      descripcionContexto: `Recaudación anual del impuesto predial y número de cuentas pagadas en ${muni.display}. Fuente: Secretaría de Hacienda y Crédito Público con información de los Ayuntamientos.`,
+      descripcionContexto: `Recaudación anual del impuesto predial y número de cuentas pagadas en ${muni.display}.`,
       series: [
         {nombre: 'Recaudación de predial', tipoSerie: 'bar', color: '#3b82f6'},
         {nombre: 'Cuentas pagadas', tipoSerie: 'line', color: '#ef4444', ejeSecundario: true},

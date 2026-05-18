@@ -65,6 +65,6 @@ export function parseTrabajadoresNomina(workbook: XLSX.WorkBook): GeneratedGrafi
     tablaDatos: {rows: tableRows},
     unidadMedida: 'unidades',
     fuente: 'inegi',
-    descripcionContexto: 'Número de trabajadores registrados en la nómina del ayuntamiento de cada municipio de la ZML. Fuente: INEGI, Histórico de los Censos de Gobiernos Municipales.',
+    descripcionContexto: 'Número de trabajadores registrados en la nómina del ayuntamiento de cada municipio de la ZML.',
   }]
 }

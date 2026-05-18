@@ -111,8 +111,9 @@ function parseFuentes(
     ubicacion: [muni.ubicacion],
     tablaDatos: {rows: tableRows},
     unidadMedida: 'millones-pesos',
-    fuente: 'municipal',
-    descripcionContexto: `Ingresos municipales de ${muni.display} desagregados por fuente de financiamiento (federal, propio, financiamientos), millones de pesos. Fuente: Transparencia Municipal del Ayuntamiento de ${muni.display}.`,
+    fuente: 'otra',
+    fuentePersonalizada: `Transparencia Municipal del Ayuntamiento de ${muni.display}`,
+    descripcionContexto: `Ingresos municipales de ${muni.display} desagregados por fuente de financiamiento (federal, propio, financiamientos), millones de pesos.`,
     ocultarValores: true,
   }
 }
@@ -157,7 +158,8 @@ function parseRubros(
     ubicacion: [muni.ubicacion],
     tablaDatos: {rows: tableRows},
     unidadMedida: 'pesos',
-    fuente: 'municipal',
-    descripcionContexto: `Ingresos municipales de ${muni.display} desagregados por rubro (impuestos, derechos, participaciones, etc.), montos anuales en pesos. Fuente: Transparencia Municipal del Ayuntamiento de ${muni.display}.`,
+    fuente: 'otra',
+    fuentePersonalizada: `Transparencia Municipal del Ayuntamiento de ${muni.display}`,
+    descripcionContexto: `Ingresos municipales de ${muni.display} desagregados por rubro (impuestos, derechos, participaciones, etc.), montos anuales en pesos.`,
   }
 }

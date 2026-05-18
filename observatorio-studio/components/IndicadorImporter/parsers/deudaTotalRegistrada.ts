@@ -86,7 +86,8 @@ function parseSheet(sheet: XLSX.Sheet, sheetName: string): GeneratedGrafica | nu
     ubicacion: [muni.ubicacion],
     tablaDatos: {rows: tableRows},
     unidadMedida: 'pesos',
-    fuente: 'municipal',
-    descripcionContexto: `Deuda total registrada en el municipio de ${muni.display}, descompuesta en pasivo circulante y no circulante. Fuente: Transparencia Municipal del Ayuntamiento de ${muni.display}.`,
+    fuente: 'otra',
+    fuentePersonalizada: `Transparencia Municipal del Ayuntamiento de ${muni.display}`,
+    descripcionContexto: `Deuda total registrada en el municipio de ${muni.display}, descompuesta en pasivo circulante y no circulante.`,
   }
 }

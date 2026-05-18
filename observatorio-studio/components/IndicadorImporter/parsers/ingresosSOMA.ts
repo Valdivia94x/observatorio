@@ -72,8 +72,9 @@ export function parseIngresosSOMA(workbook: XLSX.WorkBook): GeneratedGrafica[] {
       ubicacion: [muni.ubicacion],
       tablaDatos: {rows: tableRows},
       unidadMedida: 'pesos',
-      fuente: 'municipal',
-      descripcionContexto: `Ingresos totales del Sistema Operador de Agua de ${muni.display}, montos anuales en pesos. Fuente: Transparencia Municipal del Ayuntamiento de ${muni.display}.`,
+      fuente: 'otra',
+      fuentePersonalizada: `Transparencia Municipal del Ayuntamiento de ${muni.display}`,
+      descripcionContexto: `Ingresos totales del Sistema Operador de Agua de ${muni.display}, montos anuales en pesos.`,
     })
   }
 
