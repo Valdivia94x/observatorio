@@ -34,6 +34,38 @@
 		const ejeParam = $page.url.searchParams.get('eje');
 		selectedEje = ejeParam || DEFAULT_EJE;
 
+		// Pick a default indicador for the eje preferring one with Torreón → Coahuila → cualquiera
+		const indicadoresEnEje = indicadores
+			.filter(ind => selectedEje === 'todos' || ind.eje?.title === selectedEje)
+			.filter(ind => ind.title && (ind.contenido?.length ?? 0) > 0);
+
+		function indicadorTieneUbicacion(ind: Indicador, ubicacion: string): boolean {
+			return ind.contenido?.some(g => g.ubicacion?.includes(ubicacion as UbicacionKey)) ?? false;
+		}
+
+		const indicadoresOrdenados = [...indicadoresEnEje].sort((a, b) =>
+			(a.title || '').localeCompare(b.title || ''),
+		);
+		const indicadorConTorreon = indicadoresOrdenados.find(ind => indicadorTieneUbicacion(ind, 'torreon'));
+		const indicadorConCoahuila = indicadoresOrdenados.find(ind => indicadorTieneUbicacion(ind, 'estatal-coahuila'));
+		const fallbackIndicador = indicadoresOrdenados[0];
+
+		let defaultIndicador: string;
+		let defaultUbicacion: string;
+		if (indicadorConTorreon) {
+			defaultIndicador = indicadorConTorreon.title!;
+			defaultUbicacion = 'torreon';
+		} else if (indicadorConCoahuila) {
+			defaultIndicador = indicadorConCoahuila.title!;
+			defaultUbicacion = 'estatal-coahuila';
+		} else {
+			defaultIndicador = fallbackIndicador?.title || DEFAULT_INDICADOR;
+			defaultUbicacion = 'todos';
+		}
+
+		const indicadorParam = $page.url.searchParams.get('indicador');
+		const indicadorValue = indicadorParam || defaultIndicador;
+
 		const ubicacionParam = $page.url.searchParams.get('ubicacion');
 		if (ubicacionParam) {
 			// Convertir MunicipioKey a UbicacionKey si viene del mapa de home
@@ -44,10 +76,10 @@
 				// Si ya es una UbicacionKey válida, usarla directamente
 				selectedUbicacion = ubicacionParam;
 			}
+		} else {
+			selectedUbicacion = defaultUbicacion;
 		}
 
-		const indicadorParam = $page.url.searchParams.get('indicador');
-		const indicadorValue = indicadorParam || DEFAULT_INDICADOR;
 		requestAnimationFrame(() => {
 			selectedIndicador = indicadorValue;
 			setTimeout(() => { initialized = true; }, 0);

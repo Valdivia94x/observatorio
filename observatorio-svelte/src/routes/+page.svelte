@@ -165,7 +165,7 @@
 		{ nombre: 'Empleo', image: '/images/Principales_Ejes/Empleo.png' },
 		{ nombre: 'Salud', image: '/images/Principales_Ejes/Salud.png' },
 		{ nombre: 'Participación Ciudadana', image: '/images/Principales_Ejes/Participacion_Ciudadana.png' },
-		{ nombre: 'Buen Gobierno', image: '/images/Principales_Ejes/Buen_Gobierno.png' },
+		{ nombre: 'Finanzas Públicas', image: '/images/Principales_Ejes/Finanzas.png' },
 		{ nombre: 'Desarrollo Urbano', image: '/images/Principales_Ejes/Desarrollo_Urbano.png' },
 		{ nombre: 'Medio Ambiente', image: '/images/Principales_Ejes/Medio_Ambiente.png' }
 	];
