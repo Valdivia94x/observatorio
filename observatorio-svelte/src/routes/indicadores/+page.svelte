@@ -234,6 +234,16 @@
 		}
 	});
 
+	// Guard defensivo: si selectedIndicador no pertenece al eje actual, resetearlo al primero.
+	// Cubre cualquier desincronización (race condition, navegación rápida, hidratación parcial).
+	$effect(() => {
+		if (!initialized) return;
+		const names = indicadorNames();
+		if (selectedIndicador !== 'todos' && !names.includes(selectedIndicador)) {
+			selectedIndicador = names[0] || 'todos';
+		}
+	});
+
 	function getUbicacionLabel(key?: UbicacionKey): string {
 		if (!key) return 'Sin especificar';
 		return ubicacionLabels[key] || key;
