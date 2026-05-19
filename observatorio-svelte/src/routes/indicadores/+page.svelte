@@ -594,36 +594,40 @@ Se presentan dos vistas complementarias:
 
 	<!-- Layout: side-by-side (default) or stacked (all wide). Map siempre a la izquierda. -->
 	<div class="max-w-7xl mx-auto px-6">
-	<!-- Indicador y Eje seleccionado: solo a la izquierda; la columna derecha empieza a la altura del mapa abajo -->
-	<div class="lg:w-1/3 mb-4">
-		{@render indicadorInfoCard()}
-	</div>
-	{#if singleIndicator() && (singleIndicator()?.rangoCobertura || singleIndicator()?.periodicidad || singleIndicator()?.infoAdicional)}
-		<!-- Encabezado del indicador único: arriba del flex para que la primera gráfica empiece a la altura del mapa -->
-		<div class="lg:w-1/3 mb-4">
-			{#if singleIndicator()?.rangoCobertura || singleIndicator()?.periodicidad}
-				<div class="flex flex-wrap gap-2">
-					{#if singleIndicator()?.rangoCobertura}
-						<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
-							{singleIndicator()?.rangoCobertura}
-						</span>
-					{/if}
-					{#if singleIndicator()?.periodicidad}
-						<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
-							{getPeriodicidadLabel(singleIndicator()?.periodicidad)}
-						</span>
-					{/if}
-				</div>
-			{/if}
-			{#if singleIndicator()?.infoAdicional}
-				<div class="{themeStore.isDark ? 'bg-slate-800/50 border-slate-600' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mt-3">
-					<p class="{themeStore.isDark ? 'text-slate-300' : 'text-amber-900'} text-sm">
-						{singleIndicator()?.infoAdicional}
-					</p>
-				</div>
-			{/if}
+	<!-- Fila superior: tarjeta de Indicador/Eje a la izquierda (1/3); título h3 + tags + infoAdicional a la derecha (2/3) cuando hay un solo indicador -->
+	<div class="flex flex-col lg:flex-row gap-8 mb-4">
+		<div class="lg:w-1/3">
+			{@render indicadorInfoCard()}
 		</div>
-	{/if}
+		{#if singleIndicator()}
+			<div class="lg:w-2/3">
+				<h3 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-xl font-bold mb-2">
+					{singleIndicator()?.title}
+				</h3>
+				{#if singleIndicator()?.rangoCobertura || singleIndicator()?.periodicidad}
+					<div class="flex flex-wrap gap-2">
+						{#if singleIndicator()?.rangoCobertura}
+							<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
+								{singleIndicator()?.rangoCobertura}
+							</span>
+						{/if}
+						{#if singleIndicator()?.periodicidad}
+							<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
+								{getPeriodicidadLabel(singleIndicator()?.periodicidad)}
+							</span>
+						{/if}
+					</div>
+				{/if}
+				{#if singleIndicator()?.infoAdicional}
+					<div class="{themeStore.isDark ? 'bg-slate-800/50 border-slate-600' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mt-3">
+						<p class="{themeStore.isDark ? 'text-slate-300' : 'text-amber-900'} text-sm">
+							{singleIndicator()?.infoAdicional}
+						</p>
+					</div>
+				{/if}
+			</div>
+		{/if}
+	</div>
 	<div class="{allGraficasAreWide() ? 'flex flex-col gap-8' : 'flex flex-col lg:flex-row gap-8'}">
 		<!-- Map area: cuando está apilado + tiene descripción, mapa y descripción comparten fila -->
 		{#if allGraficasAreWide() && currentDescripcion()}
