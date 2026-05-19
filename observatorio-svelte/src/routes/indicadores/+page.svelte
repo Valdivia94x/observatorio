@@ -197,6 +197,12 @@
 		return indicadoresConGraficasFiltradas().filter(ind => ind.title === selectedIndicador);
 	});
 
+	// Cuando sólo hay un indicador en la vista, su encabezado va arriba (no inline) para alinear gráfica con mapa
+	const singleIndicator = $derived(() => {
+		const list = finalFilteredIndicadores();
+		return list.length === 1 ? list[0] : null;
+	});
+
 	// Group filtered indicadores by eje title
 	const groupedIndicadores = $derived(() => {
 		const groups: Record<string, { color?: string; iconUrl?: string; items: (Indicador & { graficasFiltradas: GraficaWidget[] })[] }> = {};
@@ -481,7 +487,7 @@ Se presentan dos vistas complementarias:
 		</div>
 	</div>
 
-	{#snippet mapColumnContent()}
+	{#snippet indicadorInfoCard()}
 		<!-- Indicador y Eje seleccionado -->
 		<div class="{themeStore.isDark ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-4 shadow-lg">
 			<p class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} font-bold text-lg">
@@ -491,7 +497,9 @@ Se presentan dos vistas complementarias:
 				{selectedEje !== 'todos' ? selectedEje : 'Todos los ejes'}{selectedIndicador !== 'todos' ? ` / ${selectedIndicador}` : ''}
 			</p>
 		</div>
+	{/snippet}
 
+	{#snippet mapColumnContent()}
 		<!-- Mapa interactivo -->
 		<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-3 shadow-lg">
 			<h1 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-2xl font-bold mb-1">
@@ -525,8 +533,97 @@ Se presentan dos vistas complementarias:
 		</div>
 	{/snippet}
 
+	{#snippet chartCard(indicador: Indicador & { graficasFiltradas: GraficaWidget[] }, grafica: GraficaWidget)}
+		<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isEstatalGrafica(grafica) && selectedUbicacion !== 'todos' && !allGraficasAreWide() ? 'mt-12' : ''}">
+			<!-- Voice button -->
+			<button
+				onclick={() => askAboutGrafica(grafica, indicador.title || '')}
+				disabled={isVoiceLoading && isActiveForVoice(grafica)}
+				class="absolute top-3 right-3 p-2 rounded-full transition-all duration-200 z-10
+					{isActiveForVoice(grafica) && isVoiceConnected
+						? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg ring-2 ring-green-400/50'
+						: isActiveForVoice(grafica) && isVoiceLoading
+							? 'bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-lg animate-pulse'
+							: themeStore.isDark
+								? 'bg-slate-700 text-slate-400 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'
+								: 'bg-slate-200 text-slate-500 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'}"
+				title={isActiveForVoice(grafica) && isVoiceConnected
+					? 'Conversación activa'
+					: isActiveForVoice(grafica) && isVoiceLoading
+						? 'Conectando...'
+						: 'Preguntar sobre esta gráfica'}
+			>
+				{#if isActiveForVoice(grafica) && isVoiceLoading}
+					<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+					</svg>
+				{:else if isActiveForVoice(grafica) && isVoiceConnected}
+					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+						<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+					</svg>
+				{:else}
+					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+						<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93h2c0 2.76 2.24 5 5 5s5-2.24 5-5h2c0 4.08-3.06 7.44-7 7.93V19h4v2H8v-2h4v-3.07z"/>
+					</svg>
+				{/if}
+			</button>
+
+			<div class="flex flex-wrap gap-2 mb-1">
+				{#if grafica.ubicacion?.length}
+					<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
+						{grafica.ubicacion.map(u => getUbicacionLabel(u)).join(', ')}
+					</span>
+				{/if}
+				{#if formatearPeriodoGrafica(grafica)}
+					<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
+						• {formatearPeriodoGrafica(grafica)}
+					</span>
+				{/if}
+				{#if grafica.periodoEspecifico}
+					<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
+						• {grafica.periodoEspecifico}
+					</span>
+				{/if}
+			</div>
+			<GraficaConFiltro
+				grafica={grafica}
+			/>
+		</div>
+	{/snippet}
+
 	<!-- Layout: side-by-side (default) or stacked (all wide). Map siempre a la izquierda. -->
 	<div class="max-w-7xl mx-auto px-6">
+	<!-- Indicador y Eje seleccionado: solo a la izquierda; la columna derecha empieza a la altura del mapa abajo -->
+	<div class="lg:w-1/3 mb-4">
+		{@render indicadorInfoCard()}
+	</div>
+	{#if singleIndicator() && (singleIndicator()?.rangoCobertura || singleIndicator()?.periodicidad || singleIndicator()?.infoAdicional)}
+		<!-- Encabezado del indicador único: arriba del flex para que la primera gráfica empiece a la altura del mapa -->
+		<div class="lg:w-1/3 mb-4">
+			{#if singleIndicator()?.rangoCobertura || singleIndicator()?.periodicidad}
+				<div class="flex flex-wrap gap-2">
+					{#if singleIndicator()?.rangoCobertura}
+						<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
+							{singleIndicator()?.rangoCobertura}
+						</span>
+					{/if}
+					{#if singleIndicator()?.periodicidad}
+						<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
+							{getPeriodicidadLabel(singleIndicator()?.periodicidad)}
+						</span>
+					{/if}
+				</div>
+			{/if}
+			{#if singleIndicator()?.infoAdicional}
+				<div class="{themeStore.isDark ? 'bg-slate-800/50 border-slate-600' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mt-3">
+					<p class="{themeStore.isDark ? 'text-slate-300' : 'text-amber-900'} text-sm">
+						{singleIndicator()?.infoAdicional}
+					</p>
+				</div>
+			{/if}
+		</div>
+	{/if}
 	<div class="{allGraficasAreWide() ? 'flex flex-col gap-8' : 'flex flex-col lg:flex-row gap-8'}">
 		<!-- Map area: cuando está apilado + tiene descripción, mapa y descripción comparten fila -->
 		{#if allGraficasAreWide() && currentDescripcion()}
@@ -569,93 +666,40 @@ Se presentan dos vistas complementarias:
 						<!-- Indicadores Grid (single column within right section) -->
 						<div class="space-y-6">
 							{#each ejeData.items as indicador}
-								<!-- Indicador Header -->
-								<div class="mb-2">
-									<h3 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-xl font-bold mb-2">
-										{indicador.title}
-									</h3>
+								{@const topCharts = getGraficasToShow(indicador).filter(g => allGraficasAreWide() || !isWideGrafica(g))}
+								{#if topCharts.length > 0}
+									{#if !singleIndicator()}
+										<!-- Indicador Header (solo cuando hay múltiples indicadores; el caso de uno solo se renderiza arriba del flex) -->
+										<div class="mb-2">
+											<h3 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-xl font-bold mb-2">
+												{indicador.title}
+											</h3>
 
-									<div class="flex flex-wrap gap-2">
-										{#if indicador.rangoCobertura}
-											<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
-												{indicador.rangoCobertura}
-											</span>
-										{/if}
-										{#if indicador.periodicidad}
-											<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
-												{getPeriodicidadLabel(indicador.periodicidad)}
-											</span>
-										{/if}
-									</div>
-
-									{#if indicador.infoAdicional}
-										<div class="{themeStore.isDark ? 'bg-slate-800/50 border-slate-600' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mt-3">
-											<p class="{themeStore.isDark ? 'text-slate-300' : 'text-amber-900'} text-sm">
-												{indicador.infoAdicional}
-											</p>
-										</div>
-									{/if}
-								</div>
-
-								<!-- Individual Chart Cards -->
-								{#if getGraficasToShow(indicador).length > 0}
-									{#each getGraficasToShow(indicador) as grafica (grafica._key)}
-										<div class="{themeStore.isDark ? 'bg-slate-700/50' : 'bg-white'} rounded-2xl px-6 py-4 shadow-lg relative group {isWideGrafica(grafica) && !allGraficasAreWide() ? 'wide-full-bleed' : ''} {isEstatalGrafica(grafica) && selectedUbicacion !== 'todos' && !allGraficasAreWide() ? 'mt-12' : ''}">
-											<!-- Voice button -->
-											<button
-												onclick={() => askAboutGrafica(grafica, indicador.title || '')}
-												disabled={isVoiceLoading && isActiveForVoice(grafica)}
-												class="absolute top-3 right-3 p-2 rounded-full transition-all duration-200 z-10
-													{isActiveForVoice(grafica) && isVoiceConnected
-														? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg ring-2 ring-green-400/50'
-														: isActiveForVoice(grafica) && isVoiceLoading
-															? 'bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-lg animate-pulse'
-															: themeStore.isDark
-																? 'bg-slate-700 text-slate-400 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'
-																: 'bg-slate-200 text-slate-500 hover:bg-gradient-to-br hover:from-orange-500 hover:to-pink-500 hover:text-white opacity-0 group-hover:opacity-100'}"
-												title={isActiveForVoice(grafica) && isVoiceConnected
-													? 'Conversación activa'
-													: isActiveForVoice(grafica) && isVoiceLoading
-														? 'Conectando...'
-														: 'Preguntar sobre esta gráfica'}
-											>
-												{#if isActiveForVoice(grafica) && isVoiceLoading}
-													<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-														<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-														<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-													</svg>
-												{:else if isActiveForVoice(grafica) && isVoiceConnected}
-													<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-														<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-													</svg>
-												{:else}
-													<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-														<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93h2c0 2.76 2.24 5 5 5s5-2.24 5-5h2c0 4.08-3.06 7.44-7 7.93V19h4v2H8v-2h4v-3.07z"/>
-													</svg>
-												{/if}
-											</button>
-
-											<div class="flex flex-wrap gap-2 mb-1">
-												{#if grafica.ubicacion?.length}
-													<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
-														{grafica.ubicacion.map(u => getUbicacionLabel(u)).join(', ')}
+											<div class="flex flex-wrap gap-2">
+												{#if indicador.rangoCobertura}
+													<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
+														{indicador.rangoCobertura}
 													</span>
 												{/if}
-												{#if formatearPeriodoGrafica(grafica)}
-													<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
-														• {formatearPeriodoGrafica(grafica)}
-													</span>
-												{/if}
-												{#if grafica.periodoEspecifico}
-													<span class="{themeStore.isDark ? 'text-slate-400' : 'text-slate-500'} text-xs">
-														• {grafica.periodoEspecifico}
+												{#if indicador.periodicidad}
+													<span class="{themeStore.isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-200 text-slate-700'} text-xs px-2 py-1 rounded-full">
+														{getPeriodicidadLabel(indicador.periodicidad)}
 													</span>
 												{/if}
 											</div>
-											<GraficaConFiltro
-												grafica={grafica}
-											/>
+
+											{#if indicador.infoAdicional}
+												<div class="{themeStore.isDark ? 'bg-slate-800/50 border-slate-600' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mt-3">
+													<p class="{themeStore.isDark ? 'text-slate-300' : 'text-amber-900'} text-sm">
+														{indicador.infoAdicional}
+													</p>
+												</div>
+											{/if}
 										</div>
+									{/if}
+
+									{#each topCharts as grafica (grafica._key)}
+										{@render chartCard(indicador, grafica)}
 									{/each}
 								{/if}
 							{/each}
@@ -665,17 +709,32 @@ Se presentan dos vistas complementarias:
 			{/if}
 		</div>
 	</div>
+
+	<!-- Wide charts (tables) section — below the map+narrow row, full width -->
+	{#if !allGraficasAreWide()}
+		{@const wideByIndicador = Object.entries(groupedIndicadores()).flatMap(([, ejeData]) =>
+			ejeData.items
+				.map(ind => ({ ind, wide: getGraficasToShow(ind).filter(g => isWideGrafica(g)) }))
+				.filter(x => x.wide.length > 0)
+		)}
+		{#if wideByIndicador.length > 0}
+			<div class="mt-8 space-y-8">
+				{#each wideByIndicador as {ind, wide}}
+					{@const hasNarrow = getGraficasToShow(ind).some(g => !isWideGrafica(g))}
+					<div class="space-y-4">
+						{#if !hasNarrow}
+							<h3 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-xl font-bold">
+								{ind.title}
+							</h3>
+						{/if}
+						{#each wide as grafica (grafica._key)}
+							{@render chartCard(ind, grafica)}
+						{/each}
+					</div>
+				{/each}
+			</div>
+		{/if}
+	{/if}
 	</div>
 </main>
 
-<style>
-	@media (min-width: 1024px) {
-		:global(.wide-full-bleed) {
-			margin-left: calc(-50% - 2rem);
-			width: calc(150% + 2rem);
-		}
-		:global(.wide-full-bleed.bg-slate-700\/50) {
-			background-color: rgb(51 65 85) !important;
-		}
-	}
-</style>
