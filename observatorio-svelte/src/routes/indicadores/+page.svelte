@@ -250,6 +250,28 @@
 		}
 	});
 
+	// Soft-hint: indica si un indicador tiene gráficas para la ubicación actual.
+	// Usado en el dropdown de Indicador para deshabilitar (gris) los que no aplican.
+	function indicadorHasUbicacionData(indicadorName: string): boolean {
+		if (selectedUbicacion === 'todos') return true;
+		const ind = indicadores.find(i => i.title === indicadorName);
+		if (!ind) return false;
+		return ind.contenido?.some(g => g.ubicacion?.includes(selectedUbicacion as UbicacionKey)) ?? false;
+	}
+
+	// Soft-hint: indica si una ubicación tiene gráficas en el contexto actual (eje + indicador).
+	function ubicacionHasIndicadorData(ubicacion: UbicacionKey): boolean {
+		if (selectedIndicador !== 'todos') {
+			const ind = indicadores.find(i => i.title === selectedIndicador);
+			if (!ind) return false;
+			return ind.contenido?.some(g => g.ubicacion?.includes(ubicacion)) ?? false;
+		}
+		// Sin indicador específico: cualquier indicador del eje vigente sirve
+		return indicadoresByEje().some(ind =>
+			ind.contenido?.some(g => g.ubicacion?.includes(ubicacion)),
+		);
+	}
+
 	function getUbicacionLabel(key?: UbicacionKey): string {
 		if (!key) return 'Sin especificar';
 		return ubicacionLabels[key] || key;
@@ -440,7 +462,10 @@ Se presentan dos vistas complementarias:
 				>
 					<option value="todos">Todas las ubicaciones</option>
 					{#each ubicaciones() as ubicacion}
-						<option value={ubicacion}>{getUbicacionLabel(ubicacion)}</option>
+						{@const hasData = ubicacionHasIndicadorData(ubicacion)}
+						<option value={ubicacion} disabled={!hasData}>
+							{getUbicacionLabel(ubicacion)}{!hasData ? ' (sin datos)' : ''}
+						</option>
 					{/each}
 				</select>
 			</div>
@@ -478,7 +503,10 @@ Se presentan dos vistas complementarias:
 						w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-colors"
 				>
 					{#each indicadorNames() as nombre}
-						<option value={nombre}>{nombre}</option>
+						{@const hasData = indicadorHasUbicacionData(nombre)}
+						<option value={nombre} disabled={!hasData}>
+							{nombre}{!hasData ? ' (sin datos)' : ''}
+						</option>
 					{/each}
 				</select>
 			</div>
