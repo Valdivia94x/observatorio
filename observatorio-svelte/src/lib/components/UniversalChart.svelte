@@ -414,8 +414,27 @@
 				u === 'dolares' || u === 'miles-dolares' || u === 'millones-dolares';
 		}
 
-		// Extract symbol (% or $) from axis title and move to ticks
-		function extractAxisSymbol(label: string): { cleanLabel: string; tickCallback?: (value: number | string) => string } {
+		// Oculta la etiqueta del 0 en el eje de valores (mantiene el resto de ticks).
+		// Si hay callback original, lo usa para los valores != 0; si no, formatea con toLocaleString.
+		function hideZeroLabel(
+			originalCallback?: (value: number | string) => string,
+		): (value: number | string) => string {
+			return (value: number | string) => {
+				const num = typeof value === 'number' ? value : Number(value);
+				if (num === 0) return '';
+				if (originalCallback) return originalCallback(value);
+				return typeof value === 'number' ? value.toLocaleString('es-MX') : String(value);
+			};
+		}
+
+		// Extract symbol (% or $) from axis title and move to ticks.
+		// fallbackToChartUnit: si true, también usa la unidadMedida del chart para inferir moneda.
+		// Para el eje secundario lo pasamos como false: solo formatea moneda si el LABEL del eje
+		// indica $ o pesos/dólares (la unidad global puede ser pesos pero la serie del eje 2 no).
+		function extractAxisSymbol(
+			label: string,
+			fallbackToChartUnit: boolean = true,
+		): { cleanLabel: string; tickCallback?: (value: number | string) => string } {
 			if (label.includes('%') || label.toLowerCase().includes('porcentaje')) {
 				const cleanLabel = label.replace(/\s*\(%?\)\s*|\s*%\s*/g, '').replace(/porcentaje/i, 'Porcentaje').trim();
 				return {
@@ -423,7 +442,12 @@
 					tickCallback: (value: number | string) => `${value}%`,
 				};
 			}
-			if (label.includes('$') || label.toLowerCase().includes('pesos') || label.toLowerCase().includes('dólares') || label.toLowerCase().includes('dolares') || isCurrencyUnit()) {
+			const labelHintsCurrency =
+				label.includes('$') ||
+				label.toLowerCase().includes('pesos') ||
+				label.toLowerCase().includes('dólares') ||
+				label.toLowerCase().includes('dolares');
+			if (labelHintsCurrency || (fallbackToChartUnit && isCurrencyUnit())) {
 				const cleanLabel = label.replace(/\s*\(\$?\)\s*|\s*\$\s*/g, '').trim();
 				return {
 					cleanLabel,
@@ -502,10 +526,23 @@
 							} else {
 								rawValue = context.parsed?.y ?? 0;
 							}
-							// Si la serie es del eje secundario y su nombre incluye "%", tratar como porcentaje
+							// Si la serie es del eje secundario, inferir su unidad propia desde el nombre.
+							// Si el nombre no sugiere moneda/porcentaje, tratarla como "unidades" para
+							// que no herede la unidad global del chart (ej: pesos).
 							const isSecondary = context.dataset.yAxisID === 'y1';
-							const isPercentageSeries = isSecondary && (label.includes('%') || label.toLowerCase().includes('porcentaje'));
-							const unidad = isPercentageSeries ? 'porcentaje' : bloqueGrafica.unidadMedida;
+							const labelLower = label.toLowerCase();
+							const labelHintsPercentage = label.includes('%') || labelLower.includes('porcentaje');
+							const labelHintsCurrency =
+								label.includes('$') ||
+								labelLower.includes('pesos') ||
+								labelLower.includes('dólares') ||
+								labelLower.includes('dolares');
+							let unidad = bloqueGrafica.unidadMedida;
+							if (isSecondary) {
+								if (labelHintsPercentage) unidad = 'porcentaje';
+								else if (labelHintsCurrency) unidad = bloqueGrafica.unidadMedida;
+								else unidad = 'unidades';
+							}
 							const formatted = formatValueWithUnit(rawValue, unidad);
 							const axis = hasSecondaryAxis() && isSecondary ? ' (eje der.)' : '';
 							return label ? `${label}: ${formatted}${axis}` : formatted;
@@ -618,7 +655,7 @@
 						font: {
 							size: isMobile ? 10 : 15
 						},
-						callback: yAxis.tickCallback,
+						callback: hideZeroLabel(yAxis.tickCallback),
 					},
 					beginAtZero: true,
 					max: (isStacked && bloqueGrafica.unidadMedida === 'porcentaje') ? 100 : undefined,
@@ -630,7 +667,7 @@
 				// Find the name of the secondary series to use as axis label
 				const secondarySerie = bloqueGrafica.series?.find(s => s.ejeSecundario);
 				const secondaryLabel = secondarySerie?.nombre || 'Eje secundario';
-				const y1Axis = extractAxisSymbol(secondaryLabel);
+				const y1Axis = extractAxisSymbol(secondaryLabel, false);
 
 				// Calculate max for secondary axis (double the max value so line stays at mid-height)
 				const rows = bloqueGrafica.tablaDatos?.rows || [];
@@ -666,7 +703,7 @@
 						font: {
 							size: isMobile ? 10 : 15
 						},
-						callback: y1Axis.tickCallback,
+						callback: hideZeroLabel(y1Axis.tickCallback),
 					},
 					beginAtZero: true,
 					max: secondaryMax !== undefined ? Math.ceil(secondaryMax * 2) : undefined,

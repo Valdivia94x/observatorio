@@ -600,8 +600,8 @@ Se presentan dos vistas complementarias:
 			{@render indicadorInfoCard()}
 		</div>
 		{#if singleIndicator()}
-			<div class="lg:w-2/3">
-				<h3 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-xl font-bold mb-2">
+			<div class="lg:w-2/3 flex flex-col justify-center">
+				<h3 class="{themeStore.isDark ? 'text-white' : 'text-slate-800'} text-2xl font-bold mb-2">
 					{singleIndicator()?.title}
 				</h3>
 				{#if singleIndicator()?.rangoCobertura || singleIndicator()?.periodicidad}
