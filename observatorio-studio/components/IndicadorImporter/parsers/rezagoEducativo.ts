@@ -198,6 +198,7 @@ function parseRankingEstatales(sheet: XLSX.Sheet): GeneratedGrafica[] {
       fuente: 'otra',
       fuentePersonalizada: 'Instituto Nacional para la Educación de los Adultos',
       descripcionContexto: `Ranking de municipios de ${config.estado} por porcentaje de población de 15 años y más en rezago educativo`,
+      ocultarValores: true,
     })
   }
 
