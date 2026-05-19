@@ -7,8 +7,21 @@ function makeRow(cells: string[]): TableRow {
   return {_type: 'tableRow', _key: nanoid(), cells}
 }
 
-const MUNICIPIOS_VALIDOS = new Set(['matamoros', 'torreón', 'torreon', 'gómez palacio', 'gomez palacio', 'lerdo'])
-const UBICACIONES_ZML = ['matamoros', 'torreon', 'gomez-palacio', 'lerdo']
+const MUNICIPIO_UBICACION: Record<string, string> = {
+  matamoros: 'matamoros',
+  torreón: 'torreon',
+  torreon: 'torreon',
+  'gómez palacio': 'gomez-palacio',
+  'gomez palacio': 'gomez-palacio',
+  lerdo: 'lerdo',
+}
+
+function normalizeMunicipio(name: string): {ubicacion: string; display: string} | null {
+  const key = name.toLowerCase().trim()
+  const ubicacion = MUNICIPIO_UBICACION[key]
+  if (!ubicacion) return null
+  return {ubicacion, display: name.trim()}
+}
 
 export function parseTrabajadoresNomina(workbook: XLSX.WorkBook): GeneratedGrafica[] {
   const sheet = workbook.Sheets[workbook.SheetNames[0]]
@@ -19,7 +32,7 @@ export function parseTrabajadoresNomina(workbook: XLSX.WorkBook): GeneratedGrafi
     defval: null,
   })
 
-  // Locate the year row (row with multiple 4-digit years and null first cell)
+  // Locate the year row
   let yearRowIdx = -1
   for (let i = 0; i < data.length; i++) {
     const row = data[i]
@@ -41,30 +54,37 @@ export function parseTrabajadoresNomina(workbook: XLSX.WorkBook): GeneratedGrafi
   }
   if (anios.length === 0) return []
 
-  const tableRows: TableRow[] = [makeRow(['', ...anios])]
+  // One chart per municipio
+  const graficas: GeneratedGrafica[] = []
 
   for (let i = yearRowIdx + 1; i < data.length; i++) {
     const row = data[i]
     if (!row || !row[0]) break
     const nombre = String(row[0]).trim()
-    if (!MUNICIPIOS_VALIDOS.has(nombre.toLowerCase())) break
+    const muni = normalizeMunicipio(nombre)
+    if (!muni) break
+
     const valores = anios.map((_, idx) => {
       const v = row[idx + 1]
       if (v === 'ND' || v === null || v === undefined || v === '') return ''
       return Math.round(Number(v)).toString()
     })
-    tableRows.push(makeRow([nombre, ...valores]))
+
+    const tableRows: TableRow[] = [
+      makeRow(['', ...anios]),
+      makeRow([muni.display, ...valores]),
+    ]
+
+    graficas.push({
+      titulo: `Trabajadores Registrados en la Nómina en ${muni.display}`,
+      tipo: 'bar',
+      ubicacion: [muni.ubicacion],
+      tablaDatos: {rows: tableRows},
+      unidadMedida: 'unidades',
+      fuente: 'inegi',
+      descripcionContexto: `Número de trabajadores registrados en la nómina del ayuntamiento de ${muni.display}.`,
+    })
   }
 
-  if (tableRows.length <= 1) return []
-
-  return [{
-    titulo: 'Trabajadores Registrados en la Nómina del Ayuntamiento',
-    tipo: 'bar',
-    ubicacion: UBICACIONES_ZML,
-    tablaDatos: {rows: tableRows},
-    unidadMedida: 'unidades',
-    fuente: 'inegi',
-    descripcionContexto: 'Número de trabajadores registrados en la nómina del ayuntamiento de cada municipio de la ZML.',
-  }]
+  return graficas
 }
