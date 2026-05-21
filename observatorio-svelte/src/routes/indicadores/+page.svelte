@@ -358,8 +358,12 @@
 	}
 
 	// Una gráfica ocupa el ancho completo si es tabla o tiene 10+ columnas de datos
+	// Títulos que se fuerzan a ancho menor (columna junto al mapa) aunque tengan >10 barras
+	const NARROW_TITLE_PREFIXES = ['Casos de Depresión Registrados', 'Suicidios Registrados', 'Mortalidad Registrada', 'Nacimientos Registrados'];
+
 	function isWideGrafica(grafica: GraficaWidget): boolean {
 		if (grafica.tipo === 'table') return true;
+		if (NARROW_TITLE_PREFIXES.some((p) => grafica.titulo?.startsWith(p))) return false;
 		const rows = grafica.tablaDatos?.rows;
 		if (!rows || rows.length === 0) return false;
 		const columnCount = (rows[0]?.cells?.length || 1) - 1;

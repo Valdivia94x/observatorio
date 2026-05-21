@@ -31,6 +31,12 @@ import {parseIngresosMunicipales} from './parsers/ingresosMunicipales'
 import {parseIngresosSOMA} from './parsers/ingresosSOMA'
 import {parseRecaudacionPredial} from './parsers/recaudacionPredial'
 import {parseTrabajadoresNomina} from './parsers/trabajadoresNomina'
+import {parseCasosDepresion} from './parsers/casosDepresion'
+import {parseCoberturaSalud} from './parsers/coberturaSalud'
+import {parseMortalidadRegistrada} from './parsers/mortalidadRegistrada'
+import {parseNatalidadRegistrada} from './parsers/natalidadRegistrada'
+import {parseRecursosSalud} from './parsers/recursosSalud'
+import {parseSuicidiosRegistrados} from './parsers/suicidiosRegistrados'
 
 // Registry: maps indicator name (lowercase) to its parser
 const registry = new Map<string, IndicadorParser>()
@@ -72,6 +78,12 @@ register('Ingresos Municipales', parseIngresosMunicipales)
 register('Ingresos de los Sistemas Operadores de Agua', parseIngresosSOMA)
 register('Recaudación del impuesto predial', parseRecaudacionPredial)
 register('Trabajadores registrados en la nómina', parseTrabajadoresNomina)
+register('Casos de depresión registrados', parseCasosDepresion)
+register('Cobertura en salud de la población', parseCoberturaSalud)
+register('Mortalidad registrada', parseMortalidadRegistrada)
+register('Natalidad registrada', parseNatalidadRegistrada)
+register('Recursos para la salud pública', parseRecursosSalud)
+register('Suicidios registrados', parseSuicidiosRegistrados)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {
