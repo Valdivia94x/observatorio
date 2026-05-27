@@ -168,7 +168,7 @@ export interface GraficaWidget {
 	_key: string;
 	_type?: 'graficaWidget';
 	titulo?: string;
-	tipo: 'bar' | 'line' | 'doughnut' | 'pie' | 'horizontalBar' | 'table';
+	tipo: 'bar' | 'line' | 'doughnut' | 'pie' | 'horizontalBar' | 'pyramid' | 'table';
 	ubicacion?: UbicacionKey[];
 	anioInicio?: number;
 	anioFin?: number;

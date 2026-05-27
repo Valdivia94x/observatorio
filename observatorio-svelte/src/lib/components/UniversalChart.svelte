@@ -66,7 +66,7 @@
 
 	interface BloqueGrafica {
 		titulo?: string;
-		tipo: 'bar' | 'stackedBar' | 'line' | 'doughnut' | 'radar' | 'horizontalBar' | 'pie' | 'table';
+		tipo: 'bar' | 'stackedBar' | 'line' | 'doughnut' | 'radar' | 'horizontalBar' | 'pyramid' | 'pie' | 'table';
 		tablaDatos: TableData;
 		series?: SerieConfig[];
 		colores?: string[];
@@ -357,9 +357,12 @@
 				? { bg: hexToRgba(colores[index], 0.95), border: colores[index] }
 				: colorPalette[index % colorPalette.length];
 
+			// Pirámide: la primera serie (ej. Hombre) se dibuja a la izquierda con valores negativos
+			const finalData = tipo === 'pyramid' && index === 0 ? data.map(v => -Math.abs(v)) : data;
+
 			return {
 				label: seriesLabel,
-				data,
+				data: finalData,
 				backgroundColor: tipo === 'line' ? color.border : color.bg,
 				borderColor: color.border,
 				borderWidth: 2,
@@ -376,7 +379,7 @@
 	}
 
 	function getChartType(): 'bar' | 'line' | 'doughnut' | 'radar' | 'pie' {
-		if (bloqueGrafica.tipo === 'horizontalBar' || bloqueGrafica.tipo === 'stackedBar') {
+		if (bloqueGrafica.tipo === 'horizontalBar' || bloqueGrafica.tipo === 'stackedBar' || bloqueGrafica.tipo === 'pyramid') {
 			return 'bar';
 		}
 		return bloqueGrafica.tipo;
@@ -516,7 +519,7 @@
 					callbacks: {
 						label: (context: { dataset: { label?: string; yAxisID?: string }; parsed: any }) => {
 							const label = context.dataset.label || '';
-							const isHorizontal = bloqueGrafica.tipo === 'horizontalBar';
+							const isHorizontal = bloqueGrafica.tipo === 'horizontalBar' || bloqueGrafica.tipo === 'pyramid';
 							const isPie = bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie';
 							let rawValue: number;
 							if (isPie) {
@@ -526,6 +529,8 @@
 							} else {
 								rawValue = context.parsed?.y ?? 0;
 							}
+							// Pirámide: los valores de la serie izquierda son negativos → mostrar absoluto
+							if (bloqueGrafica.tipo === 'pyramid') rawValue = Math.abs(rawValue);
 							// Si la serie es del eje secundario, inferir su unidad propia desde el nombre.
 							// Si el nombre no sugiere moneda/porcentaje, tratarla como "unidades" para
 							// que no herede la unidad global del chart (ej: pesos).
@@ -596,6 +601,8 @@
 				unidadLabel = unidadMedidaLabels[bloqueGrafica.unidadMedida] || 'Valor';
 			}
 			const isHorizontalBar = bloqueGrafica.tipo === 'horizontalBar';
+			const isPyramid = bloqueGrafica.tipo === 'pyramid';
+			const isHorizontalLike = isHorizontalBar || isPyramid;
 
 			const dualAxis = hasSecondaryAxis();
 			const primaryColor = dualAxis ? getAxisColor(false) : undefined;
@@ -605,9 +612,9 @@
 				? bloqueGrafica.series?.find(s => !s.ejeSecundario)?.nombre
 				: undefined;
 
-			const isStacked = bloqueGrafica.tipo === 'stackedBar';
+			const isStacked = bloqueGrafica.tipo === 'stackedBar' || isPyramid;
 
-			const yLabel = isHorizontalBar ? 'Período' : (primarySerieLabel || unidadLabel);
+			const yLabel = isHorizontalLike ? (isPyramid ? 'Grupo de edad' : 'Período') : (primarySerieLabel || unidadLabel);
 			const yAxis = extractAxisSymbol(yLabel);
 
 			const scales: Record<string, unknown> = {
@@ -615,7 +622,7 @@
 					stacked: isStacked,
 					title: {
 						display: !isMobile,
-						text: isHorizontalBar ? unidadLabel : 'Período',
+						text: isHorizontalLike ? unidadLabel : 'Período',
 						color: textColor,
 						font: {
 							size: 14,
@@ -635,9 +642,14 @@
 						minRotation: shouldRotate ? 90 : 0,
 						autoSkip: isMobile,
 						maxTicksLimit: isMobile ? 8 : undefined,
-						// En horizontalBar el eje X es el de valores → ocultar el 0.
-						// En el resto es categórico (años): se omite callback para usar el render por defecto.
-						...(isHorizontalBar ? {callback: hideZeroLabel()} : {}),
+						// Pirámide: eje X de valores divergente → mostrar valor absoluto (sin negativos).
+						// horizontalBar: eje X de valores → ocultar el 0.
+						// El resto es categórico (años): se omite callback para usar el render por defecto.
+						...(isPyramid
+							? {callback: (v: number | string) => { const n = Math.abs(Number(v)); return n === 0 ? '' : n.toLocaleString('es-MX'); }}
+							: isHorizontalBar
+								? {callback: hideZeroLabel()}
+								: {}),
 					}
 				},
 				y: {
@@ -660,9 +672,9 @@
 						font: {
 							size: isMobile ? 10 : 15
 						},
-						// En horizontalBar el eje Y es categórico (etiquetas) → se omite callback para
-						// usar el render por defecto. En el resto, ocultar la etiqueta del 0.
-						...(isHorizontalBar ? {} : {callback: hideZeroLabel(yAxis.tickCallback)}),
+						// En horizontalBar/pirámide el eje Y es categórico (etiquetas) → se omite callback
+						// para usar el render por defecto. En el resto, ocultar la etiqueta del 0.
+						...(isHorizontalLike ? {} : {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
 					beginAtZero: true,
 					max: (isStacked && bloqueGrafica.unidadMedida === 'porcentaje') ? 100 : undefined,
@@ -719,8 +731,8 @@
 
 			baseOptions.scales = scales;
 
-			// Horizontal bar configuration
-			if (isHorizontalBar) {
+			// Horizontal bar / pirámide configuration (barras horizontales)
+			if (isHorizontalLike) {
 				baseOptions.indexAxis = 'y';
 			}
 		}
@@ -929,7 +941,7 @@
 		<div
 			class="relative"
 			class:hidden={!chartModulesLoaded || !!error}
-			style="{fillHeight ? 'height: 100%;' : 'min-height: ' + (bloqueGrafica.tipo === 'horizontalBar' ? (isMobile ? '400px' : '500px') : (isMobile ? '350px' : '400px')) + ';'}"
+			style="{fillHeight ? 'height: 100%;' : 'min-height: ' + (bloqueGrafica.tipo === 'horizontalBar' || bloqueGrafica.tipo === 'pyramid' ? (isMobile ? '400px' : '500px') : (isMobile ? '350px' : '400px')) + ';'}"
 		>
 			<canvas bind:this={canvas}></canvas>
 		</div>

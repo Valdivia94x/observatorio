@@ -37,6 +37,16 @@ import {parseMortalidadRegistrada} from './parsers/mortalidadRegistrada'
 import {parseNatalidadRegistrada} from './parsers/natalidadRegistrada'
 import {parseRecursosSalud} from './parsers/recursosSalud'
 import {parseSuicidiosRegistrados} from './parsers/suicidiosRegistrados'
+import {parseAccidentesTransito} from './parsers/accidentesTransito'
+import {parseCreditosVivienda} from './parsers/creditosVivienda'
+import {parseMatrimoniosDivorcios} from './parsers/matrimoniosDivorcios'
+import {parseJefaturaHogar} from './parsers/jefaturaHogar'
+import {parseMovilidad} from './parsers/movilidad'
+import {parsePobrezaMultidimensional} from './parsers/pobrezaMultidimensional'
+import {parseCarenciasSociales} from './parsers/carenciasSociales'
+import {parseTecnologiasInformacion} from './parsers/tecnologiasInformacion'
+import {parseVehiculosMotor} from './parsers/vehiculosMotor'
+import {parsePiramidePoblacional} from './parsers/piramidePoblacional'
 
 // Registry: maps indicator name (lowercase) to its parser
 const registry = new Map<string, IndicadorParser>()
@@ -84,6 +94,16 @@ register('Mortalidad registrada', parseMortalidadRegistrada)
 register('Natalidad registrada', parseNatalidadRegistrada)
 register('Recursos para la salud pública', parseRecursosSalud)
 register('Suicidios registrados', parseSuicidiosRegistrados)
+register('Accidentes de tránsito registrados', parseAccidentesTransito)
+register('Créditos para la vivienda por institución financiera', parseCreditosVivienda)
+register('Relación de matrimonios y divorcios', parseMatrimoniosDivorcios)
+register('Jefatura del hogar por género', parseJefaturaHogar)
+register('Movilidad laboral y escolar de la población', parseMovilidad)
+register('Pobreza multidimensional', parsePobrezaMultidimensional)
+register('Carencias sociales de la población', parseCarenciasSociales)
+register('Tecnologías de la información al interior de las viviendas', parseTecnologiasInformacion)
+register('Vehículos de motor registrados en circulación', parseVehiculosMotor)
+register('Pirámide poblacional', parsePiramidePoblacional)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {

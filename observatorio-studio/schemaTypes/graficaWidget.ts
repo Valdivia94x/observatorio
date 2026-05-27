@@ -45,6 +45,7 @@ export const graficaWidget = defineType({
           {title: 'Dona', value: 'doughnut'},
           {title: 'Pie', value: 'pie'},
           {title: 'Barras Horizontales', value: 'horizontalBar'},
+          {title: 'Pirámide poblacional', value: 'pyramid'},
           {title: 'Tabla', value: 'table'},
         ],
         layout: 'dropdown',
@@ -374,6 +375,7 @@ export const graficaWidget = defineType({
         doughnut: 'Dona',
         pie: 'Pie',
         horizontalBar: 'Barras Horiz.',
+        pyramid: 'Pirámide',
         table: 'Tabla',
       }
       const ubicacionLabels: Record<string, string> = {
