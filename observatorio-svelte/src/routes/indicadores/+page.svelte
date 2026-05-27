@@ -302,6 +302,12 @@
 			? graficas.filter(g => !isZmlGrafica(g))
 			: graficas;
 
+		// Indicadores que deben respetar el orden del contenido (ej: Mortalidad → histórico antes que causas)
+		const preserveOrder = filtered.some(g =>
+			PRESERVE_ORDER_TITLE_PREFIXES.some(p => g.titulo?.startsWith(p)),
+		);
+		if (preserveOrder) return filtered;
+
 		return [...filtered].sort((a, b) => {
 			// Ordenar por "ancho" ascendente: narrow charts → wide charts → tablas
 			const aRank = widthRank(a);
@@ -321,6 +327,10 @@
 		const cols = (rows?.[0]?.cells?.length || 1) - 1;
 		return cols >= 10 ? 1 : 0;
 	}
+
+	// Indicadores donde se debe respetar el orden del contenido (no reordenar por ancho).
+	// Scoped: solo aplica a las gráficas cuyo título empiece con estos prefijos.
+	const PRESERVE_ORDER_TITLE_PREFIXES = ['Mortalidad Registrada', 'Principales Causas de Mortalidad', 'Nacimientos Registrados', 'Nacimientos por Rango de Edad'];
 
 
 	// Voice agent: inicia conversación directamente con el contexto de la gráfica

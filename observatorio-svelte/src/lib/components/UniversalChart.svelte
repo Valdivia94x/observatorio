@@ -569,6 +569,8 @@
 						size: 10,
 						weight: 600
 					},
+					// Valores verticales solo en esta gráfica (muchas barras juntas en Torreón)
+					rotation: bloqueGrafica.titulo === 'Recursos para la Salud en Torreón' ? -90 : 0,
 					// Prevención de colisiones - ocultar etiquetas que sigan chocando
 					clamp: true,
 					clip: false,
@@ -633,6 +635,9 @@
 						minRotation: shouldRotate ? 90 : 0,
 						autoSkip: isMobile,
 						maxTicksLimit: isMobile ? 8 : undefined,
+						// En horizontalBar el eje X es el de valores → ocultar el 0.
+						// En el resto es categórico (años): se omite callback para usar el render por defecto.
+						...(isHorizontalBar ? {callback: hideZeroLabel()} : {}),
 					}
 				},
 				y: {
@@ -655,7 +660,9 @@
 						font: {
 							size: isMobile ? 10 : 15
 						},
-						callback: hideZeroLabel(yAxis.tickCallback),
+						// En horizontalBar el eje Y es categórico (etiquetas) → se omite callback para
+						// usar el render por defecto. En el resto, ocultar la etiqueta del 0.
+						...(isHorizontalBar ? {} : {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
 					beginAtZero: true,
 					max: (isStacked && bloqueGrafica.unidadMedida === 'porcentaje') ? 100 : undefined,

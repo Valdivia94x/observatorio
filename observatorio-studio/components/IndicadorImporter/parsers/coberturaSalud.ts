@@ -103,6 +103,8 @@ function parseHistorico(data: (string | number | null)[][]): GeneratedGrafica[] 
       fuente: 'inegi',
       descripcionContexto: `Distribución histórica de la población con y sin cobertura de salud en ${m.display}.`,
       ocultarValores: true,
+      // Orden de series: Con cobertura, Sin cobertura, No especificado
+      colores: ['#22c55e', '#ec4899', '#3b82f6'],
     })
   }
 
