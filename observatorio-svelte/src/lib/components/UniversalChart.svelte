@@ -116,7 +116,21 @@
 	];
 
 	// Títulos cuyo eje de valores (porcentaje) debe topar en 100% aunque no sean apiladas
-	const FULL_SCALE_PERCENT_PREFIXES = ['Jefatura del Hogar por Género'];
+	const FULL_SCALE_PERCENT_PREFIXES = ['Jefatura del Hogar por Género', 'Carencias Sociales de la Población'];
+
+	// Títulos cuyas etiquetas de categoría usan mayor ancho de envoltura (más espacio, barras más cortas)
+	const WIDE_LABEL_PREFIXES = ['Carencias Sociales de la Población'];
+
+	// Etiqueta del eje categórico en gráficas horizontales, por título (default: 'Período')
+	const HORIZONTAL_CATEGORY_LABELS: {prefix: string; label: string}[] = [
+		{prefix: 'Carencias Sociales de la Población', label: 'Indicador'},
+	];
+
+	// Etiqueta del eje categórico X en gráficas de barras verticales, por título (default: 'Período')
+	const VERTICAL_CATEGORY_LABELS: {prefix: string; label: string}[] = [
+		{prefix: 'Tecnologías de la Información en las Viviendas', label: 'Tecnología'},
+		{prefix: 'Medio de Transporte de', label: 'Medio'},
+	];
 
 	// Helper to convert hex color to rgba
 	function hexToRgba(hex: string, alpha: number): string {
@@ -282,9 +296,14 @@
 			dataStartIndex = 0;
 		}
 
-		// Wrap long labels into multiline arrays for Chart.js
+		// Wrap long labels into multiline arrays for Chart.js.
+		// Para títulos en WIDE_LABEL_PREFIXES se usa un ancho de envoltura mayor: las etiquetas
+		// ocupan más espacio horizontal y, al crecer el eje, las barras se achican.
+		const wrapWidth = WIDE_LABEL_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))
+			? (isMobile ? 20 : 34)
+			: (isMobile ? 12 : 16);
 		const processedLabels: (string | string[])[] = hasLongLabels(labels)
-			? labels.map(l => wrapLabel(l, isMobile ? 12 : 16))
+			? labels.map(l => wrapLabel(l, wrapWidth))
 			: labels;
 
 		const isPieOrDoughnut = tipo === 'doughnut' || tipo === 'pie';
@@ -619,7 +638,14 @@
 
 			const isStacked = bloqueGrafica.tipo === 'stackedBar' || isPyramid;
 
-			const yLabel = isHorizontalLike ? (isPyramid ? 'Grupo de edad' : 'Período') : (primarySerieLabel || unidadLabel);
+			// El eje de valores (Y en vertical, X en horizontal) topa en 100% para apiladas
+			// porcentuales y para títulos en FULL_SCALE_PERCENT_PREFIXES.
+			const capValueAt100 = bloqueGrafica.unidadMedida === 'porcentaje' &&
+				(isStacked || FULL_SCALE_PERCENT_PREFIXES.some((p) => bloqueGrafica.titulo?.startsWith(p)));
+
+			const horizontalCatLabel = HORIZONTAL_CATEGORY_LABELS.find((e) => bloqueGrafica.titulo?.startsWith(e.prefix))?.label ?? 'Período';
+			const verticalCatLabel = VERTICAL_CATEGORY_LABELS.find((e) => bloqueGrafica.titulo?.startsWith(e.prefix))?.label ?? 'Período';
+			const yLabel = isHorizontalLike ? (isPyramid ? 'Grupo de edad' : horizontalCatLabel) : (primarySerieLabel || unidadLabel);
 			const yAxis = extractAxisSymbol(yLabel);
 
 			const scales: Record<string, unknown> = {
@@ -627,7 +653,7 @@
 					stacked: isStacked,
 					title: {
 						display: !isMobile,
-						text: isHorizontalLike ? unidadLabel : 'Período',
+						text: isHorizontalLike ? unidadLabel : verticalCatLabel,
 						color: textColor,
 						font: {
 							size: 14,
@@ -655,7 +681,9 @@
 							: isHorizontalBar
 								? {callback: hideZeroLabel()}
 								: {}),
-					}
+					},
+					// En horizontal el eje X es el de valores → topar en 100% cuando aplica
+					max: (capValueAt100 && isHorizontalLike) ? 100 : undefined,
 				},
 				y: {
 					stacked: isStacked,
@@ -682,7 +710,7 @@
 						...(isHorizontalLike ? {} : {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
 					beginAtZero: true,
-					max: (bloqueGrafica.unidadMedida === 'porcentaje' && (isStacked || FULL_SCALE_PERCENT_PREFIXES.some((p) => bloqueGrafica.titulo?.startsWith(p)))) ? 100 : undefined,
+					max: (capValueAt100 && !isHorizontalLike) ? 100 : undefined,
 				}
 			};
 
