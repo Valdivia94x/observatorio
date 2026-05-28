@@ -24,24 +24,42 @@ function ubicacionDe(name: string): string | null {
   return MUNICIPIO_UBICACION[name.toLowerCase().trim()] ?? null
 }
 
-function findSection(data: (string | number | null)[][], marker: string): number {
-  for (let i = 0; i < data.length; i++) {
+function findSection(data: (string | number | null)[][], marker: string, from = 0): number {
+  for (let i = from; i < data.length; i++) {
     const row = data[i]
     if (row && row.some((c) => typeof c === 'string' && c.includes(marker))) return i
   }
   return -1
 }
 
-// Sección con header de modos de transporte (col 0 vacía) y una fila por municipio.
+// Lee la fuente y la nota (texto literal del documento) dentro del rango de filas dado.
+function leerFuenteYNota(
+  data: (string | number | null)[][],
+  start: number,
+  end: number,
+): {fuente: string; nota: string} {
+  let fuente = ''
+  let nota = ''
+  for (let i = start; i < end; i++) {
+    const c0 = data[i]?.[0]
+    if (typeof c0 !== 'string') continue
+    const t = c0.trim()
+    if (/^fuente:/i.test(t)) fuente = t.replace(/^fuente:\s*/i, '').trim()
+    else if (/^nota:/i.test(t)) nota = t.replace(/^nota:\s*/i, '').trim()
+  }
+  return {fuente, nota}
+}
+
 function parseSeccion(
   data: (string | number | null)[][],
   marker: string,
   grupo: string,
+  end: number,
 ): GeneratedGrafica[] {
   const sectionIdx = findSection(data, marker)
   if (sectionIdx === -1) return []
 
-  // El header de modos está en la fila siguiente al marcador (col 0 vacía, resto strings)
+  // Header de modos: fila con col 0 vacía y >=2 strings
   let headerIdx = -1
   for (let i = sectionIdx; i < Math.min(sectionIdx + 3, data.length); i++) {
     const row = data[i]
@@ -61,12 +79,18 @@ function parseSeccion(
   }
   if (modos.length === 0) return []
 
+  // Fuente y nota literales del documento dentro de esta sección
+  const {fuente, nota} = leerFuenteYNota(data, headerIdx + 1, end)
+  const descripcion = [`Medio de transporte de ${grupo.toLowerCase()}.`, nota ? `Nota: ${nota}` : '']
+    .filter(Boolean)
+    .join(' ')
+
   const graficas: GeneratedGrafica[] = []
-  for (let i = headerIdx + 1; i < data.length; i++) {
+  for (let i = headerIdx + 1; i < end; i++) {
     const row = data[i]
     if (!row || !row[0]) break
     const nombre = String(row[0]).trim()
-    if (nombre.toLowerCase().startsWith('fuente') || nombre.toLowerCase().startsWith('nota')) break
+    if (/^fuente:/i.test(nombre) || /^nota:/i.test(nombre)) break
     const ub = ubicacionDe(nombre)
     if (!ub) break
 
@@ -77,8 +101,10 @@ function parseSeccion(
       ubicacion: [ub],
       tablaDatos: {rows: [makeRow(['', ...modos.map((m) => m.nombre)]), makeRow([nombre, ...valores])]},
       unidadMedida: 'porcentaje',
-      fuente: 'inegi',
-      descripcionContexto: `Medio de transporte de ${grupo.toLowerCase()} en ${nombre}, Censo de Población y Vivienda 2020. La suma puede superar 100% por uso de más de un medio.`,
+      // La fuente del documento ("INEGI, Censo de Población y Vivienda 2020") no es una predeterminada → Otra
+      fuente: 'otra',
+      fuentePersonalizada: fuente || 'INEGI, Censo de Población y Vivienda 2020',
+      descripcionContexto: descripcion,
     })
   }
 
@@ -94,8 +120,19 @@ export function parseMovilidad(workbook: XLSX.WorkBook): GeneratedGrafica[] {
     defval: null,
   })
 
+  // Límites de cada sección para acotar la búsqueda de fuente/nota
+  const estudiantesIdx = findSection(data, 'transporte de los estudiantes')
+  const trabajadoresIdx = findSection(data, 'transporte de los trabajadores')
+
   const graficas: GeneratedGrafica[] = []
-  graficas.push(...parseSeccion(data, 'transporte de los estudiantes', 'Estudiantes'))
-  graficas.push(...parseSeccion(data, 'transporte de los trabajadores', 'Trabajadores'))
+  graficas.push(
+    ...parseSeccion(
+      data,
+      'transporte de los estudiantes',
+      'Estudiantes',
+      trabajadoresIdx > estudiantesIdx ? trabajadoresIdx : data.length,
+    ),
+  )
+  graficas.push(...parseSeccion(data, 'transporte de los trabajadores', 'Trabajadores', data.length))
   return graficas
 }

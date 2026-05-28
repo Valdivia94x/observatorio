@@ -85,6 +85,8 @@ export function parseJefaturaHogar(workbook: XLSX.WorkBook): GeneratedGrafica[] 
       unidadMedida: 'porcentaje',
       fuente: 'inegi',
       descripcionContexto: `Distribución porcentual de la jefatura del hogar por género en ${m.display}, histórico censal.`,
+      // Invertido respecto al default: Hombre azul, Mujer rosa
+      colores: ['#3b82f6', '#d0005f'],
     }
   })
 }

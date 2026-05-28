@@ -115,6 +115,9 @@
 		{ bg: 'rgba(107, 114, 128, 0.7)', border: 'rgb(107, 114, 128)' },  // Gray
 	];
 
+	// Títulos cuyo eje de valores (porcentaje) debe topar en 100% aunque no sean apiladas
+	const FULL_SCALE_PERCENT_PREFIXES = ['Jefatura del Hogar por Género'];
+
 	// Helper to convert hex color to rgba
 	function hexToRgba(hex: string, alpha: number): string {
 		const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -289,7 +292,9 @@
 
 		// Row 1+: Datasets
 		const datasets = rows.slice(1).map((row, index) => {
-			let seriesLabel = firstDataIsLabel ? row.cells[0] : `Serie ${index + 1}`;
+			// Si el header tiene la primera celda vacía o la primera celda de datos es texto,
+			// la primera columna son etiquetas de serie (puede ser un año numérico como "2015").
+			let seriesLabel = (firstHeaderEmpty || firstDataIsLabel) ? row.cells[0] : `Serie ${index + 1}`;
 			// Si el label es muy largo (típico de importaciones Excel), simplificarlo
 			if (seriesLabel && seriesLabel.length > 50) {
 				seriesLabel = `Serie ${index + 1}`;
@@ -677,7 +682,7 @@
 						...(isHorizontalLike ? {} : {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
 					beginAtZero: true,
-					max: (isStacked && bloqueGrafica.unidadMedida === 'porcentaje') ? 100 : undefined,
+					max: (bloqueGrafica.unidadMedida === 'porcentaje' && (isStacked || FULL_SCALE_PERCENT_PREFIXES.some((p) => bloqueGrafica.titulo?.startsWith(p)))) ? 100 : undefined,
 				}
 			};
 

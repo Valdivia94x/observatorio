@@ -72,8 +72,8 @@ export function parseAccidentesTransito(workbook: XLSX.WorkBook): GeneratedGrafi
       ubicacion: [ub],
       tablaDatos: {rows: [makeRow(['', ...anios]), makeRow([nombre, ...valores])]},
       unidadMedida: 'unidades',
-      fuente: 'inegi',
-      descripcionContexto: `Accidentes de tránsito terrestre registrados anualmente en zonas urbanas y suburbanas de ${nombre}.`,
+      fuente: 'otra',
+      fuentePersonalizada: 'INEGI, Accidentes de tránsito terrestre en zonas urbanas y suburbanas',
     })
   }
 

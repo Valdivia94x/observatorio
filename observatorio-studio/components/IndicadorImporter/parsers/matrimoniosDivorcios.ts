@@ -101,7 +101,8 @@ export function parseMatrimoniosDivorcios(workbook: XLSX.WorkBook): GeneratedGra
       ubicacion: [ub],
       tablaDatos: {rows: tableRows},
       unidadMedida: 'unidades',
-      fuente: 'inegi',
+      fuente: 'otra',
+      fuentePersonalizada: 'INEGI, Estadística de Divorcios',
       descripcionContexto: `Divorcios registrados anualmente en ${d.display} y su relación por cada 100 matrimonios.`,
       series: t
         ? [
