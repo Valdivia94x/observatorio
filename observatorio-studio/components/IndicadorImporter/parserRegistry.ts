@@ -47,6 +47,10 @@ import {parseCarenciasSociales} from './parsers/carenciasSociales'
 import {parseTecnologiasInformacion} from './parsers/tecnologiasInformacion'
 import {parseVehiculosMotor} from './parsers/vehiculosMotor'
 import {parsePiramidePoblacional} from './parsers/piramidePoblacional'
+import {parseResiduosSolidos} from './parsers/residuosSolidos'
+import {parseExtraccionAgua} from './parsers/extraccionAgua'
+import {parseTratamientoAguas} from './parsers/tratamientoAguas'
+import {parsePozosAgua} from './parsers/pozosAgua'
 
 // Registry: maps indicator name (lowercase) to its parser
 const registry = new Map<string, IndicadorParser>()
@@ -105,6 +109,11 @@ register('Pobreza Multidimensional', (wb) => [...parsePobrezaMultidimensional(wb
 register('Tecnologías de la información al interior de las viviendas', parseTecnologiasInformacion)
 register('Vehículos de motor registrados', parseVehiculosMotor)
 register('Población', parsePiramidePoblacional)
+// Eje Medio Ambiente
+register('Residuos sólidos urbanos', parseResiduosSolidos)
+register('Extracción anual de M3 de agua', parseExtraccionAgua)
+register('Tratamiento anual de aguas residuales en M3', parseTratamientoAguas)
+register('Pozos de agua registrados', parsePozosAgua)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {

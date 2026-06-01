@@ -84,9 +84,11 @@ export function IndicadorImporter({onComplete}: IndicadorImporterProps) {
         ubicacion: g.ubicacion,
         tablaDatos: g.tablaDatos,
         unidadMedida: g.unidadMedida,
+        unidadMedidaPersonalizada: g.unidadMedidaPersonalizada,
         fuente: g.fuente,
         fuentePersonalizada: g.fuentePersonalizada,
         descripcionContexto: g.descripcionContexto,
+        nota: g.nota,
         ocultarValores: g.ocultarValores,
         colores: g.colores,
         series: g.series?.map((s) => ({

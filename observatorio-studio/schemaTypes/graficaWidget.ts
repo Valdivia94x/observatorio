@@ -203,6 +203,13 @@ export const graficaWidget = defineType({
         'Opcional. Informacion adicional que ayude al agente de voz a interpretar los datos (metodologia, notas importantes, contexto historico, etc.)',
     }),
     defineField({
+      name: 'nota',
+      title: 'Nota (debajo de la fuente)',
+      type: 'text',
+      rows: 2,
+      description: 'Opcional. Aclaración breve que se muestra debajo de la fuente (ej. "ND: No hay Datos").',
+    }),
+    defineField({
       name: 'ocultarValores',
       title: 'Ocultar Valores en las Barras',
       type: 'boolean',

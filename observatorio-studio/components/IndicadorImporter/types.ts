@@ -7,9 +7,11 @@ export interface GeneratedGrafica {
   ubicacion: string[]
   tablaDatos: TableValue
   unidadMedida?: string
+  unidadMedidaPersonalizada?: string
   fuente?: string
   fuentePersonalizada?: string
   descripcionContexto?: string
+  nota?: string
   ocultarValores?: boolean
   colores?: string[]
   series?: {

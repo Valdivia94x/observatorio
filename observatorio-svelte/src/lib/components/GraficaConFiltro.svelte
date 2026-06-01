@@ -28,7 +28,7 @@
 	</div>
 
 	<!-- Descripción y Fuente -->
-	{#if grafica.descripcionContexto || grafica.fuente}
+	{#if grafica.descripcionContexto || grafica.fuente || grafica.nota}
 		<div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
 			{#if grafica.descripcionContexto}
 				<p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
@@ -38,6 +38,11 @@
 			{#if grafica.fuente}
 				<p class="text-xs text-slate-500 dark:text-slate-500">
 					Fuente: {getFuente(grafica)}
+				</p>
+			{/if}
+			{#if grafica.nota}
+				<p class="text-xs italic text-slate-500 dark:text-slate-500 mt-1">
+					{grafica.nota}
 				</p>
 			{/if}
 		</div>

@@ -184,6 +184,7 @@ export interface GraficaWidget {
 	fuente?: FuenteKey;
 	fuentePersonalizada?: string;
 	descripcionContexto?: string;
+	nota?: string;
 	ocultarValores?: boolean;
 }
 
@@ -352,6 +353,7 @@ export const indicadorByIdQuery = `
     fuente,
     fuentePersonalizada,
     descripcionContexto,
+    nota,
     ocultarValores
   }
 }
@@ -397,6 +399,7 @@ export const allIndicadoresWithGraficasQuery = `
     fuente,
     fuentePersonalizada,
     descripcionContexto,
+    nota,
     ocultarValores
   }
 }
