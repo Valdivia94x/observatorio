@@ -121,6 +121,10 @@
 	// Títulos cuyas etiquetas de categoría usan mayor ancho de envoltura (más espacio, barras más cortas)
 	const WIDE_LABEL_PREFIXES = ['Carencias Sociales de la Población'];
 
+	// Títulos donde una celda vacía/ND debe representarse como hueco (null) en vez de 0,
+	// para que la línea/barra no caiga a cero donde no hay dato.
+	const NULL_GAP_TITLE_PREFIXES = ['Extracción de Agua'];
+
 	// Etiqueta del eje categórico en gráficas horizontales, por título (default: 'Período')
 	const HORIZONTAL_CATEGORY_LABELS: {prefix: string; label: string}[] = [
 		{prefix: 'Carencias Sociales de la Población', label: 'Indicador'},
@@ -318,11 +322,18 @@
 			if (seriesLabel && seriesLabel.length > 50) {
 				seriesLabel = `Serie ${index + 1}`;
 			}
-			const rawData = row.cells.slice(dataStartIndex).map(cell => parseFloat(cell) || 0);
+			// Celda vacía → 0 por defecto, o null (hueco) para títulos en NULL_GAP_TITLE_PREFIXES,
+			// donde un 0 sería engañoso (representa "sin dato", no un valor real de cero).
+			const useNullGap = NULL_GAP_TITLE_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p));
+			const emptyValue: number | null = useNullGap ? null : 0;
+			const rawData = row.cells.slice(dataStartIndex).map(cell => {
+				const n = parseFloat(cell);
+				return isNaN(n) ? emptyValue : n;
+			});
 
-			// Pad data with zeros at the beginning if there are fewer values than labels
+			// Pad data at the beginning if there are fewer values than labels
 			const data = rawData.length < labels.length
-				? [...Array(labels.length - rawData.length).fill(0), ...rawData]
+				? [...Array(labels.length - rawData.length).fill(emptyValue), ...rawData]
 				: rawData;
 
 			// Pie/Doughnut: colors per segment
@@ -603,8 +614,9 @@
 					// Prevención de colisiones - ocultar etiquetas que sigan chocando
 					clamp: true,
 					clip: false,
-					formatter: (value: number) => {
-						if (value === 0) return '';
+					formatter: (value: number | null) => {
+						// null/NaN = sin dato (hueco) → sin etiqueta
+						if (value === null || value === undefined || isNaN(value as number) || value === 0) return '';
 						const formatted = value.toLocaleString('es-MX');
 						if (bloqueGrafica.unidadMedida === 'pesos' || bloqueGrafica.unidadMedida === 'miles-pesos' || bloqueGrafica.unidadMedida === 'millones-pesos') return `$${formatted}`;
 						if (bloqueGrafica.unidadMedida === 'dolares' || bloqueGrafica.unidadMedida === 'miles-dolares' || bloqueGrafica.unidadMedida === 'millones-dolares') return `$${formatted}`;
@@ -829,11 +841,37 @@
 				}
 			};
 
+			// Plugin: dibuja "ND" cerca del eje X en las categorías sin dato (hueco/null).
+			// Acotado a títulos en NULL_GAP_TITLE_PREFIXES (ej. Extracción de Agua).
+			const ndMarkerPlugin = {
+				id: 'ndMarker',
+				afterDatasetsDraw(chart: any) {
+					if (!NULL_GAP_TITLE_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))) return;
+					const ds = chart.data.datasets?.[0];
+					const meta = chart.getDatasetMeta(0);
+					if (!ds || !meta) return;
+					const {ctx: c, chartArea} = chart;
+					c.save();
+					c.font = '600 10px sans-serif';
+					c.fillStyle = themeStore.isDark ? 'rgba(203,213,225,0.85)' : 'rgba(100,116,139,0.95)';
+					c.textAlign = 'center';
+					c.textBaseline = 'bottom';
+					ds.data.forEach((v: number | null, i: number) => {
+						if (v === null || v === undefined || (typeof v === 'number' && isNaN(v))) {
+							const x = meta.data[i]?.x;
+							if (x == null) return;
+							c.fillText('ND', x, chartArea.bottom - 6);
+						}
+					});
+					c.restore();
+				}
+			};
+
 			chartInstance = new Chart(ctx, {
 				type: getChartType(),
 				data: { labels, datasets },
 				options: getChartOptions() as Record<string, unknown>,
-				plugins: [legendSpacingPlugin]
+				plugins: [legendSpacingPlugin, ndMarkerPlugin]
 			});
 			error = null;
 		} catch (e) {
