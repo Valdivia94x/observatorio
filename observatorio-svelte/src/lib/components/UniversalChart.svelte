@@ -123,7 +123,7 @@
 
 	// Títulos donde una celda vacía/ND debe representarse como hueco (null) en vez de 0,
 	// para que la línea/barra no caiga a cero donde no hay dato.
-	const NULL_GAP_TITLE_PREFIXES = ['Extracción de Agua'];
+	const NULL_GAP_TITLE_PREFIXES = ['Extracción de Agua', 'Pozos de Agua Registrados', 'Tratamiento de Aguas Residuales'];
 
 	// Etiqueta del eje categórico en gráficas horizontales, por título (default: 'Período')
 	const HORIZONTAL_CATEGORY_LABELS: {prefix: string; label: string}[] = [
