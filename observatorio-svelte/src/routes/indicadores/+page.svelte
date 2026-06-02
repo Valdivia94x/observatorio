@@ -27,7 +27,7 @@
 
 	// Defaults
 	const DEFAULT_EJE = 'Desarrollo Urbano';
-	const DEFAULT_INDICADOR = 'Crecimiento poblacional';
+	const DEFAULT_INDICADOR = 'Población';
 
 	// Read query params on mount (fallback to defaults)
 	onMount(() => {
@@ -50,9 +50,21 @@
 		const indicadorConCoahuila = indicadoresOrdenados.find(ind => indicadorTieneUbicacion(ind, 'estatal-coahuila'));
 		const fallbackIndicador = indicadoresOrdenados[0];
 
+		// Al entrar al eje por defecto (sin ?eje= en la URL), preferir DEFAULT_INDICADOR si existe.
+		const preferido = !ejeParam
+			? indicadoresOrdenados.find(ind => ind.title === DEFAULT_INDICADOR)
+			: undefined;
+
 		let defaultIndicador: string;
 		let defaultUbicacion: string;
-		if (indicadorConTorreon) {
+		if (preferido) {
+			defaultIndicador = preferido.title!;
+			defaultUbicacion = indicadorTieneUbicacion(preferido, 'torreon')
+				? 'torreon'
+				: indicadorTieneUbicacion(preferido, 'estatal-coahuila')
+					? 'estatal-coahuila'
+					: 'todos';
+		} else if (indicadorConTorreon) {
 			defaultIndicador = indicadorConTorreon.title!;
 			defaultUbicacion = 'torreon';
 		} else if (indicadorConCoahuila) {
