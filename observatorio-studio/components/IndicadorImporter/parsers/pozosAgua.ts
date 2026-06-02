@@ -77,6 +77,8 @@ export function parsePozosAgua(workbook: XLSX.WorkBook): GeneratedGrafica[] {
       fuentePersonalizada: 'CONAGUA / Transparencia municipal',
       descripcionContexto: `Pozos de agua registrados en ${sheetName.trim()}, desglosados en activos e inactivos.`,
       nota: NOTA_ND,
+      // Orden de series: Activos (azul), Inactivos (gris)
+      colores: ['#3b82f6', '#9ca3af'],
     })
   }
 
