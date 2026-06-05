@@ -128,6 +128,7 @@
 	// Etiqueta del eje categórico en gráficas horizontales, por título (default: 'Período')
 	const HORIZONTAL_CATEGORY_LABELS: {prefix: string; label: string}[] = [
 		{prefix: 'Carencias Sociales de la Población', label: 'Indicador'},
+		{prefix: 'Organizaciones de la Sociedad Civil', label: 'Organización'},
 	];
 
 	// Etiqueta del eje categórico X en gráficas de barras verticales, por título (default: 'Período')
@@ -306,9 +307,14 @@
 		const wrapWidth = WIDE_LABEL_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))
 			? (isMobile ? 20 : 34)
 			: (isMobile ? 12 : 16);
-		const processedLabels: (string | string[])[] = hasLongLabels(labels)
-			? labels.map(l => wrapLabel(l, wrapWidth))
-			: labels;
+		// Una etiqueta con saltos de línea explícitos ("\n") se divide en líneas (ej. "2024\nTipo de elección").
+		// Cada parte se envuelve si sigue siendo larga. El resto usa el wrap por ancho habitual.
+		const hasExplicitBreaks = labels.some(l => typeof l === 'string' && l.includes('\n'));
+		const processedLabels: (string | string[])[] = hasExplicitBreaks
+			? labels.map(l => l.split('\n').flatMap(part => wrapLabel(part, wrapWidth)))
+			: hasLongLabels(labels)
+				? labels.map(l => wrapLabel(l, wrapWidth))
+				: labels;
 
 		const isPieOrDoughnut = tipo === 'doughnut' || tipo === 'pie';
 		const comboChart = isComboChart();

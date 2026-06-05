@@ -381,7 +381,7 @@
 
 	// Una gráfica ocupa el ancho completo si es tabla o tiene 10+ columnas de datos
 	// Títulos que se fuerzan a ancho menor (columna junto al mapa) aunque tengan >10 barras
-	const NARROW_TITLE_PREFIXES = ['Casos de Depresión Registrados', 'Suicidios Registrados', 'Mortalidad Registrada', 'Nacimientos Registrados', 'Pirámide Poblacional'];
+	const NARROW_TITLE_PREFIXES = ['Casos de Depresión Registrados', 'Suicidios Registrados', 'Mortalidad Registrada', 'Nacimientos Registrados', 'Pirámide Poblacional', 'Financiamiento a Partidos Políticos', 'Participación Electoral por Edad y Género'];
 
 	function isWideGrafica(grafica: GraficaWidget): boolean {
 		if (grafica.tipo === 'table') return true;
@@ -439,6 +439,24 @@ Se presentan dos vistas complementarias:
 <strong>Patrones Afiliados en el IMSS</strong> (por ubicación): muestra la evolución anual del número total de patrones registrados en cada municipio de la Región Lagunera y en la ZML agregada. Permite identificar tendencias de creación o cierre de empresas formales, el impacto de la coyuntura económica y la capacidad de la región para atraer nuevas unidades productivas.
 
 <strong>Patrones por Tamaño de Registro Patronal</strong>: clasifica a los patrones según el rango de personas ocupadas que reportan (desde 1 trabajador hasta más de 1,000). Revela la estructura empresarial local —si predominan microempresas o si existe una capa robusta de empresas medianas y grandes— y cómo evoluciona esa composición entre cortes anuales. Es clave para entender la base productiva y la capacidad regional de generación de empleo formal.`,
+		'Costo del voto por Partido Político': `El <strong>costo del voto por partido político</strong> relaciona el <strong>financiamiento público</strong> que recibe cada partido con el número de <strong>votos</strong> que obtuvo en la elección, para estimar cuánto cuesta —en pesos de financiamiento— cada voto conseguido. Es una medida de eficiencia del gasto público electoral y de la relación entre recursos asignados y respaldo ciudadano.
+
+Los datos provienen de los <strong>Institutos Electorales locales (IEC de Coahuila e IEPC de Durango)</strong> con base en las estadísticas de sus procesos electorales más recientes.
+
+<strong>¿Cómo se lee?</strong>
+
+Para cada partido se muestran tres cifras: el financiamiento público recibido, los votos obtenidos y el costo por voto resultante (financiamiento ÷ votos). Un costo por voto <strong>alto</strong> indica que el partido recibió mucho financiamiento en relación con los votos que logró; uno <strong>bajo</strong> refleja mayor respaldo ciudadano por cada peso asignado. La fila <strong>Total estatal</strong> resume el promedio de la entidad.
+
+Comparar Coahuila y Durango permite contrastar cómo se distribuye el financiamiento entre fuerzas políticas y qué tan eficiente resulta ese gasto en términos de votos efectivamente captados.`,
+		'Organizaciones de la Sociedad Civil': `Las <strong>organizaciones de la sociedad civil (OSC)</strong> son agrupaciones ciudadanas sin fines de lucro que atienden causas de interés público —asistencia social, educación, salud, medio ambiente, derechos humanos, entre otras—. Su número y diversidad son un indicador del <strong>capital social</strong> y de la vitalidad de la participación ciudadana organizada en cada municipio.
+
+Los datos provienen de la <strong>Secretaría del Bienestar</strong> y clasifican a las OSC según su tipo de actividad u objeto social.
+
+<strong>¿Cómo se lee?</strong>
+
+Para cada municipio se presenta la distribución porcentual de las organizaciones por tipo de actividad, ordenada de mayor a menor. El porcentaje indica qué proporción de las OSC del municipio se dedica a cada causa (una misma organización puede registrar más de una actividad, por lo que la suma puede superar el 100%).
+
+Comparar Torreón, Gómez Palacio, Lerdo y Matamoros revela las vocaciones sociales de cada localidad: en qué causas se concentra el trabajo ciudadano, qué temas están subrepresentados y cómo se diversifica el tejido asociativo de la Región Lagunera.`,
 	};
 
 	const currentDescripcion = $derived(() => {
