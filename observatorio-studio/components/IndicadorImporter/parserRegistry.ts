@@ -51,6 +51,11 @@ import {parseResiduosSolidos} from './parsers/residuosSolidos'
 import {parseExtraccionAgua} from './parsers/extraccionAgua'
 import {parseTratamientoAguas} from './parsers/tratamientoAguas'
 import {parsePozosAgua} from './parsers/pozosAgua'
+import {parsePresupuestoInstitutos} from './parsers/presupuestoInstitutos'
+import {parseCostoVoto} from './parsers/costoVoto'
+import {parseFinanciamientoPartidos} from './parsers/financiamientoPartidos'
+import {parseOrganizacionesSC} from './parsers/organizacionesSC'
+import {parseParticipacionElectoral} from './parsers/participacionElectoral'
 
 // Registry: maps indicator name (lowercase) to its parser
 const registry = new Map<string, IndicadorParser>()
@@ -114,6 +119,12 @@ register('Residuos sólidos urbanos', parseResiduosSolidos)
 register('Extracción anual de M3 de agua', parseExtraccionAgua)
 register('Tratamiento anual de aguas residuales en M3', parseTratamientoAguas)
 register('Pozos de agua registrados', parsePozosAgua)
+// Eje Participación Ciudadana — llaves = títulos de los indicadores en Sanity (nombres de los Excel)
+register('Costo de la democracia', parsePresupuestoInstitutos)
+register('Costo del voto por Partido Político', parseCostoVoto)
+register('Finaciamientos Partidos', parseFinanciamientoPartidos)
+register('Organizaciones de la Sociedad Civil', parseOrganizacionesSC)
+register('Participación Electoral', parseParticipacionElectoral)
 
 // === Public API ===
 export function getParser(indicadorName: string): IndicadorParser | null {
