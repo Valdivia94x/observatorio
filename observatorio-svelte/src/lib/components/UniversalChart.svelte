@@ -121,6 +121,14 @@
 	// Títulos cuyas etiquetas de categoría usan mayor ancho de envoltura (más espacio, barras más cortas)
 	const WIDE_LABEL_PREFIXES = ['Carencias Sociales de la Población'];
 
+	// Override del máximo del eje de valores por título (tiene prioridad sobre el tope de 100%)
+	const VALUE_AXIS_MAX: {prefix: string; max: number}[] = [
+		{prefix: 'Carencias Sociales de la Población', max: 80},
+	];
+
+	// Títulos con barras más gruesas (mayor ocupación de la categoría)
+	const THICK_BARS_PREFIXES = ['Carencias Sociales de la Población'];
+
 	// Títulos donde una celda vacía/ND debe representarse como hueco (null) en vez de 0,
 	// para que la línea/barra no caiga a cero donde no hay dato.
 	const NULL_GAP_TITLE_PREFIXES = ['Extracción de Agua', 'Pozos de Agua Registrados', 'Tratamiento de Aguas Residuales'];
@@ -401,6 +409,9 @@
 			// Pirámide: la primera serie (ej. Hombre) se dibuja a la izquierda con valores negativos
 			const finalData = tipo === 'pyramid' && index === 0 ? data.map(v => -Math.abs(v)) : data;
 
+			// Barras más gruesas para títulos en THICK_BARS_PREFIXES
+			const thickBars = THICK_BARS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p));
+
 			return {
 				label: seriesLabel,
 				data: finalData,
@@ -413,6 +424,7 @@
 				pointBorderColor: '#fff',
 				pointHoverBackgroundColor: '#fff',
 				pointHoverBorderColor: color.border,
+				...(thickBars ? { categoryPercentage: 0.98, barPercentage: 0.98 } : {}),
 			};
 		});
 
@@ -660,6 +672,9 @@
 			// porcentuales y para títulos en FULL_SCALE_PERCENT_PREFIXES.
 			const capValueAt100 = bloqueGrafica.unidadMedida === 'porcentaje' &&
 				(isStacked || FULL_SCALE_PERCENT_PREFIXES.some((p) => bloqueGrafica.titulo?.startsWith(p)));
+			// Override explícito del máximo por título (prioridad sobre el tope de 100%)
+			const customMax = VALUE_AXIS_MAX.find((e) => bloqueGrafica.titulo?.startsWith(e.prefix))?.max;
+			const valueAxisMax = customMax ?? (capValueAt100 ? 100 : undefined);
 
 			const horizontalCatLabel = HORIZONTAL_CATEGORY_LABELS.find((e) => bloqueGrafica.titulo?.startsWith(e.prefix))?.label ?? 'Período';
 			const verticalCatLabel = VERTICAL_CATEGORY_LABELS.find((e) => bloqueGrafica.titulo?.startsWith(e.prefix))?.label ?? 'Período';
@@ -700,8 +715,8 @@
 								? {callback: hideZeroLabel()}
 								: {}),
 					},
-					// En horizontal el eje X es el de valores → topar en 100% cuando aplica
-					max: (capValueAt100 && isHorizontalLike) ? 100 : undefined,
+					// En horizontal el eje X es el de valores → aplicar tope/override cuando corresponde
+					max: isHorizontalLike ? valueAxisMax : undefined,
 				},
 				y: {
 					stacked: isStacked,
@@ -725,12 +740,14 @@
 						font: {
 							size: isMobile ? 10 : 15
 						},
+						// Mostrar TODAS las etiquetas de categoría (no saltar ninguna) para títulos con barras gruesas
+						...(THICK_BARS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p)) ? {autoSkip: false} : {}),
 						// En horizontalBar/pirámide el eje Y es categórico (etiquetas) → se omite callback
 						// para usar el render por defecto. En el resto, ocultar la etiqueta del 0.
 						...(isHorizontalLike ? {} : {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
 					beginAtZero: true,
-					max: (capValueAt100 && !isHorizontalLike) ? 100 : undefined,
+					max: !isHorizontalLike ? valueAxisMax : undefined,
 				}
 			};
 
@@ -1020,7 +1037,7 @@
 		<div
 			class="relative"
 			class:hidden={!chartModulesLoaded || !!error}
-			style="{fillHeight ? 'height: 100%;' : 'min-height: ' + (bloqueGrafica.tipo === 'horizontalBar' || bloqueGrafica.tipo === 'pyramid' ? (isMobile ? '400px' : '500px') : (isMobile ? '350px' : '400px')) + ';'}"
+			style="{fillHeight ? 'height: 100%;' : 'min-height: ' + (THICK_BARS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p)) ? (isMobile ? '560px' : '720px') : (bloqueGrafica.tipo === 'horizontalBar' || bloqueGrafica.tipo === 'pyramid' ? (isMobile ? '400px' : '500px') : (isMobile ? '350px' : '400px'))) + ';'}"
 		>
 			<canvas bind:this={canvas}></canvas>
 		</div>
