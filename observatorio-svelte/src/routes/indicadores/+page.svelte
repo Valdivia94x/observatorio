@@ -148,25 +148,29 @@
 		'lerdo': 'estatal-durango',
 	};
 
+	// Ejes donde un indicador SOLO estatal se abre desde el municipio de su estado
+	// (Torreón/Matamoros→Coahuila, Gómez/Lerdo→Durango). Acotado a estos ejes.
+	const EJES_ESTATAL_POR_MUNICIPIO = ['Participación Ciudadana'];
+
+	// Una gráfica es visible para una ubicación municipal si: es de ese municipio, O —cuando el
+	// indicador pertenece a un eje en EJES_ESTATAL_POR_MUNICIPIO— es estatal del estado del municipio.
+	function graficaVisibleEnUbicacion(grafica: GraficaWidget, ubicacion: string, allowEstatalByState: boolean): boolean {
+		if (ubicacion === 'todos') return true;
+		if (grafica.ubicacion?.includes(ubicacion as UbicacionKey)) return true;
+		if (!allowEstatalByState) return false;
+		const estado = municipioToEstado[ubicacion];
+		if (estado && isEstatalGrafica(grafica)) {
+			return grafica.ubicacion?.includes(estado as UbicacionKey) ?? false;
+		}
+		return false;
+	}
+
 	// Filter graficas within an indicador based on ubicacion
-	function filterGraficas(graficas: GraficaWidget[] | undefined): GraficaWidget[] {
+	function filterGraficas(graficas: GraficaWidget[] | undefined, ejeTitle?: string): GraficaWidget[] {
 		if (!graficas) return [];
-
 		if (selectedUbicacion === 'todos') return graficas;
-
-		const hasMunicipal = graficas.some(g => !isEstatalGrafica(g) && !isZmlGrafica(g));
-		const hasEstatal = graficas.some(g => isEstatalGrafica(g));
-		const estadoSlug = municipioToEstado[selectedUbicacion];
-
-		return graficas.filter(grafica => {
-			// Municipal: match by ubicacion
-			if (grafica.ubicacion?.includes(selectedUbicacion as UbicacionKey)) return true;
-			// Estatal: include if indicator has both types and state matches
-			if (hasMunicipal && hasEstatal && estadoSlug && isEstatalGrafica(grafica)) {
-				return grafica.ubicacion?.includes(estadoSlug as UbicacionKey) ?? false;
-			}
-			return false;
-		});
+		const allowEstatalByState = !!ejeTitle && EJES_ESTATAL_POR_MUNICIPIO.includes(ejeTitle);
+		return graficas.filter(g => graficaVisibleEnUbicacion(g, selectedUbicacion, allowEstatalByState));
 	}
 
 	// Step 1: Filter indicadores by eje (nivel padre)
@@ -182,7 +186,7 @@
 		return indicadoresByEje()
 			.map(ind => ({
 				...ind,
-				graficasFiltradas: filterGraficas(ind.contenido)
+				graficasFiltradas: filterGraficas(ind.contenido, ind.eje?.title)
 			}))
 			.filter(ind => {
 				// Only show indicadores that have graficas to display
@@ -268,7 +272,8 @@
 		if (selectedUbicacion === 'todos') return true;
 		const ind = indicadores.find(i => i.title === indicadorName);
 		if (!ind) return false;
-		return ind.contenido?.some(g => g.ubicacion?.includes(selectedUbicacion as UbicacionKey)) ?? false;
+		const allow = EJES_ESTATAL_POR_MUNICIPIO.includes(ind.eje?.title ?? '');
+		return ind.contenido?.some(g => graficaVisibleEnUbicacion(g, selectedUbicacion, allow)) ?? false;
 	}
 
 	// Soft-hint: indica si una ubicación tiene gráficas en el contexto actual (eje + indicador).
@@ -276,12 +281,14 @@
 		if (selectedIndicador !== 'todos') {
 			const ind = indicadores.find(i => i.title === selectedIndicador);
 			if (!ind) return false;
-			return ind.contenido?.some(g => g.ubicacion?.includes(ubicacion)) ?? false;
+			const allow = EJES_ESTATAL_POR_MUNICIPIO.includes(ind.eje?.title ?? '');
+			return ind.contenido?.some(g => graficaVisibleEnUbicacion(g, ubicacion, allow)) ?? false;
 		}
 		// Sin indicador específico: cualquier indicador del eje vigente sirve
-		return indicadoresByEje().some(ind =>
-			ind.contenido?.some(g => g.ubicacion?.includes(ubicacion)),
-		);
+		return indicadoresByEje().some(ind => {
+			const allow = EJES_ESTATAL_POR_MUNICIPIO.includes(ind.eje?.title ?? '');
+			return ind.contenido?.some(g => graficaVisibleEnUbicacion(g, ubicacion, allow));
+		});
 	}
 
 	function getUbicacionLabel(key?: UbicacionKey): string {
