@@ -47,6 +47,7 @@ import {parseCarenciasSociales} from './parsers/carenciasSociales'
 import {parseTecnologiasInformacion} from './parsers/tecnologiasInformacion'
 import {parseVehiculosMotor} from './parsers/vehiculosMotor'
 import {parsePiramidePoblacional} from './parsers/piramidePoblacional'
+import {parseCrecimientoPoblacional} from './parsers/crecimientoPoblacional'
 import {parseResiduosSolidos} from './parsers/residuosSolidos'
 import {parseExtraccionAgua} from './parsers/extraccionAgua'
 import {parseTratamientoAguas} from './parsers/tratamientoAguas'
@@ -113,7 +114,9 @@ register('Medio de transporte de los estudiantes y trabajadores', parseMovilidad
 register('Pobreza Multidimensional', (wb) => [...parsePobrezaMultidimensional(wb), ...parseCarenciasSociales(wb)])
 register('Tecnologías de la información al interior de las viviendas', parseTecnologiasInformacion)
 register('Vehículos de motor registrados', parseVehiculosMotor)
-register('Población', parsePiramidePoblacional)
+// "Población" admite ambos archivos: crecimiento poblacional (barras) y pirámide.
+// Al importar un archivo solo produce las gráficas que correspondan a su estructura.
+register('Población', (wb) => [...parseCrecimientoPoblacional(wb), ...parsePiramidePoblacional(wb)])
 // Eje Medio Ambiente
 register('Residuos sólidos urbanos', parseResiduosSolidos)
 register('Extracción anual de M3 de agua', parseExtraccionAgua)
