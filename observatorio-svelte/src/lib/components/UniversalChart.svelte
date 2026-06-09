@@ -217,12 +217,22 @@
 	}
 
 	// Formatea una celda de tabla: si es numérica, aplica el símbolo de la unidad
-	function formatTableCell(cell: string, rowLabel: string): string {
+	function formatTableCell(cell: string, rowLabel: string, columnHeader?: string): string {
 		if (cell === null || cell === undefined || cell === '') return cell;
 		const num = Number(cell);
 		if (isNaN(num)) return cell;
 		const labelHasPercent = typeof rowLabel === 'string' && rowLabel.includes('%');
-		const unidad = labelHasPercent ? 'porcentaje' : bloqueGrafica.unidadMedida;
+		// El encabezado de columna puede forzar la unidad por columna (ej. "Financiamiento (pesos)" → $),
+		// útil en tablas con columnas de distintas unidades.
+		const headerLow = (columnHeader || '').toLowerCase();
+		const colUnidad = labelHasPercent || headerLow.includes('%')
+			? 'porcentaje'
+			: /(d[oó]lar|usd)/.test(headerLow)
+				? 'dolares'
+				: (headerLow.includes('peso') || columnHeader?.includes('$'))
+					? 'pesos'
+					: undefined;
+		const unidad = colUnidad ?? (labelHasPercent ? 'porcentaje' : bloqueGrafica.unidadMedida);
 		return formatValueWithUnit(num, unidad);
 	}
 
@@ -1011,7 +1021,7 @@
 										class:text-right={i > 0 && !(hasRankColumn && i === 1)}
 										class:font-medium={i === 0 && !isRankHeader(i)}
 									>
-										{i === 0 ? cell : formatTableCell(cell, row.cells[0])}
+										{i === 0 ? cell : formatTableCell(cell, row.cells[0], rows[0].cells[i])}
 									</td>
 								{/each}
 							</tr>
