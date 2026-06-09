@@ -64,7 +64,6 @@ function leerSeccion(data: (string | number | null)[][], marker: string): Seccio
 }
 
 // Divorcios.xlsx: Hoja2 trae divorcios (barras) + tasa por 100 matrimonios (línea, eje 2).
-// Hoja1 trae la tabla "Histórico de matrimonios" → barras por municipio.
 export function parseMatrimoniosDivorcios(workbook: XLSX.WorkBook): GeneratedGrafica[] {
   const allData = workbook.SheetNames.map((sn) =>
     XLSX.utils.sheet_to_json(workbook.Sheets[sn], {header: 1, defval: null}) as (string | number | null)[][],
@@ -74,34 +73,8 @@ export function parseMatrimoniosDivorcios(workbook: XLSX.WorkBook): GeneratedGra
   const data = allData.find((d) =>
     d.some((row) => row && row.some((c) => typeof c === 'string' && c.includes('Histórico de divorcios') && c.includes('EJE'))),
   )
-  // Hoja con la tabla de matrimonios
-  const matData = allData.find((d) =>
-    d.some((row) => row && row.some((c) => typeof c === 'string' && c.includes('Histórico de matrimonios'))),
-  )
 
   const graficas: GeneratedGrafica[] = []
-
-  // === Matrimonios (barras por municipio) ===
-  if (matData) {
-    const matrimonios = leerSeccion(matData, 'Histórico de matrimonios')
-    if (matrimonios) {
-      for (const ub of Object.keys(matrimonios.porMuni)) {
-        const m = matrimonios.porMuni[ub]
-        graficas.push({
-          titulo: `Matrimonios Registrados en ${m.display}`,
-          tipo: 'bar',
-          ubicacion: [ub],
-          tablaDatos: {
-            rows: [makeRow(['', ...matrimonios.anios]), makeRow([m.display, ...m.valores.map((v) => Math.round(v).toString())])],
-          },
-          unidadMedida: 'unidades',
-          fuente: 'otra',
-          fuentePersonalizada: 'INEGI, Estadística de Matrimonios',
-          descripcionContexto: `Matrimonios registrados anualmente en ${m.display}.`,
-        })
-      }
-    }
-  }
 
   // === Divorcios + tasa (dual-axis por municipio) ===
   if (!data) return graficas
