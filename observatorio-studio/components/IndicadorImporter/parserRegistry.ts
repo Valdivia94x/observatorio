@@ -48,6 +48,7 @@ import {parseTecnologiasInformacion} from './parsers/tecnologiasInformacion'
 import {parseVehiculosMotor} from './parsers/vehiculosMotor'
 import {parsePiramidePoblacional} from './parsers/piramidePoblacional'
 import {parseCrecimientoPoblacional} from './parsers/crecimientoPoblacional'
+import {parseAsistenciaEscolar} from './parsers/asistenciaEscolar'
 import {parseResiduosSolidos} from './parsers/residuosSolidos'
 import {parseExtraccionAgua} from './parsers/extraccionAgua'
 import {parseTratamientoAguas} from './parsers/tratamientoAguas'
@@ -78,6 +79,7 @@ register('Indicadores básicos de media superior', parseIndicadoresMediaSuperior
 register('Egresados Universitarios', parseEgresadosUniversitarios)
 register('Egresados Posgrado', parseEgresadosPosgrado)
 register('Años promedio de escolaridad', parseAniosEscolaridad)
+register('Asistencia Escolar', parseAsistenciaEscolar)
 register('Crecimiento Económico PIB', parseCrecimientoPIB)
 register('Exportaciones', parseExportaciones)
 register('Inflación', parseInflacion)
