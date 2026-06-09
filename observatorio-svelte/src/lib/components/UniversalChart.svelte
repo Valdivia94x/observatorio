@@ -706,6 +706,8 @@
 				y: {
 					stacked: isStacked,
 					position: 'left',
+					// Pirámide: invertir el eje categórico para que el grupo de edad mayor quede arriba
+					reverse: isPyramid,
 					title: {
 						display: !isMobile,
 						text: yAxis.cleanLabel,
