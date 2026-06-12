@@ -49,6 +49,7 @@ import {parseVehiculosMotor} from './parsers/vehiculosMotor'
 import {parsePiramidePoblacional} from './parsers/piramidePoblacional'
 import {parseCrecimientoPoblacional} from './parsers/crecimientoPoblacional'
 import {parseAsistenciaEscolar} from './parsers/asistenciaEscolar'
+import {parseHomicidioDoloso, parseFeminicidio, parseRoboConViolencia, parseViolenciaFamiliar} from './parsers/seguridad'
 import {parseResiduosSolidos} from './parsers/residuosSolidos'
 import {parseExtraccionAgua} from './parsers/extraccionAgua'
 import {parseTratamientoAguas} from './parsers/tratamientoAguas'
@@ -80,6 +81,11 @@ register('Egresados Universitarios', parseEgresadosUniversitarios)
 register('Egresados Posgrado', parseEgresadosPosgrado)
 register('Años promedio de escolaridad', parseAniosEscolaridad)
 register('Asistencia Escolar', parseAsistenciaEscolar)
+// Eje Seguridad — llaves = nombres de las hojas del Excel (títulos en Sanity)
+register('Homicidio Doloso', parseHomicidioDoloso)
+register('Feminicidio', parseFeminicidio)
+register('Robo con violencia', parseRoboConViolencia)
+register('Violencia Familiar', parseViolenciaFamiliar)
 register('Crecimiento Económico PIB', parseCrecimientoPIB)
 register('Exportaciones', parseExportaciones)
 register('Inflación', parseInflacion)
