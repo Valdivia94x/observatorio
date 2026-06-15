@@ -187,36 +187,44 @@ function parsePercepcion(sheet: XLSX.Sheet | undefined, indicadorNombre: string)
   const COLOR_TORREON = '#22c55e'
   const COLOR_NACIONAL = '#9ca3af'
 
-  const municipios: {ubicacion: string; display: string; conTorreon: boolean}[] = [
-    {ubicacion: 'matamoros', display: 'Matamoros', conTorreon: false},
-    {ubicacion: 'torreon', display: 'Torreón', conTorreon: true},
-    {ubicacion: 'gomez-palacio', display: 'Gómez Palacio', conTorreon: false},
-    {ubicacion: 'lerdo', display: 'Lerdo', conTorreon: false},
-  ]
+  const graficas: GeneratedGrafica[] = []
 
-  return municipios.map((m) => {
-    const rows: TableRow[] = [makeRow(['', ...periodos]), makeRow(['La Laguna', ...laguna])]
-    const colores = [COLOR_LAGUNA]
-    if (m.conTorreon && torreon.length) {
-      rows.push(makeRow(['Torreón', ...torreon]))
-      colores.push(COLOR_TORREON)
-    }
-    rows.push(makeRow(['Nacional', ...nacional]))
-    colores.push(COLOR_NACIONAL)
+  // La Laguna (cubre Matamoros, Gómez Palacio y Lerdo, que no tienen dato propio): La Laguna vs Nacional.
+  // Se muestra al filtrar cualquiera de esos municipios y una sola vez en "todas las ubicaciones".
+  graficas.push({
+    titulo: `${indicadorNombre} en La Laguna`,
+    tipo: 'bar',
+    ubicacion: ['matamoros', 'gomez-palacio', 'lerdo'],
+    tablaDatos: {rows: [makeRow(['', ...periodos]), makeRow(['La Laguna', ...laguna]), makeRow(['Nacional', ...nacional])]},
+    unidadMedida: 'porcentaje',
+    fuente: 'inegi',
+    descripcionContexto: `${indicadorNombre} en la Zona Metropolitana de La Laguna, comparativo vs el promedio Nacional por trimestre. Fuente: INEGI, Encuesta Nacional de Seguridad Pública Urbana.`,
+    colores: [COLOR_LAGUNA, COLOR_NACIONAL],
+  })
 
-    return {
-      titulo: `${indicadorNombre} en ${m.display}`,
-      tipo: 'bar' as const,
-      ubicacion: [m.ubicacion],
-      tablaDatos: {rows},
+  // Torreón: La Laguna vs Torreón vs Nacional (3 barras → ocultar valores para no saturar)
+  if (torreon.length) {
+    graficas.push({
+      titulo: `${indicadorNombre} en Torreón`,
+      tipo: 'bar',
+      ubicacion: ['torreon'],
+      tablaDatos: {
+        rows: [
+          makeRow(['', ...periodos]),
+          makeRow(['La Laguna', ...laguna]),
+          makeRow(['Torreón', ...torreon]),
+          makeRow(['Nacional', ...nacional]),
+        ],
+      },
       unidadMedida: 'porcentaje',
       fuente: 'inegi',
-      descripcionContexto: `${indicadorNombre} en ${m.display}, comparativo La Laguna vs Nacional por trimestre. Fuente: INEGI, Encuesta Nacional de Seguridad Pública Urbana.`,
-      colores,
-      // Torreón tiene 3 barras por trimestre → ocultar los valores sobre las barras para no saturar
-      ocultarValores: m.conTorreon,
-    }
-  })
+      descripcionContexto: `${indicadorNombre} en Torreón, comparativo con La Laguna y el promedio Nacional por trimestre. Fuente: INEGI, Encuesta Nacional de Seguridad Pública Urbana.`,
+      colores: [COLOR_LAGUNA, COLOR_TORREON, COLOR_NACIONAL],
+      ocultarValores: true,
+    })
+  }
+
+  return graficas
 }
 
 export function parsePercepcionInseguridad(wb: XLSX.WorkBook): GeneratedGrafica[] {
