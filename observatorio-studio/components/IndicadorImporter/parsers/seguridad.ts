@@ -132,3 +132,96 @@ export function parseRoboConViolencia(wb: XLSX.WorkBook): GeneratedGrafica[] {
 export function parseViolenciaFamiliar(wb: XLSX.WorkBook): GeneratedGrafica[] {
   return parseHoja(wb.Sheets['Violencia Familiar'], 'Violencia Familiar')
 }
+export function parseRobosPatrimoniales(wb: XLSX.WorkBook): GeneratedGrafica[] {
+  return parseHoja(wb.Sheets['Robos patrimoniales'], 'Robos Patrimoniales')
+}
+
+// Hojas "Percepción de inseguridad" / "Desempeño de autoridades":
+// por trimestre, columnas La Laguna / Torreón / Nacional (valores en %).
+// Genera una gráfica de barras por municipio: Torreón con 3 series (La Laguna, Torreón, Nacional);
+// Matamoros/Gómez/Lerdo con 2 (La Laguna, Nacional), pues no tienen dato propio.
+function parsePercepcion(sheet: XLSX.Sheet | undefined, indicadorNombre: string): GeneratedGrafica[] {
+  if (!sheet) return []
+  const data: (string | number | null)[][] = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: null})
+
+  // Header: [Periodo, La Laguna, Torreón, Nacional]
+  let headerIdx = -1
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i]
+    if (row && typeof row[0] === 'string' && row[0].trim().toLowerCase() === 'periodo') {
+      headerIdx = i
+      break
+    }
+  }
+  if (headerIdx === -1) return []
+  const header = data[headerIdx]
+  const colDe = (name: string) =>
+    header.findIndex((c) => typeof c === 'string' && c.trim().toLowerCase() === name.toLowerCase())
+  const lagCol = colDe('La Laguna')
+  const torCol = colDe('Torreón') >= 0 ? colDe('Torreón') : colDe('Torreon')
+  const nacCol = colDe('Nacional')
+  if (lagCol === -1 || nacCol === -1) return []
+
+  const periodos: string[] = []
+  const dataRows: (string | number | null)[][] = []
+  for (let i = headerIdx + 1; i < data.length; i++) {
+    const row = data[i]
+    if (!row || !row[0]) break
+    const p = String(row[0]).trim()
+    if (p.toLowerCase().startsWith('fuente') || p.toLowerCase().startsWith('nota')) break
+    periodos.push(p)
+    dataRows.push(row)
+  }
+  if (periodos.length === 0) return []
+
+  const valoresDe = (col: number) =>
+    dataRows.map((row) => {
+      const v = row[col]
+      return v === null || v === undefined || v === '' ? '' : parseFloat(Number(v).toFixed(1)).toString()
+    })
+  const laguna = valoresDe(lagCol)
+  const nacional = valoresDe(nacCol)
+  const torreon = torCol >= 0 ? valoresDe(torCol) : []
+
+  const COLOR_LAGUNA = '#3b82f6'
+  const COLOR_TORREON = '#22c55e'
+  const COLOR_NACIONAL = '#9ca3af'
+
+  const municipios: {ubicacion: string; display: string; conTorreon: boolean}[] = [
+    {ubicacion: 'matamoros', display: 'Matamoros', conTorreon: false},
+    {ubicacion: 'torreon', display: 'Torreón', conTorreon: true},
+    {ubicacion: 'gomez-palacio', display: 'Gómez Palacio', conTorreon: false},
+    {ubicacion: 'lerdo', display: 'Lerdo', conTorreon: false},
+  ]
+
+  return municipios.map((m) => {
+    const rows: TableRow[] = [makeRow(['', ...periodos]), makeRow(['La Laguna', ...laguna])]
+    const colores = [COLOR_LAGUNA]
+    if (m.conTorreon && torreon.length) {
+      rows.push(makeRow(['Torreón', ...torreon]))
+      colores.push(COLOR_TORREON)
+    }
+    rows.push(makeRow(['Nacional', ...nacional]))
+    colores.push(COLOR_NACIONAL)
+
+    return {
+      titulo: `${indicadorNombre} en ${m.display}`,
+      tipo: 'bar' as const,
+      ubicacion: [m.ubicacion],
+      tablaDatos: {rows},
+      unidadMedida: 'porcentaje',
+      fuente: 'inegi',
+      descripcionContexto: `${indicadorNombre} en ${m.display}, comparativo La Laguna vs Nacional por trimestre. Fuente: INEGI, Encuesta Nacional de Seguridad Pública Urbana.`,
+      colores,
+      // Torreón tiene 3 barras por trimestre → ocultar los valores sobre las barras para no saturar
+      ocultarValores: m.conTorreon,
+    }
+  })
+}
+
+export function parsePercepcionInseguridad(wb: XLSX.WorkBook): GeneratedGrafica[] {
+  return parsePercepcion(wb.Sheets['Percepción de inseguridad'], 'Percepción de Inseguridad')
+}
+export function parseDesempenoAutoridades(wb: XLSX.WorkBook): GeneratedGrafica[] {
+  return parsePercepcion(wb.Sheets['Desempeño de autoridades'], 'Confianza en la Policía Municipal')
+}
