@@ -145,6 +145,19 @@
 		{prefix: 'Medio de Transporte de', label: 'Medio'},
 	];
 
+	// Etiqueta del eje de VALORES por título (Y en verticales, X en horizontales).
+	// Sobre-escribe la etiqueta derivada de la unidad de medida.
+	const VALUE_AXIS_LABELS: {prefix: string; label: string}[] = [
+		{prefix: 'Accidentes de Tránsito Registrados', label: 'Accidentes'},
+		{prefix: 'Créditos para la Vivienda por Institución', label: 'Créditos'},
+		{prefix: 'Condiciones Sociales de la Población', label: 'Porcentaje de la población'},
+		{prefix: 'Tecnologías de la Información en las Viviendas', label: 'Porcentaje de la población'},
+		{prefix: 'Vehículos de Motor Registrados', label: 'Vehículos'},
+	];
+
+	// Títulos cuyas etiquetas de eje (categorías/ticks) se muestran más grandes
+	const LARGE_TICK_PREFIXES = ['Medio de Transporte de'];
+
 	// Helper to convert hex color to rgba
 	function hexToRgba(hex: string, alpha: number): string {
 		const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -688,15 +701,22 @@
 
 			const horizontalCatLabel = HORIZONTAL_CATEGORY_LABELS.find((e) => bloqueGrafica.titulo?.startsWith(e.prefix))?.label ?? 'Período';
 			const verticalCatLabel = VERTICAL_CATEGORY_LABELS.find((e) => bloqueGrafica.titulo?.startsWith(e.prefix))?.label ?? 'Período';
-			const yLabel = isHorizontalLike ? (isPyramid ? 'Grupo de edad' : horizontalCatLabel) : (primarySerieLabel || unidadLabel);
+			// Override de la etiqueta del eje de valores por título (Y vertical / X horizontal)
+			const valueAxisLabel = VALUE_AXIS_LABELS.find((e) => bloqueGrafica.titulo?.startsWith(e.prefix))?.label;
+			const valueLabel = valueAxisLabel ?? primarySerieLabel ?? unidadLabel;
+			const yLabel = isHorizontalLike ? (isPyramid ? 'Grupo de edad' : horizontalCatLabel) : valueLabel;
 			const yAxis = extractAxisSymbol(yLabel);
+			// Texto del eje X: en horizontales es el eje de valores; en verticales es la categoría
+			const xAxisText = isHorizontalLike ? (valueAxisLabel ?? unidadLabel) : verticalCatLabel;
+			// Tamaño de fuente de los ticks de categoría (mayor para títulos en LARGE_TICK_PREFIXES)
+			const largeTicks = LARGE_TICK_PREFIXES.some((p) => bloqueGrafica.titulo?.startsWith(p));
 
 			const scales: Record<string, unknown> = {
 				x: {
 					stacked: isStacked,
 					title: {
 						display: !isMobile,
-						text: isHorizontalLike ? unidadLabel : verticalCatLabel,
+						text: xAxisText,
 						color: textColor,
 						font: {
 							size: 14,
@@ -710,7 +730,7 @@
 					ticks: {
 						color: textColor,
 						font: {
-							size: labelsAreLong ? (isMobile ? 7 : 9) : (isMobile ? 9 : 12)
+							size: largeTicks ? (isMobile ? 11 : 15) : (labelsAreLong ? (isMobile ? 7 : 9) : (isMobile ? 9 : 12))
 						},
 						maxRotation: shouldRotate ? 90 : 0,
 						minRotation: shouldRotate ? 90 : 0,

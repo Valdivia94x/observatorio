@@ -70,8 +70,14 @@ export function parseVehiculosMotor(workbook: XLSX.WorkBook): GeneratedGrafica[]
       }
       if (anios.length === 0) continue
 
-      // Series = clases excepto "Total"
-      const series = clases.filter((cl) => cl.nombre.toLowerCase() !== 'total')
+      // Series = clases excepto "Total"; "Automóviles" se mueve al final
+      const series = clases
+        .filter((cl) => cl.nombre.toLowerCase() !== 'total')
+        .sort((a, b) => {
+          const aAuto = a.nombre.toLowerCase().startsWith('autom') ? 1 : 0
+          const bAuto = b.nombre.toLowerCase().startsWith('autom') ? 1 : 0
+          return aAuto - bAuto
+        })
       const tableRows: TableRow[] = [makeRow(['', ...anios])]
       for (const cl of series) {
         const valores = dataRows.map((dr) => {
