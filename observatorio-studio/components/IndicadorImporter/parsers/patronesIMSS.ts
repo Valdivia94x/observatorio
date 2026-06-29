@@ -191,11 +191,11 @@ function parseSeccion2Tamano(data: (string | number | null)[][]): GeneratedGrafi
     const name = displayName(block.name)
     const ubicacion = MUNICIPIO_UBICACION[block.name.toLowerCase()] || ['torreon']
 
+    // Transpuesta: tamaños como filas, períodos como columnas (más legible)
     const tablaDatos: TableValue = {
       rows: [
-        makeRow(['', ...tamanos]),
-        makeRow([block.label1, ...serie1]),
-        makeRow([block.label2, ...serie2]),
+        makeRow(['Tamaño', block.label1, block.label2]),
+        ...tamanos.map((t, i) => makeRow([t, serie1[i], serie2[i]])),
       ],
     }
 

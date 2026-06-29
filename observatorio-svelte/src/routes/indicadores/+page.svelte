@@ -466,8 +466,12 @@ Para cada municipio se presenta la distribución porcentual de las organizacione
 Comparar Torreón, Gómez Palacio, Lerdo y Matamoros revela las vocaciones sociales de cada localidad: en qué causas se concentra el trabajo ciudadano, qué temas están subrepresentados y cómo se diversifica el tejido asociativo de la Región Lagunera.`,
 	};
 
+	// Indicadores donde NO se muestra el panel "Acerca de este indicador" (junto al mapa)
+	const SIN_PANEL_DESCRIPCION = ['Indicadores de Desocupación', 'Patrones Afiliados en el IMSS'];
+
 	const currentDescripcion = $derived(() => {
 		if (selectedIndicador === 'todos') return null;
+		if (SIN_PANEL_DESCRIPCION.includes(selectedIndicador)) return null;
 		return indicadorDescripciones[selectedIndicador] || null;
 	});
 
