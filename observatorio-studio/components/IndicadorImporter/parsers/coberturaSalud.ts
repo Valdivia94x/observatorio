@@ -141,7 +141,7 @@ function parsePorInstitucion(data: (string | number | null)[][]): GeneratedGrafi
     })
 
     graficas.push({
-      titulo: `Cobertura en Salud por Institución en ${nombre}`,
+      titulo: `Cobertura en Salud por Institución en ${nombre} (2020)`,
       tipo: 'bar',
       ubicacion: [ub],
       tablaDatos: {

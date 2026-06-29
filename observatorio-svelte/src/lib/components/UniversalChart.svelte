@@ -128,7 +128,7 @@
 
 	// Títulos con barras más gruesas (mayor ocupación de la categoría), eje categórico con todas
 	// las etiquetas visibles (autoSkip false) y mayor altura del contenedor.
-	const THICK_BARS_PREFIXES = ['Carencias Sociales de la Población', 'Salario por Actividad Económica'];
+	const THICK_BARS_PREFIXES = ['Carencias Sociales de la Población', 'Salario por Actividad Económica', 'Principales Causas de Mortalidad'];
 
 	// Títulos donde una celda vacía/ND debe representarse como hueco (null) en vez de 0,
 	// para que la línea/barra no caiga a cero donde no hay dato.
@@ -156,6 +156,8 @@
 		{prefix: 'Vehículos de Motor Registrados', label: 'Vehículos'},
 		{prefix: 'Población Ocupada por Género', label: 'Ocupados'},
 		{prefix: 'Patrones Afiliados en el IMSS', label: 'Patrones'},
+		{prefix: 'Casos de Depresión Registrados', label: 'Personas'},
+		{prefix: 'Suicidios Registrados', label: 'Personas'},
 	];
 
 	// Títulos cuyas etiquetas de eje (categorías/ticks) se muestran más grandes

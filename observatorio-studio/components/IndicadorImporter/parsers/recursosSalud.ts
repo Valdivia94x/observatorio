@@ -64,7 +64,9 @@ export function parseRecursosSalud(workbook: XLSX.WorkBook): GeneratedGrafica[] 
   for (let o = 0; o < blockSize; o++) {
     const nombre = resourceRow[firstYearCol + o]
     if (typeof nombre === 'string' && nombre.trim()) {
-      recursos.push({offset: o, nombre: nombre.trim()})
+      // "Enfermeros" → "Enfermeras"
+      const limpio = nombre.trim().toLowerCase() === 'enfermeros' ? 'Enfermeras' : nombre.trim()
+      recursos.push({offset: o, nombre: limpio})
     }
   }
   if (recursos.length === 0) return []
@@ -96,7 +98,7 @@ export function parseRecursosSalud(workbook: XLSX.WorkBook): GeneratedGrafica[] 
       tablaDatos: {rows: tableRows},
       unidadMedida: 'unidades',
       fuente: 'salud',
-      descripcionContexto: `Recursos para la salud pública (consultorios, médicos, camas, enfermeros) en ${nombre}, evolución anual.`,
+      descripcionContexto: `Recursos para la salud pública (consultorios, médicos, camas, enfermeras) en ${nombre}, evolución anual.`,
     })
   }
 
