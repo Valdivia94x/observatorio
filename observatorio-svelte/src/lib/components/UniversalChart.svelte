@@ -158,6 +158,9 @@
 		{prefix: 'Patrones Afiliados en el IMSS', label: 'Patrones'},
 		{prefix: 'Casos de Depresión Registrados', label: 'Personas'},
 		{prefix: 'Suicidios Registrados', label: 'Personas'},
+		{prefix: 'Deuda Total Registrada', label: 'Millones de pesos'},
+		{prefix: 'Deuda del Sistema Operador de Agua', label: 'Millones de pesos'},
+		{prefix: 'Ingresos del Sistema Operador de Agua', label: 'Millones de pesos'},
 	];
 
 	// Títulos cuyas etiquetas de eje (categorías/ticks) se muestran más grandes
@@ -213,7 +216,24 @@
 	}
 
 	// Devuelve el subtítulo de unidad (escala/personalizada) o null cuando es redundante
+	// Títulos en pesos cuyos valores se MUESTRAN en millones (÷1,000,000) con subtítulo
+	// "Millones de pesos", sin abreviar con "M". Solo afecta el eje de valores primario.
+	const MILLONES_PESOS_DISPLAY_PREFIXES = [
+		'Deuda Total Registrada',
+		'Deuda del Sistema Operador de Agua',
+		'Ingresos del Sistema Operador de Agua',
+		'Recaudación del Impuesto Predial',
+	];
+	const showMillonesPesos = () =>
+		MILLONES_PESOS_DISPLAY_PREFIXES.some((p) => bloqueGrafica.titulo?.startsWith(p));
+	// Formatea un valor en pesos como millones (ej. 84700000 → "84.7")
+	function fmtMillones(value: number): string {
+		return (value / 1e6).toLocaleString('es-MX', {maximumFractionDigits: 1});
+	}
+
 	function getUnitSubtitle(): string | null {
+		// Pesos mostrados en millones → subtítulo explícito
+		if (showMillonesPesos()) return 'Millones de pesos';
 		const u = bloqueGrafica.unidadMedida;
 		if (u === 'otro') {
 			const custom = bloqueGrafica.unidadMedidaPersonalizada?.trim();
@@ -629,7 +649,10 @@
 								else if (labelHintsCurrency) unidad = bloqueGrafica.unidadMedida;
 								else unidad = 'unidades';
 							}
-							const formatted = formatValueWithUnit(rawValue, unidad);
+							// Pesos mostrados en millones (solo eje primario): dividir y anteponer $
+							const formatted = (showMillonesPesos() && !isSecondary)
+								? `$${fmtMillones(rawValue)} millones`
+								: formatValueWithUnit(rawValue, unidad);
 							const axis = hasSecondaryAxis() && isSecondary ? ' (eje der.)' : '';
 							return label ? `${label}: ${formatted}${axis}` : formatted;
 						}
@@ -663,6 +686,8 @@
 					formatter: (value: number | null) => {
 						// null/NaN = sin dato (hueco) → sin etiqueta
 						if (value === null || value === undefined || isNaN(value as number) || value === 0) return '';
+						// Pesos mostrados en millones → dividir y anteponer $
+						if (showMillonesPesos()) return `$${fmtMillones(value)}`;
 						const formatted = value.toLocaleString('es-MX');
 						if (bloqueGrafica.unidadMedida === 'pesos' || bloqueGrafica.unidadMedida === 'miles-pesos' || bloqueGrafica.unidadMedida === 'millones-pesos') return `$${formatted}`;
 						if (bloqueGrafica.unidadMedida === 'dolares' || bloqueGrafica.unidadMedida === 'miles-dolares' || bloqueGrafica.unidadMedida === 'millones-dolares') return `$${formatted}`;
@@ -771,7 +796,9 @@
 						color: gridColor,
 					},
 					ticks: {
-						color: primaryColor || textColor,
+						// Las etiquetas (números) del eje usan el color de texto del tema (blanco en oscuro)
+						// para que no se pierdan; el título del eje sí conserva el color de la serie.
+						color: textColor,
 						font: {
 							size: isMobile ? 10 : 15
 						},
@@ -779,7 +806,12 @@
 						...(THICK_BARS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p)) ? {autoSkip: false} : {}),
 						// En horizontalBar/pirámide el eje Y es categórico (etiquetas) → se omite callback
 						// para usar el render por defecto. En el resto, ocultar la etiqueta del 0.
-						...(isHorizontalLike ? {} : {callback: hideZeroLabel(yAxis.tickCallback)}),
+						// Si se muestran millones, el eje primario divide entre 1,000,000 (sin "M").
+						...(isHorizontalLike
+							? {}
+							: showMillonesPesos()
+								? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : fmtMillones(n); }}
+								: {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
 					beginAtZero: true,
 					max: !isHorizontalLike ? valueAxisMax : undefined,
@@ -823,7 +855,8 @@
 						drawOnChartArea: false,
 					},
 					ticks: {
-						color: secondaryColor || textColor,
+						// Etiquetas del eje secundario en color de texto del tema (legibles en fondo oscuro)
+						color: textColor,
 						font: {
 							size: isMobile ? 10 : 15
 						},
