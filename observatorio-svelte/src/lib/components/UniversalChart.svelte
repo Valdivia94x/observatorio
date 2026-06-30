@@ -130,6 +130,9 @@
 	// las etiquetas visibles (autoSkip false) y mayor altura del contenedor.
 	const THICK_BARS_PREFIXES = ['Carencias Sociales de la Población', 'Salario por Actividad Económica', 'Principales Causas de Mortalidad'];
 
+	// Títulos con valores sobre las barras en fuente más pequeña (muchas barras juntas)
+	const SMALL_DATALABEL_PREFIXES = ['Percepción de Inseguridad en Torreón', 'Confianza en la Policía Municipal en Torreón'];
+
 	// Títulos donde una celda vacía/ND debe representarse como hueco (null) en vez de 0,
 	// para que la línea/barra no caiga a cero donde no hay dato.
 	const NULL_GAP_TITLE_PREFIXES = ['Extracción de Agua', 'Pozos de Agua Registrados', 'Tratamiento de Aguas Residuales'];
@@ -675,7 +678,7 @@
 					offset: (bloqueGrafica.tipo === 'doughnut' || bloqueGrafica.tipo === 'pie' || bloqueGrafica.tipo === 'stackedBar') ? 0 : -2,
 					color: bloqueGrafica.tipo === 'stackedBar' ? '#fff' : (isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)'),
 					font: {
-						size: 10,
+						size: SMALL_DATALABEL_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p)) ? 7 : 10,
 						weight: 600
 					},
 					// Valores verticales solo en esta gráfica (muchas barras juntas en Torreón)
@@ -786,7 +789,8 @@
 					title: {
 						display: !isMobile,
 						text: yAxis.cleanLabel,
-						color: primaryColor || textColor,
+						// Título lateral del eje en color de texto del tema (blanco en oscuro), no el de la serie
+						color: textColor,
 						font: {
 							size: 14,
 							weight: 'bold' as const
@@ -824,6 +828,8 @@
 				const secondarySerie = bloqueGrafica.series?.find(s => s.ejeSecundario);
 				const secondaryLabel = secondarySerie?.nombre || 'Eje secundario';
 				const y1Axis = extractAxisSymbol(secondaryLabel, false);
+				// Las "tasas" se muestran con 1 decimal en el eje secundario
+				const secondaryIsTasa = secondaryLabel.toLowerCase().includes('tasa');
 
 				// Calculate max for secondary axis (double the max value so line stays at mid-height)
 				const rows = bloqueGrafica.tablaDatos?.rows || [];
@@ -845,7 +851,8 @@
 					title: {
 						display: !isMobile,
 						text: y1Axis.cleanLabel,
-						color: secondaryColor || textColor,
+						// Título lateral del eje secundario en color de texto del tema (legible en oscuro)
+						color: textColor,
 						font: {
 							size: 14,
 							weight: 'bold' as const
@@ -860,7 +867,9 @@
 						font: {
 							size: isMobile ? 10 : 15
 						},
-						callback: hideZeroLabel(y1Axis.tickCallback),
+						callback: secondaryIsTasa
+							? (v: number | string) => { const n = Number(v); return n === 0 ? '' : n.toLocaleString('es-MX', {minimumFractionDigits: 1, maximumFractionDigits: 1}); }
+							: hideZeroLabel(y1Axis.tickCallback),
 					},
 					beginAtZero: true,
 					max: secondaryMax !== undefined ? Math.ceil(secondaryMax * 2) : undefined,

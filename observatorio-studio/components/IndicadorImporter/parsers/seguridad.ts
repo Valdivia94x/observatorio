@@ -11,6 +11,10 @@ function round2(n: number): string {
   return parseFloat(n.toFixed(2)).toString()
 }
 
+function round1(n: number): string {
+  return parseFloat(n.toFixed(1)).toString()
+}
+
 const MUNICIPIO_UBICACION: Record<string, string> = {
   matamoros: 'matamoros',
   torreón: 'torreon',
@@ -94,7 +98,7 @@ function parseHoja(sheet: XLSX.Sheet | undefined, indicadorNombre: string): Gene
     })
     const tasas = dataRows.map((row) => {
       const v = row[m.tasaCol]
-      return v === null || v === undefined || v === '' ? '' : round2(Number(v))
+      return v === null || v === undefined || v === '' ? '' : round1(Number(v))
     })
     return {
       titulo: `${indicadorNombre} en ${m.display}`,
@@ -111,6 +115,7 @@ function parseHoja(sheet: XLSX.Sheet | undefined, indicadorNombre: string): Gene
       fuente: 'otra',
       fuentePersonalizada: fuente,
       descripcionContexto: `${indicadorNombre} en ${m.display}: número absoluto de casos y tasa por cada 100 mil habitantes.`,
+      nota: 'Las cifras hacen referencia a carpetas de investigación.',
       series: [
         {nombre: 'Número absoluto', tipoSerie: 'bar', color: '#3b82f6'},
         {nombre: 'Tasa por cada 100 mil hab.', tipoSerie: 'line', color: '#ef4444', ejeSecundario: true},
@@ -202,7 +207,7 @@ function parsePercepcion(sheet: XLSX.Sheet | undefined, indicadorNombre: string)
     colores: [COLOR_LAGUNA, COLOR_NACIONAL],
   })
 
-  // Torreón: La Laguna vs Torreón vs Nacional (3 barras → ocultar valores para no saturar)
+  // Torreón: La Laguna vs Torreón vs Nacional (3 barras; se muestran los valores en fuente pequeña)
   if (torreon.length) {
     graficas.push({
       titulo: `${indicadorNombre} en Torreón`,
@@ -220,7 +225,6 @@ function parsePercepcion(sheet: XLSX.Sheet | undefined, indicadorNombre: string)
       fuente: 'inegi',
       descripcionContexto: `${indicadorNombre} en Torreón, comparativo con La Laguna y el promedio Nacional por trimestre. Fuente: INEGI, Encuesta Nacional de Seguridad Pública Urbana.`,
       colores: [COLOR_LAGUNA, COLOR_TORREON, COLOR_NACIONAL],
-      ocultarValores: true,
     })
   }
 
