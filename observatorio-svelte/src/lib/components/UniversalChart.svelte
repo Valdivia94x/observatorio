@@ -124,6 +124,7 @@
 	// Override del máximo del eje de valores por título (tiene prioridad sobre el tope de 100%)
 	const VALUE_AXIS_MAX: {prefix: string; max: number}[] = [
 		{prefix: 'Carencias Sociales de la Población', max: 80},
+		{prefix: 'Nivel de Escolaridad', max: 30},
 	];
 
 	// Títulos con barras más gruesas (mayor ocupación de la categoría), eje categórico con todas
@@ -141,12 +142,16 @@
 	const HORIZONTAL_CATEGORY_LABELS: {prefix: string; label: string}[] = [
 		{prefix: 'Carencias Sociales de la Población', label: 'Indicador'},
 		{prefix: 'Organizaciones de la Sociedad Civil', label: 'Organización'},
+		{prefix: 'Nivel de Escolaridad', label: 'Escolaridad'},
 	];
 
 	// Etiqueta del eje categórico X en gráficas de barras verticales, por título (default: 'Período')
 	const VERTICAL_CATEGORY_LABELS: {prefix: string; label: string}[] = [
 		{prefix: 'Tecnologías de la Información en las Viviendas', label: 'Tecnología'},
 		{prefix: 'Medio de Transporte de', label: 'Medio'},
+		{prefix: 'Asistencia Escolar', label: 'Escolaridad'},
+		{prefix: 'Resultados PLANEA', label: 'Materia'},
+		{prefix: 'Rezago Educativo', label: 'Rezago'},
 	];
 
 	// Etiqueta del eje de VALORES por título (Y en verticales, X en horizontales).
@@ -165,13 +170,27 @@
 		{prefix: 'Deuda del Sistema Operador de Agua', label: 'Millones de pesos'},
 		{prefix: 'Ingresos del Sistema Operador de Agua', label: 'Millones de pesos'},
 		{prefix: 'Financiamiento a Partidos Políticos', label: 'Millones de pesos'},
+		// Educación
+		{prefix: 'Egresados de Posgrado por Género', label: 'Egresados'},
+		{prefix: 'Egresados Universitarios por Género', label: 'Egresados'},
+		{prefix: 'Matrícula de Posgrado por Género', label: 'Matrícula'},
+		{prefix: 'Matrícula Universitaria por Género', label: 'Matrícula'},
+		{prefix: 'Nivel de Escolaridad', label: '% de población'},
+		// Instituciones (gráfica 2 de Egresados/Matrícula) — tras renombrar título a "…por tipo de sostenimiento"
+		{prefix: 'Instituciones de Posgrado por tipo de sostenimiento', label: 'Instituciones'},
+		{prefix: 'Instituciones Universitarias por tipo de sostenimiento', label: 'Instituciones'},
+		// Escuelas (gráfica 2 de Indicadores Básicos) — tras renombrar título a "Instituciones de … por tipo de sostenimiento"
+		{prefix: 'Instituciones de Preescolar por tipo de sostenimiento', label: 'Escuelas'},
+		{prefix: 'Instituciones de Primaria por tipo de sostenimiento', label: 'Escuelas'},
+		{prefix: 'Instituciones de Secundaria por tipo de sostenimiento', label: 'Escuelas'},
+		{prefix: 'Instituciones de Media Superior por tipo de sostenimiento', label: 'Escuelas'},
 	];
 
 	// Títulos cuyo eje de valores NO empieza en 0 (se ajusta al rango de datos para apreciar diferencias)
 	const NO_BEGIN_AT_ZERO_PREFIXES = ['Participación Electoral por Edad y Género'];
 
 	// Títulos cuyas etiquetas de eje (categorías/ticks) se muestran más grandes
-	const LARGE_TICK_PREFIXES = ['Medio de Transporte de'];
+	const LARGE_TICK_PREFIXES = ['Medio de Transporte de', 'Resultados PLANEA', 'Rezago Educativo'];
 
 	// Helper to convert hex color to rgba
 	function hexToRgba(hex: string, alpha: number): string {

@@ -152,6 +152,15 @@
 	// (Torreón/Matamoros→Coahuila, Gómez/Lerdo→Durango). Acotado a estos ejes.
 	const EJES_ESTATAL_POR_MUNICIPIO = ['Participación Ciudadana'];
 
+	// Indicadores puntuales (no todo el eje) donde una gráfica estatal se abre desde el municipio
+	// de su estado. Ej.: "Años promedio de escolaridad" muestra su gráfica de Coahuila/Durango.
+	const INDICADORES_ESTATAL_POR_MUNICIPIO = ['Años promedio de escolaridad'];
+
+	function permiteEstatalPorMunicipio(ejeTitle?: string, indTitle?: string): boolean {
+		return (!!ejeTitle && EJES_ESTATAL_POR_MUNICIPIO.includes(ejeTitle)) ||
+			(!!indTitle && INDICADORES_ESTATAL_POR_MUNICIPIO.includes(indTitle));
+	}
+
 	// Una gráfica es visible para una ubicación municipal si: es de ese municipio, O —cuando el
 	// indicador pertenece a un eje en EJES_ESTATAL_POR_MUNICIPIO— es estatal del estado del municipio.
 	function graficaVisibleEnUbicacion(grafica: GraficaWidget, ubicacion: string, allowEstatalByState: boolean): boolean {
@@ -166,10 +175,10 @@
 	}
 
 	// Filter graficas within an indicador based on ubicacion
-	function filterGraficas(graficas: GraficaWidget[] | undefined, ejeTitle?: string): GraficaWidget[] {
+	function filterGraficas(graficas: GraficaWidget[] | undefined, ejeTitle?: string, indTitle?: string): GraficaWidget[] {
 		if (!graficas) return [];
 		if (selectedUbicacion === 'todos') return graficas;
-		const allowEstatalByState = !!ejeTitle && EJES_ESTATAL_POR_MUNICIPIO.includes(ejeTitle);
+		const allowEstatalByState = permiteEstatalPorMunicipio(ejeTitle, indTitle);
 		return graficas.filter(g => graficaVisibleEnUbicacion(g, selectedUbicacion, allowEstatalByState));
 	}
 
@@ -186,7 +195,7 @@
 		return indicadoresByEje()
 			.map(ind => ({
 				...ind,
-				graficasFiltradas: filterGraficas(ind.contenido, ind.eje?.title)
+				graficasFiltradas: filterGraficas(ind.contenido, ind.eje?.title, ind.title)
 			}))
 			.filter(ind => {
 				// Only show indicadores that have graficas to display
@@ -272,7 +281,7 @@
 		if (selectedUbicacion === 'todos') return true;
 		const ind = indicadores.find(i => i.title === indicadorName);
 		if (!ind) return false;
-		const allow = EJES_ESTATAL_POR_MUNICIPIO.includes(ind.eje?.title ?? '');
+		const allow = permiteEstatalPorMunicipio(ind.eje?.title, ind.title);
 		return ind.contenido?.some(g => graficaVisibleEnUbicacion(g, selectedUbicacion, allow)) ?? false;
 	}
 
@@ -281,12 +290,12 @@
 		if (selectedIndicador !== 'todos') {
 			const ind = indicadores.find(i => i.title === selectedIndicador);
 			if (!ind) return false;
-			const allow = EJES_ESTATAL_POR_MUNICIPIO.includes(ind.eje?.title ?? '');
+			const allow = permiteEstatalPorMunicipio(ind.eje?.title, ind.title);
 			return ind.contenido?.some(g => graficaVisibleEnUbicacion(g, ubicacion, allow)) ?? false;
 		}
 		// Sin indicador específico: cualquier indicador del eje vigente sirve
 		return indicadoresByEje().some(ind => {
-			const allow = EJES_ESTATAL_POR_MUNICIPIO.includes(ind.eje?.title ?? '');
+			const allow = permiteEstatalPorMunicipio(ind.eje?.title, ind.title);
 			return ind.contenido?.some(g => graficaVisibleEnUbicacion(g, ubicacion, allow));
 		});
 	}
@@ -469,9 +478,14 @@ Comparar Torreón, Gómez Palacio, Lerdo y Matamoros revela las vocaciones socia
 	// Indicadores donde NO se muestra el panel "Acerca de este indicador" (junto al mapa)
 	const SIN_PANEL_DESCRIPCION = ['Indicadores de Desocupación', 'Patrones Afiliados en el IMSS', 'Costo del voto por Partido Político', 'Organizaciones de la Sociedad Civil'];
 
+	// Indicadores cuyo panel de descripción se oculta al filtrar por un estado (ubicación estatal-*),
+	// para dejar solo el ranking (ej. "Años promedio de escolaridad").
+	const SIN_PANEL_DESCRIPCION_EN_ESTADO = ['Años promedio de escolaridad'];
+
 	const currentDescripcion = $derived(() => {
 		if (selectedIndicador === 'todos') return null;
 		if (SIN_PANEL_DESCRIPCION.includes(selectedIndicador)) return null;
+		if (SIN_PANEL_DESCRIPCION_EN_ESTADO.includes(selectedIndicador) && selectedUbicacion.startsWith('estatal-')) return null;
 		return indicadorDescripciones[selectedIndicador] || null;
 	});
 

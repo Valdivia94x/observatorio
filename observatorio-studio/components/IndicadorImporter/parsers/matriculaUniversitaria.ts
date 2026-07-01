@@ -233,7 +233,7 @@ function parseSeccion3Instituciones(data: (string | number | null)[][]): Generat
     }
 
     graficas.push({
-      titulo: `Instituciones Universitarias en ${displayName}`,
+      titulo: `Instituciones Universitarias por tipo de sostenimiento en ${displayName}`,
       tipo: 'bar',
       ubicacion,
       tablaDatos,

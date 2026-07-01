@@ -137,12 +137,13 @@ function parseEscuelas(
     }
 
     graficas.push({
-      titulo: `Escuelas de ${nivel} en ${name}`,
+      titulo: `Instituciones de ${nivel} por tipo de sostenimiento en ${name}`,
       tipo: 'bar',
       ubicacion,
       tablaDatos,
       unidadMedida: 'unidades',
-      fuente: 'sep',
+      fuente: 'otra',
+      fuentePersonalizada: 'SEP, Sistema de Estadísticas Continuas de Educación, Formato 911',
       descripcionContexto: `Número de escuelas de ${nivel.toLowerCase()} por tipo de sostenimiento en ${name}.`,
     })
   }
@@ -190,7 +191,8 @@ export function createIndicadoresBasicosParser(nivel: string) {
           ubicacion,
           tablaDatos,
           unidadMedida: 'unidades',
-          fuente: 'sep',
+          fuente: 'otra',
+          fuentePersonalizada: 'SEP, Sistema de Estadísticas Continuas de Educación, Formato 911',
           descripcionContexto: `Alumnos (barras) y maestros (línea) de ${nivel.toLowerCase()} en ${name}. Fuente: Sistema de Estadísticas Continuas de Educación, Formato 911.`,
           series: [
             {nombre: 'Alumnos', tipoSerie: 'bar', color: '#3b82f6'},
