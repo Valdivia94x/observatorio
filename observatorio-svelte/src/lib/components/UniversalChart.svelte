@@ -199,6 +199,10 @@
 	// Títulos cuyo eje de valores muestra el número completo (sin abreviar con "M"/"MM")
 	const FULL_NUMBER_AXIS_PREFIXES = ['Productividad Bruta Total'];
 
+	// Títulos en pesos cuyo eje muestra el monto COMPLETO con "$" (sin abreviar "M"), para que
+	// no se mezclen ticks tipo "$1.5M" con números planos cuando los valores rondan el millón.
+	const FULL_PESOS_AXIS_PREFIXES = ['Productividad por Trabajador'];
+
 	// Títulos cuyo eje de valores muestra TODAS las etiquetas como porcentaje, incluido el 0 ("0%")
 	const SHOW_ZERO_PERCENT_AXIS_PREFIXES = ['Ranking Nacional de Crecimiento Económico'];
 
@@ -874,6 +878,8 @@
 								? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : fmtMillones(n); }}
 								: FULL_NUMBER_AXIS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))
 									? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : n.toLocaleString('es-MX'); }}
+									: FULL_PESOS_AXIS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))
+										? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : `$${n.toLocaleString('es-MX')}`; }}
 									: SHOW_ZERO_PERCENT_AXIS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))
 										? {callback: (v: number | string) => `${Number(v).toLocaleString('es-MX')}%`}
 										: {callback: hideZeroLabel(yAxis.tickCallback)}),
