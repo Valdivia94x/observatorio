@@ -836,6 +836,9 @@
 				const y1Axis = extractAxisSymbol(secondaryLabel, false);
 				// Las "tasas" se muestran con 1 decimal en el eje secundario
 				const secondaryIsTasa = secondaryLabel.toLowerCase().includes('tasa');
+				// Títulos cuyo eje secundario se ajusta al rango real de datos (sin el x2 que lo duplica),
+				// para que la numeración no quede desproporcionada.
+				const secondaryFit = ['Extracción de Agua'].some(p => bloqueGrafica.titulo?.startsWith(p));
 
 				// Calculate max for secondary axis (double the max value so line stays at mid-height)
 				const rows = bloqueGrafica.tablaDatos?.rows || [];
@@ -878,7 +881,10 @@
 							: hideZeroLabel(y1Axis.tickCallback),
 					},
 					beginAtZero: true,
-					max: secondaryMax !== undefined ? Math.ceil(secondaryMax * 2) : undefined,
+					// secondaryFit: ajustar al dato real (con poco margen); resto: x2 para dejar la línea a media altura
+					max: secondaryMax !== undefined
+						? (secondaryFit ? Math.ceil((secondaryMax * 1.1) / 10) * 10 : Math.ceil(secondaryMax * 2))
+						: undefined,
 				};
 			}
 
