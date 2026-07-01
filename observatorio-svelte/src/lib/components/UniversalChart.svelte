@@ -153,7 +153,6 @@
 		{prefix: 'Resultados PLANEA', label: 'Materia'},
 		{prefix: 'Rezago Educativo', label: 'Rezago'},
 		{prefix: 'Ranking Nacional de Crecimiento Económico', label: 'Entidad Federativa'},
-		{prefix: 'Exportaciones de', label: 'Miles de Millones de Dólares'},
 	];
 
 	// Override de la etiqueta del eje SECUNDARIO (Y2) por título de gráfica
@@ -164,6 +163,7 @@
 	// Etiqueta del eje de VALORES por título (Y en verticales, X en horizontales).
 	// Sobre-escribe la etiqueta derivada de la unidad de medida.
 	const VALUE_AXIS_LABELS: {prefix: string; label: string}[] = [
+		{prefix: 'Exportaciones de', label: 'Miles de Millones de Dólares'},
 		{prefix: 'Accidentes de Tránsito Registrados', label: 'Accidentes'},
 		{prefix: 'Créditos para la Vivienda por Institución', label: 'Créditos'},
 		{prefix: 'Condiciones Sociales de la Población', label: 'Porcentaje de la población'},
