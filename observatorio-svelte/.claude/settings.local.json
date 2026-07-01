@@ -5,7 +5,9 @@
       "Bash(npm run check:*)",
       "Bash(npx svelte-check:*)",
       "Bash(npm run build:*)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(grep -r \"grid\\\\|flex\\\\|w-\\\\|h-\\\\|responsive\" /Users/alejandrovaldivia/Documents/Neurya/Proyectos/CCI LAGUNA/Observatorio/observatorio-svelte/src/lib/components/*.svelte)",
+      "Bash(xxd)"
     ]
   }
 }
