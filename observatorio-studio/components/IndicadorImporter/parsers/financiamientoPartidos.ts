@@ -55,7 +55,9 @@ export function parseFinanciamientoPartidos(workbook: XLSX.WorkBook): GeneratedG
       const partido = String(row[0]).trim()
       if (partido.toLowerCase().startsWith('fuente') || partido.toLowerCase().startsWith('partido')) break
       if (row[1] === null || row[1] === undefined || row[1] === '') break
-      partidos.push(partido)
+      // Abreviar "Asociaciones/Agrupaciones Políticas" → "AP" (etiqueta muy larga encoge el gráfico)
+      const nombre = /^(asociaciones|agrupaciones)\s+pol/i.test(partido) ? 'AP' : partido
+      partidos.push(nombre)
       valores.push(Math.round(Number(row[1])).toString())
     }
     if (partidos.length === 0) continue

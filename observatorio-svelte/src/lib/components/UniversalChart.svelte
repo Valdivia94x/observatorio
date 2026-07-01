@@ -164,7 +164,11 @@
 		{prefix: 'Deuda Total Registrada', label: 'Millones de pesos'},
 		{prefix: 'Deuda del Sistema Operador de Agua', label: 'Millones de pesos'},
 		{prefix: 'Ingresos del Sistema Operador de Agua', label: 'Millones de pesos'},
+		{prefix: 'Financiamiento a Partidos Políticos', label: 'Millones de pesos'},
 	];
+
+	// Títulos cuyo eje de valores NO empieza en 0 (se ajusta al rango de datos para apreciar diferencias)
+	const NO_BEGIN_AT_ZERO_PREFIXES = ['Participación Electoral por Edad y Género'];
 
 	// Títulos cuyas etiquetas de eje (categorías/ticks) se muestran más grandes
 	const LARGE_TICK_PREFIXES = ['Medio de Transporte de'];
@@ -226,6 +230,7 @@
 		'Deuda del Sistema Operador de Agua',
 		'Ingresos del Sistema Operador de Agua',
 		'Recaudación del Impuesto Predial',
+		'Financiamiento a Partidos Políticos',
 	];
 	const showMillonesPesos = () =>
 		MILLONES_PESOS_DISPLAY_PREFIXES.some((p) => bloqueGrafica.titulo?.startsWith(p));
@@ -817,7 +822,8 @@
 								? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : fmtMillones(n); }}
 								: {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
-					beginAtZero: true,
+					// Algunos títulos no empiezan en 0 para apreciar diferencias pequeñas
+					beginAtZero: !NO_BEGIN_AT_ZERO_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p)),
 					max: !isHorizontalLike ? valueAxisMax : undefined,
 				}
 			};
