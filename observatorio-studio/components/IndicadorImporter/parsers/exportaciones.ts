@@ -11,9 +11,10 @@ function toPercent(val: number): string {
   return parseFloat((val * 100).toFixed(2)).toString()
 }
 
-// Miles de dólares → millones de dólares (MDD), 1 decimal
+// Miles de dólares → miles de millones de dólares (÷1,000,000), 1 decimal
+const UNIDAD_MMDD = 'Miles de millones de dólares'
 function toMDD(val: number): string {
-  return parseFloat((val / 1000).toFixed(1)).toString()
+  return parseFloat((val / 1e6).toFixed(1)).toString()
 }
 
 export function parseExportaciones(workbook: XLSX.WorkBook): GeneratedGrafica[] {
@@ -92,9 +93,10 @@ function parseSeccion1Entidades(data: (string | number | null)[][]): GeneratedGr
       tipo: 'bar',
       ubicacion,
       tablaDatos,
-      unidadMedida: 'millones-dolares',
+      unidadMedida: 'otro',
+      unidadMedidaPersonalizada: UNIDAD_MMDD,
       fuente: 'inegi',
-      descripcionContexto: `Exportaciones trimestrales de ${entidad} en millones de dólares (barras) y porcentaje del total nacional (línea). Fuente: INEGI.`,
+      descripcionContexto: `Exportaciones trimestrales de ${entidad} en miles de millones de dólares (barras) y porcentaje del total nacional (línea). Fuente: INEGI.`,
       series: [
         {nombre: entidad, tipoSerie: 'bar', color: '#3b82f6'},
         {nombre: '% del nacional', tipoSerie: 'line', color: '#ef4444', ejeSecundario: true},
@@ -202,9 +204,10 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
       tipo: 'table',
       ubicacion: block.ubicacion,
       tablaDatos,
-      unidadMedida: 'millones-dolares',
+      unidadMedida: 'otro',
+      unidadMedidaPersonalizada: UNIDAD_MMDD,
       fuente: 'inegi',
-      descripcionContexto: `Principales subactividades de exportación en ${block.name}, millones de dólares. Fuente: INEGI.`,
+      descripcionContexto: `Principales subactividades de exportación en ${block.name}, miles de millones de dólares. Fuente: INEGI.`,
       nota: 'La suma de las subactividades no equivale al total de la entidad porque algunos datos son confidenciales.',
     })
   }
@@ -248,7 +251,7 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
   if (entidades.length === 0) return []
 
   const tableRows: TableRow[] = [
-    makeRow(['#', 'Entidad Federativa', 'Exportaciones (millones USD)']),
+    makeRow(['#', 'Entidad Federativa', 'Exportaciones (miles de millones USD)']),
   ]
   for (let i = 0; i < entidades.length; i++) {
     tableRows.push(makeRow([(i + 1).toString(), entidades[i], valores[i]]))
@@ -264,9 +267,10 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
     tipo: 'table',
     ubicacion: ['estatal-coahuila', 'estatal-durango'],
     tablaDatos,
-    unidadMedida: 'millones-dolares',
+    unidadMedida: 'otro',
+    unidadMedidaPersonalizada: UNIDAD_MMDD,
     fuente: 'inegi',
-    descripcionContexto: 'Ranking de entidades federativas por exportaciones totales en millones de dólares, 2025. Fuente: INEGI.',
+    descripcionContexto: 'Ranking de entidades federativas por exportaciones totales en miles de millones de dólares, 2025. Fuente: INEGI.',
     ocultarValores: true,
   }]
 }

@@ -153,7 +153,7 @@
 		{prefix: 'Resultados PLANEA', label: 'Materia'},
 		{prefix: 'Rezago Educativo', label: 'Rezago'},
 		{prefix: 'Ranking Nacional de Crecimiento Económico', label: 'Entidad Federativa'},
-		{prefix: 'Exportaciones de', label: 'Millones de dólares'},
+		{prefix: 'Exportaciones de', label: 'Miles de Millones de Dólares'},
 	];
 
 	// Override de la etiqueta del eje SECUNDARIO (Y2) por título de gráfica

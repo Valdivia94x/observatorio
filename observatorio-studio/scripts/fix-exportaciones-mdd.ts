@@ -1,11 +1,13 @@
 /**
- * Migration OBSLAG Economía — Exportaciones a MDD:
- * Divide entre 1,000 los valores en miles de dólares para dejarlos en millones de dólares (MDD)
- * en los datos ya importados, y cambia la unidad a 'millones-dolares'. NO toca las filas de
- * porcentaje ("% del nacional"). Idempotente (salta si la unidad ya es millones-dolares).
+ * Migration OBSLAG Economía — Exportaciones a MILES DE MILLONES de dólares:
+ * Deja los valores en miles de millones de dólares (÷1,000,000 respecto a los miles originales)
+ * y la unidad como 'otro' con subleyenda "Miles de millones de dólares". No toca filas de
+ * porcentaje ("% del nacional"). Idempotente (guard por unidadMedidaPersonalizada).
  *
- * Nota: el bug Coahuila=Durango en la tabla de subactividad y la fila "Total de la entidad"
- * solo se corrigen re-importando (esta migración solo aplica la división).
+ * Los datos actuales ya venían divididos entre 1,000 (millones) por la migración previa, así que
+ * aquí solo se divide entre 1,000 adicional. Si se corre sobre datos en miles originales, ajustar.
+ *
+ * El bug Coahuila=Durango y la fila "Total de la entidad" solo se corrigen re-importando.
  *
  * Uso:
  *   Dry-run:  pnpm exec sanity exec scripts/fix-exportaciones-mdd.ts --with-user-token
@@ -14,11 +16,13 @@
 import {getCliClient} from 'sanity/cli'
 
 const APPLY = process.env.APPLY === '1'
+const UNIDAD = 'Miles de millones de dólares'
 
 interface Row {cells: string[]; [k: string]: unknown}
-interface Grafica {_key: string; titulo?: string; unidadMedida?: string; tablaDatos?: {rows: Row[]}; [k: string]: unknown}
+interface Grafica {_key: string; titulo?: string; unidadMedida?: string; unidadMedidaPersonalizada?: string; tablaDatos?: {rows: Row[]}; [k: string]: unknown}
 interface Indicador {_id: string; title?: string; contenido?: Grafica[]}
 
+// Divide entre 1,000 (millones → miles de millones), 1 decimal
 function div1000(cell: string): string {
   if (cell === '' || cell === null || cell === undefined) return cell
   const n = Number(cell)
@@ -50,27 +54,22 @@ async function main() {
         t.startsWith('Exportaciones por Subactividad') ||
         t.startsWith('Ranking Nacional de Exportaciones')
       if (!esExport || !g.tablaDatos?.rows) return g
-      if (g.unidadMedida === 'millones-dolares') return g // ya convertido
+      if (g.unidadMedidaPersonalizada === UNIDAD) return g // ya convertido
 
       const isRanking = t.startsWith('Ranking Nacional de Exportaciones')
       const rows = g.tablaDatos.rows.map((r, ri) => {
         if (ri === 0) {
-          // Ranking: actualizar encabezado "miles USD" → "millones USD"
-          if (isRanking) return {...r, cells: r.cells.map((c) => (typeof c === 'string' ? c.replace(/miles USD/i, 'millones USD') : c))}
+          if (isRanking) return {...r, cells: r.cells.map((c) => (typeof c === 'string' ? c.replace(/\(millones USD\)|\(miles USD\)/i, '(miles de millones USD)') : c))}
           return r
         }
-        if (isRanking) {
-          // Divide solo la columna de valor (índice 2), preserva # y entidad
-          return {...r, cells: r.cells.map((c, ci) => (ci === 2 ? div1000(c) : c))}
-        }
-        // Barras / subactividad: no dividir filas de porcentaje; saltar la etiqueta (col 0)
+        if (isRanking) return {...r, cells: r.cells.map((c, ci) => (ci === 2 ? div1000(c) : c))}
         if (esFilaPorcentaje(r.cells[0])) return r
         return {...r, cells: r.cells.map((c, ci) => (ci === 0 ? c : div1000(c)))}
       })
-      console.log(`[${ind.title}] "${t}": ÷1000 → MDD`)
+      console.log(`[${ind.title}] "${t}": ÷1000 → miles de millones`)
       charts++
       changed = true
-      return {...g, tablaDatos: {...g.tablaDatos, rows}, unidadMedida: 'millones-dolares'}
+      return {...g, tablaDatos: {...g.tablaDatos, rows}, unidadMedida: 'otro', unidadMedidaPersonalizada: UNIDAD}
     })
     if (changed) {
       docs++
