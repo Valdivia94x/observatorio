@@ -199,6 +199,21 @@
 	// Títulos cuyo eje de valores muestra el número completo (sin abreviar con "M"/"MM")
 	const FULL_NUMBER_AXIS_PREFIXES = ['Productividad Bruta Total'];
 
+	// Títulos cuyo eje de valores muestra TODAS las etiquetas como porcentaje, incluido el 0 ("0%")
+	const SHOW_ZERO_PERCENT_AXIS_PREFIXES = ['Ranking Nacional de Crecimiento Económico'];
+
+	// Abreviatura de entidades federativas con nombre largo (para ejes de rankings)
+	const ENTIDAD_ABREV: Record<string, string> = {
+		'Coahuila de Zaragoza': 'Coahuila',
+		'Michoacán de Ocampo': 'Michoacán',
+		'Veracruz de Ignacio de la Llave': 'Veracruz',
+		'Ciudad de México': 'CDMX',
+		'Baja California Sur': 'B.C.S.',
+		'Baja California': 'B.C.',
+		'San Luis Potosí': 'S.L.P.',
+		'Quintana Roo': 'Q. Roo',
+	};
+
 	// Títulos cuyas etiquetas de eje (categorías/ticks) se muestran más grandes
 	const LARGE_TICK_PREFIXES = ['Medio de Transporte de', 'Resultados PLANEA', 'Rezago Educativo'];
 
@@ -308,7 +323,10 @@
 					? 'pesos'
 					: undefined;
 		const unidad = colUnidad ?? (labelHasPercent ? 'porcentaje' : bloqueGrafica.unidadMedida);
-		return formatValueWithUnit(num, unidad);
+		const result = formatValueWithUnit(num, unidad);
+		// IED: quitar el sufijo " USD" de las celdas (solo en este indicador)
+		const esTablaIED = bloqueGrafica.titulo?.startsWith('IED por Tipo') || bloqueGrafica.titulo?.startsWith('Ranking Nacional de IED');
+		return esTablaIED ? result.replace(/ USD$/, '') : result;
 	}
 
 	// Formatea un valor numérico con el símbolo/etiqueta de su unidad
@@ -392,6 +410,11 @@
 		} else {
 			labels = headerRow;
 			dataStartIndex = 0;
+		}
+
+		// Abreviar entidades federativas con nombre largo (solo en el ranking de crecimiento)
+		if (bloqueGrafica.titulo?.startsWith('Ranking Nacional de Crecimiento Económico')) {
+			labels = labels.map(l => (typeof l === 'string' && ENTIDAD_ABREV[l.trim()]) ? ENTIDAD_ABREV[l.trim()] : l);
 		}
 
 		// Wrap long labels into multiline arrays for Chart.js.
@@ -851,7 +874,9 @@
 								? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : fmtMillones(n); }}
 								: FULL_NUMBER_AXIS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))
 									? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : n.toLocaleString('es-MX'); }}
-									: {callback: hideZeroLabel(yAxis.tickCallback)}),
+									: SHOW_ZERO_PERCENT_AXIS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))
+										? {callback: (v: number | string) => `${Number(v).toLocaleString('es-MX')}%`}
+										: {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
 					// Algunos títulos no empiezan en 0 para apreciar diferencias pequeñas
 					beginAtZero: !NO_BEGIN_AT_ZERO_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p)),
@@ -1122,7 +1147,7 @@
 					</thead>
 					<tbody>
 						{#each rows.slice(1) as row, rowIdx}
-							{@const isTotalRow = row.cells.some(c => typeof c === 'string' && c.trim().toLowerCase().startsWith('total '))}
+							{@const isTotalRow = row.cells.some(c => typeof c === 'string' && (c.trim().toLowerCase().startsWith('total ') || c.trim().toLowerCase().startsWith('pib total')))}
 							<tr class="{rowIdx % 2 === 1 ? (themeStore.isDark ? 'bg-slate-800/50' : 'bg-slate-50') : ''} {isTotalRow ? 'font-bold ' + (themeStore.isDark ? 'bg-slate-700/70' : 'bg-slate-100') : ''}">
 								{#each row.cells as cell, i}
 									<td
