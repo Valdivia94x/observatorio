@@ -196,6 +196,9 @@
 	// Títulos cuyo eje de valores NO empieza en 0 (se ajusta al rango de datos para apreciar diferencias)
 	const NO_BEGIN_AT_ZERO_PREFIXES = ['Participación Electoral por Edad y Género'];
 
+	// Títulos cuyo eje de valores muestra el número completo (sin abreviar con "M"/"MM")
+	const FULL_NUMBER_AXIS_PREFIXES = ['Productividad Bruta Total'];
+
 	// Títulos cuyas etiquetas de eje (categorías/ticks) se muestran más grandes
 	const LARGE_TICK_PREFIXES = ['Medio de Transporte de', 'Resultados PLANEA', 'Rezago Educativo'];
 
@@ -846,7 +849,9 @@
 							? {}
 							: showMillonesPesos()
 								? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : fmtMillones(n); }}
-								: {callback: hideZeroLabel(yAxis.tickCallback)}),
+								: FULL_NUMBER_AXIS_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p))
+									? {callback: (v: number | string) => { const n = Number(v); return n === 0 ? '' : n.toLocaleString('es-MX'); }}
+									: {callback: hideZeroLabel(yAxis.tickCallback)}),
 					},
 					// Algunos títulos no empiezan en 0 para apreciar diferencias pequeñas
 					beginAtZero: !NO_BEGIN_AT_ZERO_PREFIXES.some(p => bloqueGrafica.titulo?.startsWith(p)),
