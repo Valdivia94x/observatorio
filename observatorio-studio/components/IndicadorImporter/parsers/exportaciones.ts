@@ -11,6 +11,11 @@ function toPercent(val: number): string {
   return parseFloat((val * 100).toFixed(2)).toString()
 }
 
+// Miles de dólares → millones de dólares (MDD), 1 decimal
+function toMDD(val: number): string {
+  return parseFloat((val / 1000).toFixed(1)).toString()
+}
+
 export function parseExportaciones(workbook: XLSX.WorkBook): GeneratedGrafica[] {
   const sheet = workbook.Sheets[workbook.SheetNames[0]]
   if (!sheet) return []
@@ -60,7 +65,7 @@ function parseSeccion1Entidades(data: (string | number | null)[][]): GeneratedGr
     if (!eje1Label.includes('1')) continue
 
     const entidad = String(row1[1]).trim()
-    const valores = anios.map((_, idx) => Math.round(Number(row1[idx + 2] || 0)).toString())
+    const valores = anios.map((_, idx) => toMDD(Number(row1[idx + 2] || 0)))
 
     // Next row should be Eje 2
     const row2 = data[i + 1]
@@ -87,9 +92,9 @@ function parseSeccion1Entidades(data: (string | number | null)[][]): GeneratedGr
       tipo: 'bar',
       ubicacion,
       tablaDatos,
-      unidadMedida: 'miles-dolares',
+      unidadMedida: 'millones-dolares',
       fuente: 'inegi',
-      descripcionContexto: `Exportaciones trimestrales de ${entidad} en miles de dólares (barras) y porcentaje del total nacional (línea). Fuente: INEGI.`,
+      descripcionContexto: `Exportaciones trimestrales de ${entidad} en millones de dólares (barras) y porcentaje del total nacional (línea). Fuente: INEGI.`,
       series: [
         {nombre: entidad, tipoSerie: 'bar', color: '#3b82f6'},
         {nombre: '% del nacional', tipoSerie: 'line', color: '#ef4444', ejeSecundario: true},
@@ -124,13 +129,16 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
     const val = stateRow[c]
     if (val && typeof val === 'string' && val.trim()) {
       const name = val.trim()
-      // Find 2024 and 2025 columns
+      // Find 2024 and 2025 columns — las PRIMERAS a partir de esta columna de estado.
+      // (Antes tomaba las últimas de toda la fila → Coahuila terminaba usando las columnas
+      //  de Durango y mostraba sus datos. Se toma la primera de cada año y se detiene.)
       let col2024 = -1
       let col2025 = -1
       for (let pc = c; pc < periodRow.length; pc++) {
         const pVal = periodRow[pc]
-        if (pVal && String(pVal).includes('2024')) col2024 = pc
-        if (pVal && String(pVal).includes('2025')) col2025 = pc
+        if (pVal && String(pVal).includes('2024') && col2024 < 0) col2024 = pc
+        if (pVal && String(pVal).includes('2025') && col2025 < 0) col2025 = pc
+        if (col2024 >= 0 && col2025 >= 0) break
       }
       if (col2024 >= 0 && col2025 >= 0) {
         const ubicacion = name.toLowerCase().includes('coahuila')
@@ -149,6 +157,8 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
     const actividades: string[] = []
     const val2024: string[] = []
     const val2025: string[] = []
+    let total2024 = ''
+    let total2025 = ''
 
     for (let i = sectionIdx + 3; i < data.length; i++) {
       const row = data[i]
@@ -158,12 +168,17 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
       if (!actName || typeof actName !== 'string' || !actName.trim()) break
 
       const name = actName.trim()
-      if (name.toLowerCase().includes('exportaciones totales')) continue
+      // La fila "exportaciones totales" es el total de la entidad (no una subactividad más)
+      if (name.toLowerCase().includes('exportaciones totales')) {
+        total2024 = toMDD(Number(row[block.col2024] || 0))
+        total2025 = toMDD(Number(row[block.col2025] || 0))
+        continue
+      }
 
       // Truncate long names
       actividades.push(name.length > 50 ? name.substring(0, 47) + '...' : name)
-      val2024.push(Math.round(Number(row[block.col2024] || 0)).toString())
-      val2025.push(Math.round(Number(row[block.col2025] || 0)).toString())
+      val2024.push(toMDD(Number(row[block.col2024] || 0)))
+      val2025.push(toMDD(Number(row[block.col2025] || 0)))
     }
 
     if (actividades.length === 0) continue
@@ -175,6 +190,10 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
     for (let j = 0; j < actividades.length; j++) {
       tableRows.push(makeRow([actividades[j], val2024[j], val2025[j]]))
     }
+    // Total de la entidad al final
+    if (total2024 || total2025) {
+      tableRows.push(makeRow(['Total de la entidad', total2024, total2025]))
+    }
 
     const tablaDatos: TableValue = {rows: tableRows}
 
@@ -183,9 +202,10 @@ function parseSeccion2Subactividades(data: (string | number | null)[][]): Genera
       tipo: 'table',
       ubicacion: block.ubicacion,
       tablaDatos,
-      unidadMedida: 'miles-dolares',
+      unidadMedida: 'millones-dolares',
       fuente: 'inegi',
-      descripcionContexto: `Principales subactividades de exportación en ${block.name}, miles de dólares. Fuente: INEGI.`,
+      descripcionContexto: `Principales subactividades de exportación en ${block.name}, millones de dólares. Fuente: INEGI.`,
+      nota: 'La suma de las subactividades no equivale al total de la entidad porque algunos datos son confidenciales.',
     })
   }
 
@@ -218,17 +238,17 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
     const val = row[2]
     if (val === null || val === undefined) continue
     if (name.toLowerCase() === 'nacional') {
-      nacionalValor = Math.round(Number(val)).toString()
+      nacionalValor = toMDD(Number(val))
       continue
     }
     entidades.push(name)
-    valores.push(Math.round(Number(val)).toString())
+    valores.push(toMDD(Number(val)))
   }
 
   if (entidades.length === 0) return []
 
   const tableRows: TableRow[] = [
-    makeRow(['#', 'Entidad Federativa', 'Exportaciones (miles USD)']),
+    makeRow(['#', 'Entidad Federativa', 'Exportaciones (millones USD)']),
   ]
   for (let i = 0; i < entidades.length; i++) {
     tableRows.push(makeRow([(i + 1).toString(), entidades[i], valores[i]]))
@@ -244,9 +264,9 @@ function parseSeccion3Ranking(data: (string | number | null)[][]): GeneratedGraf
     tipo: 'table',
     ubicacion: ['estatal-coahuila', 'estatal-durango'],
     tablaDatos,
-    unidadMedida: 'miles-dolares',
+    unidadMedida: 'millones-dolares',
     fuente: 'inegi',
-    descripcionContexto: 'Ranking de entidades federativas por exportaciones totales en miles de dólares, 2025. Fuente: INEGI.',
+    descripcionContexto: 'Ranking de entidades federativas por exportaciones totales en millones de dólares, 2025. Fuente: INEGI.',
     ocultarValores: true,
   }]
 }

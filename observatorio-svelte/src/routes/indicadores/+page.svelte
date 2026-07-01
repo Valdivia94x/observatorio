@@ -476,7 +476,7 @@ Comparar Torreón, Gómez Palacio, Lerdo y Matamoros revela las vocaciones socia
 	};
 
 	// Indicadores donde NO se muestra el panel "Acerca de este indicador" (junto al mapa)
-	const SIN_PANEL_DESCRIPCION = ['Indicadores de Desocupación', 'Patrones Afiliados en el IMSS', 'Costo del voto por Partido Político', 'Organizaciones de la Sociedad Civil'];
+	const SIN_PANEL_DESCRIPCION = ['Indicadores de Desocupación', 'Patrones Afiliados en el IMSS', 'Costo del voto por Partido Político', 'Organizaciones de la Sociedad Civil', 'Inflación', 'Unidades Económicas'];
 
 	// Indicadores cuyo panel de descripción se oculta al filtrar por un estado (ubicación estatal-*),
 	// para dejar solo el ranking (ej. "Años promedio de escolaridad").

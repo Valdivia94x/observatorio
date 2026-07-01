@@ -152,6 +152,13 @@
 		{prefix: 'Asistencia Escolar', label: 'Escolaridad'},
 		{prefix: 'Resultados PLANEA', label: 'Materia'},
 		{prefix: 'Rezago Educativo', label: 'Rezago'},
+		{prefix: 'Ranking Nacional de Crecimiento Económico', label: 'Entidad Federativa'},
+		{prefix: 'Exportaciones de', label: 'Millones de dólares'},
+	];
+
+	// Override de la etiqueta del eje SECUNDARIO (Y2) por título de gráfica
+	const SECONDARY_AXIS_LABELS: {prefix: string; label: string}[] = [
+		{prefix: 'Exportaciones de', label: 'Porcentaje'},
 	];
 
 	// Etiqueta del eje de VALORES por título (Y en verticales, X en horizontales).
@@ -851,7 +858,9 @@
 			if (dualAxis) {
 				// Find the name of the secondary series to use as axis label
 				const secondarySerie = bloqueGrafica.series?.find(s => s.ejeSecundario);
-				const secondaryLabel = secondarySerie?.nombre || 'Eje secundario';
+				// Override de la etiqueta del eje secundario por título, si existe
+				const secondaryLabelOverride = SECONDARY_AXIS_LABELS.find(e => bloqueGrafica.titulo?.startsWith(e.prefix))?.label;
+				const secondaryLabel = secondaryLabelOverride || secondarySerie?.nombre || 'Eje secundario';
 				const y1Axis = extractAxisSymbol(secondaryLabel, false);
 				// Las "tasas" se muestran con 1 decimal en el eje secundario
 				const secondaryIsTasa = secondaryLabel.toLowerCase().includes('tasa');
